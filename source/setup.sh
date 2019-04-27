@@ -79,7 +79,7 @@ echo 'if [[ ${#mod} -gt 0 ]]; then
     mod=true
 else
     mod=false
-fi'
+fi' >> build.tmp
 echo "cd \"$sleepypath\"" >> build.tmp
 echo 'git fetch &>/dev/null
 sleepyrevision=$(git rev-list --count HEAD)' >> build.tmp
