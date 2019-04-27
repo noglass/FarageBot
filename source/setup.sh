@@ -102,7 +102,8 @@ if [ ! -f ../config/admins.conf ]; then
 # 
 # You can use a # to mark a line as a comment.
 # You can also place a # in the middle of a line to mark
-# everything from that point on that line as a comment.' > ../config/admins.conf
+# everything from that point on that line as a comment.
+' > ../config/admins.conf
     echo -n "Would you like to setup the admin config file now? [Y/n] "
     read ans
     if [[ $ans == y* ]] || [[ $ans == Y* ]]; then
@@ -195,7 +196,7 @@ echo "#define SLEEPY_VERSION \"$sleepyversion\"" > ../include/conf/sleepyversion
 
 apiversion=$(cat ../include/conf/.farageAPIbuild.h | tr -d ' >> build.tmp
 echo "'\n\r' | sed 's/[^\\\"]*\\\"\\([^\\\"]*\\)\\\".*/\\1/')" >> build.tmp
-echo -n 'echo Using FarageAPI v$apiversion
+echo -n 'echo Using FarageAPI $apiversion
 
 oldengversion=$(cat ../include/conf/.farageEngineBuild.h | tr -d ' >> build.tmp
 echo "'\n\r' | sed 's/[^\\\"]*\\\"\\([^\\\"]*\\)\\\".*/\\1/')" >> build.tmp
@@ -218,7 +219,7 @@ if $usePCRE2; then
 fi' >> build.tmp
 echo -n "g++ -std=c++11 -o ../../faragebot engine/faragebot.cpp shared/libini.cpp -I \"${sleepypath}/include\" -I \"${sleepypath}/deps\" -I \"${sleepypath}/deps/include\" -I \"${sleepypath}/include/sleepy_discord/IncludeNonexistent\" -I \"../include\" -I \"../include/shared\" -L\"${sleepypath}/buildtools\" -L\"${sleepypath}/deps/cpr\" ${sleepypath}/deps/cpr/cpr/*.o -L\"${curDir}/src/bin\" -L/usr/bin -pthread -lcurl -lssl -lcrypto -lsleepy_discord -lfarage " >> build.tmp
 echo '$pcre -ldl "$@"
-if [[ $? -ne 0 ]] && [[ "$engversion" != "$oldengversion" ]]; then
+if [[ $? -ne 0 ]]; then
     echo "#define FARAGE_ENGINE           \"$oldengversion\"" > ../include/conf/.farageEngineBuild.h
     exit 1
 else
