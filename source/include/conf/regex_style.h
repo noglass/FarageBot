@@ -1,1 +1,0 @@
-#define FARAGE_USE_PCRE2
