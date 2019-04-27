@@ -1,0 +1,14 @@
+modules
+config
+source/src/buildengine.sh
+source/src/bin
+source/include/conf/*.sh
+source/include/conf/sleepyversion.h
+source/sleepy-discord
+source/pcre*
+*.tar.gz
+*.o
+*.a
+*.fso
+faragebot
+
