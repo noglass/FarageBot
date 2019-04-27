@@ -1665,7 +1665,7 @@ namespace Farage
     {
         int version(Farage::BotClass *bot,Farage::Global &global,int argc,const std::string argv[])
         {
-            consoleOut("FarageBot written by nigel https://github.com/nigelSaysHesHappy/\n  Engine Version " + std::string(FARAGE_ENGINE) + "\n  API Version " + std::string(FARAGE_API_VERSION) + "\n  Powered by " + std::string(SLEEPY_VERSION) + " https://github.com/yourWaifu/sleepy-discord/");
+            consoleOut("FarageBot written by nigel https://github.com/nigelSaysHesHappy/\n  Farage API " + std::string(FARAGE_API_VERSION) + "\n  FarageBot Version " + std::string(FARAGE_ENGINE) + "\n  Powered by " + std::string(SLEEPY_VERSION) + " https://github.com/yourWaifu/sleepy-discord/");
             return PLUGIN_HANDLED;
         }
         int modules(Farage::BotClass *bot,Farage::Global &global,int argc,const std::string argv[])
@@ -2010,7 +2010,7 @@ namespace Farage
     {
         int version(Farage::BotClass *bot,Farage::Global &global,int argc,const std::string argv[],const SleepyDiscord::Message &message)
         {
-            bot->sendMessage(message.channelID,"FarageBot written by nigel <https://github.com/nigelSaysHesHappy/>\n - Engine Version `" + std::string(FARAGE_ENGINE) + "`\n - API Version `" + std::string(FARAGE_API_VERSION) + "`\n  Powered by `" + std::string(SLEEPY_VERSION) + "` <https://github.com/yourWaifu/sleepy-discord/>");
+            bot->sendMessage(message.channelID,"FarageBot written by nigel <https://github.com/nigelSaysHesHappy/>\n - Farage API `" + std::string(FARAGE_API_VERSION) + "`\n - FarageBot Version `" + std::string(FARAGE_ENGINE) + "`\n Powered by `" + std::string(SLEEPY_VERSION) + "` <https://github.com/yourWaifu/sleepy-discord/>");
             return PLUGIN_HANDLED;
         }
         int setprefix(Farage::BotClass *bot,Farage::Global &global,int argc,const std::string argv[],const SleepyDiscord::Message &message)
