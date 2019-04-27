@@ -846,7 +846,7 @@ namespace Farage
         {
             if (json.size() < 1)
             {
-                /*SleepyDiscord::ObjectResponse<SleepyDiscord::Message> response = */((BotClass*)(recallGlobal()->discord))->sendMessage(chan,message,SleepyDiscord::Embed::Flag::INVALID_EMBED,tts);
+                /*SleepyDiscord::ObjectResponse<SleepyDiscord::Message> response = */((BotClass*)(recallGlobal()->discord))->sendMessage(chan,message,/*SleepyDiscord::Embed::Flag::INVALID_EMBED*/SleepyDiscord::Embed(),tts);
                 return ObjectResponse<Message>();//(std::move(convertResponse(response)),std::move(convertMessage(std::move(response.cast()))));
             }
             else
