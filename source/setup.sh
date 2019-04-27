@@ -41,13 +41,109 @@ fi
 
 echo "This script will setup everything you need to get FarageBOT up and running."
 echo ""
+if [ ! -d ../config ]; then
+    mkdir ../config
+    mkdir ../config/priority
+elif [ ! -d ../config/priority ]; then
+    mkdir ../config/priority
+fi
+doConf=false
+if [ ! -f ../config/farage.conf ]; then
+    doConf=true
+else
+    echo -n "Would you like to re-create the runtime configuration now? [Y/n] "
+    read ans
+    echo ""
+    if [[ $ans == y* ]] || [[ $ans == Y* ]]; then
+        doConf=true
+    fi
+fi
+if $doConf; then
+    echo "Setting up runtime configuration . . ."
+    echo ""
+    echo '[farage]
+verbose=true
+debug=true' > ../config/farage.conf
+    echo -n "Do you have a bot token yet? [Y/n] "
+    read ans
+    if [[ $ans == y* ]] || [[ $ans == Y* ]]; then
+        echo "Please enter your bot token and press enter:"
+        read ans
+        echo ""
+        echo "token=${ans}" >> ../config/farage.conf
+    else
+        echo ""
+        echo "token=YOUR BOT TOKEN HERE" >> ../config/farage.conf
+        echo 'A placeholder has been added to the "../config/farage.conf" file. You will need to manually enter you bot token before running faragebot.'
+        echo ""
+    fi
+    echo 'Enter the default command prefix you would like your bot to use, default is "!":'
+    read ans
+    echo "prefix=${ans}" >> ../config/farage.conf
+    echo ""
+    echo "Runtime configuration complete."
+    echo 'These settings can be changed by editing the "../config/farage.conf" file at any time.'
+    echo ""
+fi
+if [ ! -f ../config/admins.conf ]; then
+    echo '# Here you can set globally active admin flags.
+# Unlike the adminroles.ini file, admins defined here will
+# have power everywhere including within Direct Messages.
+# 
+# It is a good idea to at least define your own ID here.
+# 
+# Format:
+# 
+# <USER_ID> = <flags>
+# 
+# Example:
+# 
+# 153786881912340480 = z # nigel
+# 
+# You can use a # to mark a line as a comment.
+# You can also place a # in the middle of a line to mark
+# everything from that point on that line as a comment.' > ../config/admins.conf
+    echo -n "Would you like to setup the admin config file now? [Y/n] "
+    read ans
+    if [[ $ans == y* ]] || [[ $ans == Y* ]]; then
+        echo "Enter your own discord user ID and press enter: "
+        read ans
+        echo ""
+        echo "${ans} = z # This is me!" >> ../config/admins.conf
+        echo "You are now set as a root admin."
+        echo ""
+        echo -n "Would you like to add more admins now? [Y/n] "
+        read ans
+        echo ""
+        while [[ $ans == y* ]] || [[ $ans == Y* ]]; do
+            echo "Enter the discord user ID of the admin you would like to create:"
+            read ans
+            echo ""
+            echo "Enter the flags you would like to give this admin:"
+            read flags
+            echo ""
+            echo "${ans} = ${flags}" >> ../config/admins.conf
+            echo -n "Would you like to add another admin now? [Y/n] "
+            read ans
+            echo ""
+        done
+    else
+        echo 'The default "../config/admins.conf" file has been created complete with instructions for adding admins.'
+        echo "No admins have been defined."
+    fi
+    echo 'You can change the admin config by editing the "../config/admin.conf" file at any time.'
+    echo ""
+fi
+
 setup=false
 echo -n "Do you have SleepyDiscord already? [Y/n] "
 read ans
+echo ""
 if [[ $ans == y* ]] || [[ $ans == Y* ]]; then
     while [ 1 ]; do
         echo "Please input the full path where the git repository is installed:"
         read sleepypath
+        echo ""
         if [[ -d "$sleepypath" ]]; then
             break
         else
@@ -62,6 +158,7 @@ else
     sleepypath=$PWD/sleepy-discord/
     git clone https://github.com/yourWaifu/sleepy-discord.git
     setup=true
+    echo ""
 fi
 
 echo '#!/bin/bash
@@ -129,89 +226,6 @@ else
 fi' >> build.tmp
 mv build.tmp src/buildengine.sh
 chmod +x src/buildengine.sh
-
-if [ ! -d ../config ]; then
-    mkdir ../config
-    mkdir ../config/priority
-elif [ ! -d ../config/priority ]; then
-    mkdir ../config/priority
-fi
-doConf=false
-if [ ! -f ../config/farage.conf ]; then
-    doConf=true
-else
-    echo -n "Would you like to re-create the runtime configuration now? [Y/n] "
-    read ans
-    if [[ $ans == y* ]] || [[ $ans == Y* ]]; then
-        doConf=true
-    fi
-fi
-if $doConf; then
-    echo "Setting up runtime configuration . . ."
-    echo ""
-    echo '[farage]
-verbose=true
-debug=true' > ../config/farage.conf
-    echo -n "Do you have a bot token yet? [Y/n] "
-    read ans
-    if [[ $ans == y* ]] || [[ $ans == Y* ]]; then
-        echo "Please enter your bot token and press enter:"
-        read ans
-        echo "token=${ans}" >> ../config/farage.conf
-    else
-        echo "token=YOUR BOT TOKEN HERE" >> ../config/farage.conf
-        echo 'A placeholder has been added to the "../config/farage.conf" file. You will need to manually enter you bot token before running faragebot.'
-    fi
-    echo 'Enter the default command prefix you would like your bot to use, default is "!":'
-    read ans
-    echo "prefix=${ans}" >> ../config/farage.conf
-    echo "Runtime configuration complete."
-    echo 'These settings can be changed by editing the "../config/farage.conf" file at any time.'
-    echo ""
-fi
-if [ ! -f ../config/admins.conf ]; then
-    echo '# Here you can set globally active admin flags.
-# Unlike the adminroles.ini file, admins defined here will
-# have power everywhere including within Direct Messages.
-# 
-# It is a good idea to at least define your own ID here.
-# 
-# Format:
-# 
-# <USER_ID> = <flags>
-# 
-# Example:
-# 
-# 153786881912340480 = z # nigel
-# 
-# You can use a # to mark a line as a comment.
-# You can also place a # in the middle of a line to mark
-# everything from that point on that line as a comment.' > ../config/admins.conf
-    echo -n "Would you like to setup the admin config file now? [Y/n] "
-    read ans
-    if [[ $ans == y* ]] || [[ $ans == Y* ]]; then
-        echo "Enter your own discord user ID and press enter: "
-        read ans
-        echo "${ans} = z # This is me!" >> ../config/admins.conf
-        echo "You are now set as a root admin."
-        echo -n "Would you like to add more admins now? [Y/n] "
-        read ans
-        while [[ $ans == y*]] || [[ $ans == Y* ]]; do
-            echo "Enter the discord user ID of the admin you would like to create:"
-            read ans
-            echo "Enter the flags you would like to give this admin:"
-            read flags
-            echo "${ans} = ${flags}" >> ../config/admins.conf
-            echo -n "Would you like to add another admin now? [Y/n] "
-            read ans
-        done
-    else
-        echo 'The default "../config/admins.conf" file has been created complete with instructions for adding admins.'
-        echo "No admins have been defined."
-    fi
-    echo 'You can change the admin config by editing the "../config/admin.conf" file at any time.'
-    echo ""
-fi
 
 cd $sleepypath
 if $nogit; then
