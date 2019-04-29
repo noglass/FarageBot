@@ -64,24 +64,34 @@ Farage::GlobVar* Farage::findGlobVar(const std::string &name)
 
 void Farage::consoleOut(const std::string &msg)
 {
+    Farage::recallGlobal()->getBuffer()->push_back(msg);
     std::cout<<msg<<std::endl;
 }
 
 void Farage::errorOut(const std::string &msg)
 {
+    Farage::recallGlobal()->getBuffer()->push_back(msg);
     std::cerr<<msg<<std::endl;
 }
 
 void Farage::debugOut(const std::string &msg)
 {
-    if (Farage::recallGlobal()->debug)
+    Farage::Global *global = Farage::recallGlobal();
+    if (global->debug)
+    {
+        global->getBuffer()->push_back(msg);
         std::cerr<<msg<<std::endl;
+    }
 }
 
 void Farage::verboseOut(const std::string &msg)
 {
-    if (Farage::recallGlobal()->verbose)
+    Farage::Global *global = Farage::recallGlobal();
+    if (global->verbose)
+    {
+        global->getBuffer()->push_back(msg);
         std::cout<<msg<<std::endl;
+    }
 }
 
 int Farage::ignoreChannel(const std::string &ID, bool toggle)

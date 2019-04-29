@@ -252,23 +252,23 @@ namespace Farage
         return Invite{ invite.code, convertServer(invite.server), convertChannel(invite.channel) };
     }
                                                                                 
-    User                convertObject(SleepyDiscord::User user)                 { return convertUser(std::move(user)); }
-    Channel             convertObject(SleepyDiscord::Channel channel)           { return convertChannel(std::move(channel)); }
-    Role                convertObject(SleepyDiscord::Role role)                 { return convertRole(std::move(role)); }
-    ServerMember        convertObject(SleepyDiscord::ServerMember member)       { return convertServerMember(std::move(member)); }
-    Server              convertObject(SleepyDiscord::Server server)             { return convertServer(std::move(server)); }
-    Message             convertObject(SleepyDiscord::Message message)           { return convertMessage(std::move(message)); }
-    Ready               convertObject(SleepyDiscord::Ready readyData)           { return convertReady(std::move(readyData)); }
-    Emoji               convertObject(SleepyDiscord::Emoji emoji)               { return convertEmoji(std::move(emoji)); }
-    ActivityAssets      convertObject(SleepyDiscord::ActivityAssets assets)     { return convertActivityAssets(std::move(assets)); }
-    ActivitySecrets     convertObject(SleepyDiscord::ActivitySecrets secrets)   { return convertActivitySecrets(std::move(secrets)); }
-    Activity            convertObject(SleepyDiscord::Activity activity)         { return convertActivity(std::move(activity)); }
-    PresenceUpdate      convertObject(SleepyDiscord::PresenceUpdate presence)   { return convertPresenceUpdate(std::move(presence)); }
-    Response            convertObject(SleepyDiscord::Response response)         { return convertResponse(std::move(response)); }
-    VoiceState          convertObject(SleepyDiscord::VoiceState state)          { return convertVoiceState(std::move(state)); }
-    VoiceServerUpdate   convertObject(SleepyDiscord::VoiceServerUpdate update)  { return convertVoiceServerUpdate(std::move(update)); }
-    Reaction            convertObject(SleepyDiscord::Reaction reaction)         { return convertReaction(std::move(reaction)); }
-    Invite              convertObject(SleepyDiscord::Invite invite)             { return convertInvite(std::move(invite)); }
+    inline User                convertObject(SleepyDiscord::User user)                 { return convertUser(std::move(user)); }
+    inline Channel             convertObject(SleepyDiscord::Channel channel)           { return convertChannel(std::move(channel)); }
+    inline Role                convertObject(SleepyDiscord::Role role)                 { return convertRole(std::move(role)); }
+    inline ServerMember        convertObject(SleepyDiscord::ServerMember member)       { return convertServerMember(std::move(member)); }
+    inline Server              convertObject(SleepyDiscord::Server server)             { return convertServer(std::move(server)); }
+    inline Message             convertObject(SleepyDiscord::Message message)           { return convertMessage(std::move(message)); }
+    inline Ready               convertObject(SleepyDiscord::Ready readyData)           { return convertReady(std::move(readyData)); }
+    inline Emoji               convertObject(SleepyDiscord::Emoji emoji)               { return convertEmoji(std::move(emoji)); }
+    inline ActivityAssets      convertObject(SleepyDiscord::ActivityAssets assets)     { return convertActivityAssets(std::move(assets)); }
+    inline ActivitySecrets     convertObject(SleepyDiscord::ActivitySecrets secrets)   { return convertActivitySecrets(std::move(secrets)); }
+    inline Activity            convertObject(SleepyDiscord::Activity activity)         { return convertActivity(std::move(activity)); }
+    inline PresenceUpdate      convertObject(SleepyDiscord::PresenceUpdate presence)   { return convertPresenceUpdate(std::move(presence)); }
+    inline Response            convertObject(SleepyDiscord::Response response)         { return convertResponse(std::move(response)); }
+    inline VoiceState          convertObject(SleepyDiscord::VoiceState state)          { return convertVoiceState(std::move(state)); }
+    inline VoiceServerUpdate   convertObject(SleepyDiscord::VoiceServerUpdate update)  { return convertVoiceServerUpdate(std::move(update)); }
+    inline Reaction            convertObject(SleepyDiscord::Reaction reaction)         { return convertReaction(std::move(reaction)); }
+    inline Invite              convertObject(SleepyDiscord::Invite invite)             { return convertInvite(std::move(invite)); }
     
     template<class FromType, class ToType>
     ArrayResponse<ToType> convertArrayResponse(SleepyDiscord::ArrayResponse<FromType> response)
