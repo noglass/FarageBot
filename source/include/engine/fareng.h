@@ -359,7 +359,6 @@ OPTIONS\n\
             void onReady(SleepyDiscord::Ready readyData)
             {
                 Farage::Global *global = Farage::recallGlobal();
-                global->clearBuffer();
                 createServerCache();
                 Ready fready = convertReady(std::move(readyData));
                 void *arg0 = (void*)(&fready);
@@ -371,7 +370,6 @@ OPTIONS\n\
             void onResumed(const SleepyDiscord::json::Value& jsonMessage)
             {
                 Farage::Global *global = Farage::recallGlobal();
-                global->clearBuffer();
                 void *arg0 = (void*)(&jsonMessage);
                 for (auto it = global->plugins.begin(), ite = global->plugins.end();it != ite;++it)
                     if ((*it)->callEvent(Event::ONRESUMED,arg0,nullptr,nullptr,nullptr) == PLUGIN_HANDLED)
@@ -381,7 +379,6 @@ OPTIONS\n\
             void onDeleteServer(SleepyDiscord::UnavailableServer server)
             {
                 Farage::Global *global = Farage::recallGlobal();
-                global->clearBuffer();
                 std::string sserver = server.ID;
                 void *arg0 = (void*)(&sserver);
                 for (auto it = global->plugins.begin(), ite = global->plugins.end();it != ite;++it)
@@ -392,7 +389,6 @@ OPTIONS\n\
             void onEditServer(SleepyDiscord::Server server)
             {
                 Farage::Global *global = Farage::recallGlobal();
-                global->clearBuffer();
                 Server fserver = convertServer(std::move(server));
                 void *arg0 = (void*)(&fserver);
                 for (auto it = global->plugins.begin(), ite = global->plugins.end();it != ite;++it)
@@ -403,7 +399,6 @@ OPTIONS\n\
             void onBan(SleepyDiscord::Snowflake<SleepyDiscord::Server> serverID, SleepyDiscord::User user)
             {
                 Farage::Global *global = Farage::recallGlobal();
-                global->clearBuffer();
                 User fuser = convertUser(std::move(user));
                 std::string ID = serverID;
                 void *arg0 = (void*)(&ID);
@@ -416,7 +411,6 @@ OPTIONS\n\
             void onUnban(SleepyDiscord::Snowflake<SleepyDiscord::Server> serverID, SleepyDiscord::User user)
             {
                 Farage::Global *global = Farage::recallGlobal();
-                global->clearBuffer();
                 User fuser = convertUser(std::move(user));
                 std::string ID = serverID;
                 void *arg0 = (void*)(&ID);
@@ -429,7 +423,6 @@ OPTIONS\n\
             void onMember(SleepyDiscord::Snowflake<SleepyDiscord::Server> serverID, SleepyDiscord::ServerMember member)
             {
                 Farage::Global *global = Farage::recallGlobal();
-                global->clearBuffer();
                 ServerMember fmember = convertServerMember(std::move(member));
                 std::string ID = serverID;
                 void *arg0 = (void*)(&ID);
@@ -455,7 +448,6 @@ OPTIONS\n\
             void onEditMember(SleepyDiscord::Snowflake<SleepyDiscord::Server> serverID, SleepyDiscord::User user, std::vector<SleepyDiscord::Snowflake<SleepyDiscord::Role>> roles, std::string nick)
             {
                 Farage::Global *global = Farage::recallGlobal();
-                global->clearBuffer();
                 User fuser = convertUser(std::move(user));
                 std::string ID = serverID;
                 std::vector<std::string> froles;
@@ -474,7 +466,6 @@ OPTIONS\n\
             void onRole(SleepyDiscord::Snowflake<SleepyDiscord::Server> serverID, SleepyDiscord::Role role)
             {
                 Farage::Global *global = Farage::recallGlobal();
-                global->clearBuffer();
                 Role frole = convertRole(std::move(role));
                 std::string ID = serverID;
                 void *arg0 = (void*)(&ID);
@@ -487,7 +478,6 @@ OPTIONS\n\
             void onDeleteRole(SleepyDiscord::Snowflake<SleepyDiscord::Server> serverID, SleepyDiscord::Snowflake<SleepyDiscord::Role> roleID)
             {
                 Farage::Global *global = Farage::recallGlobal();
-                global->clearBuffer();
                 std::string ID = serverID, srole = roleID;
                 void *arg0 = (void*)(&ID);
                 void *arg1 = (void*)(&srole);
@@ -499,7 +489,6 @@ OPTIONS\n\
             void onEditRole(SleepyDiscord::Snowflake<SleepyDiscord::Server> serverID, SleepyDiscord::Role role)
             {
                 Farage::Global *global = Farage::recallGlobal();
-                global->clearBuffer();
                 Role frole = convertRole(std::move(role));
                 std::string ID = serverID;
                 void *arg0 = (void*)(&ID);
@@ -512,7 +501,6 @@ OPTIONS\n\
             void onEditEmojis(SleepyDiscord::Snowflake<SleepyDiscord::Server> serverID, std::vector<SleepyDiscord::Emoji> emojis)
             {
                 Farage::Global *global = Farage::recallGlobal();
-                global->clearBuffer();
                 std::vector<Emoji> femojis;
                 femojis.reserve(emojis.size());
                 for (auto it = emojis.begin(), ite = emojis.end();it != ite;++it)
@@ -528,7 +516,6 @@ OPTIONS\n\
             void onMemberChunk(SleepyDiscord::Snowflake<SleepyDiscord::Server> serverID, std::vector<SleepyDiscord::ServerMember> members)
             {
                 Farage::Global *global = Farage::recallGlobal();
-                global->clearBuffer();
                 std::vector<ServerMember> fmembers;
                 fmembers.reserve(members.size());
                 for (auto it = members.begin(), ite = members.end();it != ite;++it)
@@ -544,7 +531,6 @@ OPTIONS\n\
             void onDeleteChannel(SleepyDiscord::Channel channel)
             {
                 Farage::Global *global = Farage::recallGlobal();
-                global->clearBuffer();
                 Channel fchannel = convertChannel(std::move(channel));
                 void *arg0 = (void*)(&fchannel);
                 for (auto it = global->plugins.begin(), ite = global->plugins.end();it != ite;++it)
@@ -555,7 +541,6 @@ OPTIONS\n\
             void onEditChannel(SleepyDiscord::Channel channel)
             {
                 Farage::Global *global = Farage::recallGlobal();
-                global->clearBuffer();
                 Channel fchannel = convertChannel(std::move(channel));
                 void *arg0 = (void*)(&fchannel);
                 for (auto it = global->plugins.begin(), ite = global->plugins.end();it != ite;++it)
@@ -566,7 +551,6 @@ OPTIONS\n\
             void onPinMessage(SleepyDiscord::Snowflake<SleepyDiscord::Channel> channelID, std::string lastPinTimestamp)
             {
                 Farage::Global *global = Farage::recallGlobal();
-                global->clearBuffer();
                 std::string ID = channelID;
                 void *arg0 = (void*)(&ID);
                 void *arg1 = (void*)(&lastPinTimestamp);
@@ -578,7 +562,6 @@ OPTIONS\n\
             void onPresenceUpdate(SleepyDiscord::PresenceUpdate presenceUpdate)
             {
                 Farage::Global *global = Farage::recallGlobal();
-                global->clearBuffer();
                 PresenceUpdate presence = convertPresenceUpdate(std::move(presenceUpdate));
                 void *arg0 = (void*)(&presence);
                 for (auto it = global->plugins.begin(), ite = global->plugins.end();it != ite;++it)
@@ -589,7 +572,6 @@ OPTIONS\n\
             void onEditUser(SleepyDiscord::User user)
             {
                 Farage::Global *global = Farage::recallGlobal();
-                global->clearBuffer();
                 User fuser = convertUser(std::move(user));
                 void *arg0 = (void*)(&fuser);
                 for (auto it = global->plugins.begin(), ite = global->plugins.end();it != ite;++it)
@@ -600,7 +582,6 @@ OPTIONS\n\
             void onEditUserNote(const SleepyDiscord::json::Value& jsonMessage)
             {
                 Farage::Global *global = Farage::recallGlobal();
-                global->clearBuffer();
                 void *arg0 = (void*)(&jsonMessage);
                 for (auto it = global->plugins.begin(), ite = global->plugins.end();it != ite;++it)
                     if ((*it)->callEvent(Event::ONEDITUSERNOTE,arg0,nullptr,nullptr,nullptr) == PLUGIN_HANDLED)
@@ -610,7 +591,6 @@ OPTIONS\n\
             void onEditUserSettings(const SleepyDiscord::json::Value& jsonMessage)
             {
                 Farage::Global *global = Farage::recallGlobal();
-                global->clearBuffer();
                 void *arg0 = (void*)(&jsonMessage);
                 for (auto it = global->plugins.begin(), ite = global->plugins.end();it != ite;++it)
                     if ((*it)->callEvent(Event::ONEDITUSERSETTINGS,arg0,nullptr,nullptr,nullptr) == PLUGIN_HANDLED)
@@ -620,7 +600,6 @@ OPTIONS\n\
             void onEditVoiceState(SleepyDiscord::VoiceState& state)
             {
                 Farage::Global *global = Farage::recallGlobal();
-                global->clearBuffer();
                 VoiceState fstate = convertVoiceState(std::move(state));
                 void *arg0 = (void*)(&fstate);
                 for (auto it = global->plugins.begin(), ite = global->plugins.end();it != ite;++it)
@@ -631,7 +610,6 @@ OPTIONS\n\
             void onTyping(SleepyDiscord::Snowflake<SleepyDiscord::Channel> channelID, SleepyDiscord::Snowflake<SleepyDiscord::User> userID, time_t timestamp)
             {
                 Farage::Global *global = Farage::recallGlobal();
-                global->clearBuffer();
                 std::string channel = channelID, user = userID;
                 for (auto it = global->ignoredUsers.begin(), ite = global->ignoredUsers.end();it != ite;++it)
                     if (*it == user)
@@ -647,7 +625,6 @@ OPTIONS\n\
             void onDeleteMessages(SleepyDiscord::Snowflake<SleepyDiscord::Channel> channelID, std::vector<SleepyDiscord::Snowflake<SleepyDiscord::Message>> messages)
             {
                 Farage::Global *global = Farage::recallGlobal();
-                global->clearBuffer();
                 std::string channel = channelID;
                 std::vector<std::string> smessages;
                 smessages.reserve(messages.size());
@@ -663,7 +640,6 @@ OPTIONS\n\
             void onEditMessage(const SleepyDiscord::json::Value& jsonMessage)
             {
                 Farage::Global *global = Farage::recallGlobal();
-                global->clearBuffer();
                 void *arg0 = (void*)(&jsonMessage);
                 for (auto it = global->plugins.begin(), ite = global->plugins.end();it != ite;++it)
                     if ((*it)->callEvent(Event::ONEDITMESSAGE,arg0,nullptr,nullptr,nullptr) == PLUGIN_HANDLED)
@@ -673,7 +649,6 @@ OPTIONS\n\
             void onEditVoiceServer(SleepyDiscord::VoiceServerUpdate& update)
             {
                 Farage::Global *global = Farage::recallGlobal();
-                global->clearBuffer();
                 VoiceServerUpdate fupdate = convertVoiceServerUpdate(std::move(update));
                 void *arg0 = (void*)(&fupdate);
                 for (auto it = global->plugins.begin(), ite = global->plugins.end();it != ite;++it)
@@ -684,7 +659,6 @@ OPTIONS\n\
             void onServerSync(const SleepyDiscord::json::Value& jsonMessage)
             {
                 Farage::Global *global = Farage::recallGlobal();
-                global->clearBuffer();
                 void *arg0 = (void*)(&jsonMessage);
                 for (auto it = global->plugins.begin(), ite = global->plugins.end();it != ite;++it)
                     if ((*it)->callEvent(Event::ONSERVERSYNC,arg0,nullptr,nullptr,nullptr) == PLUGIN_HANDLED)
@@ -694,7 +668,6 @@ OPTIONS\n\
             void onRelationship(const SleepyDiscord::json::Value& jsonMessage)
             {
                 Farage::Global *global = Farage::recallGlobal();
-                global->clearBuffer();
                 void *arg0 = (void*)(&jsonMessage);
                 for (auto it = global->plugins.begin(), ite = global->plugins.end();it != ite;++it)
                     if ((*it)->callEvent(Event::ONRELATIONSHIP,arg0,nullptr,nullptr,nullptr) == PLUGIN_HANDLED)
@@ -704,7 +677,6 @@ OPTIONS\n\
             void onDeleteRelationship(const SleepyDiscord::json::Value& jsonMessage)
             {
                 Farage::Global *global = Farage::recallGlobal();
-                global->clearBuffer();
                 void *arg0 = (void*)(&jsonMessage);
                 for (auto it = global->plugins.begin(), ite = global->plugins.end();it != ite;++it)
                     if ((*it)->callEvent(Event::ONDELETERELATIONSHIP,arg0,nullptr,nullptr,nullptr) == PLUGIN_HANDLED)
@@ -714,7 +686,6 @@ OPTIONS\n\
             void onReaction(SleepyDiscord::Snowflake<SleepyDiscord::User> userID, SleepyDiscord::Snowflake<SleepyDiscord::Channel> channelID, SleepyDiscord::Snowflake<SleepyDiscord::Message> messageID, SleepyDiscord::Emoji emoji)
             {
                 Farage::Global *global = Farage::recallGlobal();
-                global->clearBuffer();
                 std::string user = userID, channel = channelID, message = messageID;
                 for (auto it = global->ignoredUsers.begin(), ite = global->ignoredUsers.end();it != ite;++it)
                     if (*it == user)
@@ -732,7 +703,6 @@ OPTIONS\n\
             void onDeleteReaction(SleepyDiscord::Snowflake<SleepyDiscord::User> userID, SleepyDiscord::Snowflake<SleepyDiscord::Channel> channelID, SleepyDiscord::Snowflake<SleepyDiscord::Message> messageID, SleepyDiscord::Emoji emoji)
             {
                 Farage::Global *global = Farage::recallGlobal();
-                global->clearBuffer();
                 std::string user = userID, channel = channelID, message = messageID;
                 for (auto it = global->ignoredUsers.begin(), ite = global->ignoredUsers.end();it != ite;++it)
                     if (*it == user)
@@ -750,7 +720,6 @@ OPTIONS\n\
             void onDeleteAllReaction(SleepyDiscord::Snowflake<SleepyDiscord::Server> serverID, SleepyDiscord::Snowflake<SleepyDiscord::Channel> channelID, SleepyDiscord::Snowflake<SleepyDiscord::Message> messageID)
             {
                 Farage::Global *global = Farage::recallGlobal();
-                global->clearBuffer();
                 std::string server = serverID, channel = channelID, message = messageID;
                 void *arg0 = (void*)(&server);
                 void *arg1 = (void*)(&channel);
@@ -763,7 +732,6 @@ OPTIONS\n\
             void onMessage(SleepyDiscord::Message message)
             {
                 Farage::Global *global = Farage::recallGlobal();
-                global->clearBuffer();
                 std::string ID = message.channelID;
                 for (auto it = global->ignoredChannels.begin(), ite = global->ignoredChannels.end();it != ite;++it)
                     if (*it == ID)
@@ -858,7 +826,6 @@ OPTIONS\n\
             void onServer(SleepyDiscord::Server server)
             {
                 Farage::Global *global = Farage::recallGlobal();
-                global->clearBuffer();
                 Server fserver = convertServer(std::move(server));
                 void *arg0 = (void*)(&fserver);
                 for (auto it = global->plugins.begin(), ite = global->plugins.end();it != ite;++it)
@@ -869,7 +836,6 @@ OPTIONS\n\
             void onChannel(SleepyDiscord::Channel channel)
             {
                 Farage::Global *global = Farage::recallGlobal();
-                global->clearBuffer();
                 Channel fchannel = convertChannel(std::move(channel));
                 void *arg0 = (void*)(&fchannel);
                 for (auto it = global->plugins.begin(), ite = global->plugins.end();it != ite;++it)
@@ -880,7 +846,6 @@ OPTIONS\n\
             void onDispatch(const SleepyDiscord::json::Value& jsonMessage)
             {
                 Farage::Global *global = Farage::recallGlobal();
-                global->clearBuffer();
                 void *arg0 = (void*)(&jsonMessage);
                 for (auto it = global->plugins.begin(), ite = global->plugins.end();it != ite;++it)
                     if ((*it)->callEvent(Event::ONDISPATCH,arg0,nullptr,nullptr,nullptr) == PLUGIN_HANDLED)
@@ -890,7 +855,6 @@ OPTIONS\n\
             void onHeartbeat()
             {
                 Farage::Global *global = Farage::recallGlobal();
-                global->clearBuffer();
                 for (auto it = global->plugins.begin(), ite = global->plugins.end();it != ite;++it)
                     if ((*it)->callEvent(Event::ONHEARTBEAT,nullptr,nullptr,nullptr,nullptr) == PLUGIN_HANDLED)
                         break;
@@ -899,7 +863,6 @@ OPTIONS\n\
             void onHeartbeatAck()
             {
                 Farage::Global *global = Farage::recallGlobal();
-                global->clearBuffer();
                 for (auto it = global->plugins.begin(), ite = global->plugins.end();it != ite;++it)
                     if ((*it)->callEvent(Event::ONHEARTBEATACK,nullptr,nullptr,nullptr,nullptr) == PLUGIN_HANDLED)
                         break;
@@ -908,7 +871,6 @@ OPTIONS\n\
             void onInvaldSession()
             {
                 Farage::Global *global = Farage::recallGlobal();
-                global->clearBuffer();
                 for (auto it = global->plugins.begin(), ite = global->plugins.end();it != ite;++it)
                     if ((*it)->callEvent(Event::ONINVALIDSESSION,nullptr,nullptr,nullptr,nullptr) == PLUGIN_HANDLED)
                         break;
@@ -917,7 +879,6 @@ OPTIONS\n\
             void onDisconnect()
             {
                 Farage::Global *global = Farage::recallGlobal();
-                global->clearBuffer();
                 for (auto it = global->plugins.begin(), ite = global->plugins.end();it != ite;++it)
                     if ((*it)->callEvent(Event::ONDISCONNECT,nullptr,nullptr,nullptr,nullptr) == PLUGIN_HANDLED)
                         break;
@@ -926,7 +887,6 @@ OPTIONS\n\
             void onResume()
             {
                 Farage::Global *global = Farage::recallGlobal();
-                global->clearBuffer();
                 for (auto it = global->plugins.begin(), ite = global->plugins.end();it != ite;++it)
                     if ((*it)->callEvent(Event::ONRESUME,nullptr,nullptr,nullptr,nullptr) == PLUGIN_HANDLED)
                         break;
@@ -935,7 +895,6 @@ OPTIONS\n\
             void onQuit()
             {
                 Farage::Global *global = Farage::recallGlobal();
-                global->clearBuffer();
                 for (auto it = global->plugins.begin(), ite = global->plugins.end();it != ite;++it)
                     if ((*it)->callEvent(Event::ONQUIT,nullptr,nullptr,nullptr,nullptr) == PLUGIN_HANDLED)
                         break;
@@ -944,7 +903,6 @@ OPTIONS\n\
             void onRestart()
             {
                 Farage::Global *global = Farage::recallGlobal();
-                global->clearBuffer();
                 for (auto it = global->plugins.begin(), ite = global->plugins.end();it != ite;++it)
                     if ((*it)->callEvent(Event::ONRESTART,nullptr,nullptr,nullptr,nullptr) == PLUGIN_HANDLED)
                         break;
@@ -953,7 +911,6 @@ OPTIONS\n\
             void onResponse(SleepyDiscord::Response response)
             {
                 Farage::Global *global = Farage::recallGlobal();
-                global->clearBuffer();
                 Response fresponse = convertResponse(std::move(response));
                 void *arg0 = (void*)(&fresponse);
                 for (auto it = global->plugins.begin(), ite = global->plugins.end();it != ite;++it)
@@ -964,7 +921,6 @@ OPTIONS\n\
             void onError(SleepyDiscord::ErrorCode errorCode, const std::string errorMessage)
             {
                 Farage::Global *global = Farage::recallGlobal();
-                global->clearBuffer();
                 int code = errorCode;
                 void *arg0 = (void*)(&code);
                 void *arg1 = (void*)(&errorMessage);
@@ -2211,11 +2167,11 @@ OPTIONS\n\
                 std::string output;
                 for (auto it = buffer->begin(), ite = buffer->end();it != ite;++it)
                     output = output + *it + '\n';
+                global.returnBuffer();
                 if (output.size() > 0)
                     bot->sendMessage(message.channelID,"```\n" + output + "```");
                 else
                     bot->addReaction(message.channelID,message.ID,"%E2%9C%85");
-                global.returnBuffer();
             }
             return PLUGIN_HANDLED;
         }
