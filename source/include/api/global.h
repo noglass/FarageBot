@@ -37,27 +37,30 @@ namespace Farage
             inline bool bufferIsLocked() { return isLocked; }
             void clearBuffer()
             {
-                bufferLock.lock();
-                isLocked = true;
+                lock();
                 consoleBuffer.clear();
-                bufferLock.unlock();
-                isLocked = false;
+                unlock();
             }
             std::vector<std::string>* getBuffer()
             {
-                bufferLock.lock();
-                isLocked = true;
+                lock();
                 return &consoleBuffer;
             }
-            inline void returnBuffer()
-            {
-                bufferLock.unlock();
-                isLocked = false;
-            }
+            inline void returnBuffer() { unlock(); }
             
         private:
             std::atomic<bool> isLocked;
             std::mutex bufferLock;
+            inline void lock()
+            {
+                bufferLock.lock();
+                isLocked = true;
+            }
+            inline void unlock()
+            {
+                isLocked = false;
+                bufferLock.unlock();
+            }
             std::string engineVer;
             std::vector<std::string> consoleBuffer;
     };
