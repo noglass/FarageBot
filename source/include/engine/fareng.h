@@ -351,6 +351,78 @@ OPTIONS\n\
         return 42; // normal exit code
     }
     
+    /*void processCinput(BotClass *bot, Global &global, const std::string &input)
+    {
+        int argc, ret = PLUGIN_CONTINUE;
+        std::string *argv = splitString(nospace(input)," ",argc);
+        auto plug = global.plugins.begin(), pluge = global.plugins.end();
+        bool done = false;
+        for (;plug != pluge;++plug)
+        {
+            if ((*plug)->getLoadPriority() != 0)
+                break;
+            if ((ret = (*plug)->callConsoleCmd(argv[0],argc,argv)) == PLUGIN_HANDLED)
+            {
+                done = true;
+                break;
+            }
+        }
+        if ((!done) && ((ret = internals.call(bot,global,argc,argv)) != PLUGIN_HANDLED))
+            for (;plug != pluge;++plug)
+                if ((ret = (*plug)->callConsoleCmd(argv[0],argc,argv)) == PLUGIN_HANDLED)
+                    break;
+        if (ret == PLUGIN_CONTINUE)
+            consoleOut("Unknown command: \"" + argv[0] + "\"");
+        delete[] argv;
+    }*/
+    
+    int processCinput(BotClass *bot, Global &global, int argc, const std::string argv[])
+    {
+        int ret = PLUGIN_CONTINUE;
+        auto plug = global.plugins.begin(), pluge = global.plugins.end();
+        bool done = false;
+        for (;plug != pluge;++plug)
+        {
+            if ((*plug)->getLoadPriority() != 0)
+                break;
+            if ((ret = (*plug)->callConsoleCmd(argv[0],argc,argv)) == PLUGIN_HANDLED)
+            {
+                done = true;
+                break;
+            }
+        }
+        if ((!done) && ((ret = internals.call(bot,global,argc,argv)) != PLUGIN_HANDLED))
+            for (;plug != pluge;++plug)
+                if ((ret = (*plug)->callConsoleCmd(argv[0],argc,argv)) == PLUGIN_HANDLED)
+                    break;
+        if (ret == PLUGIN_CONTINUE)
+            consoleOut("Unknown command: \"" + argv[0] + "\"");
+        return ret;
+    }
+    
+    void processCinput(BotClass *bot, Global &global, const std::string &input)
+    {
+        int argc;
+        std::string *argv = splitString(nospace(input)," ",argc);
+        processCinput(bot,global,argc,argv);
+        delete[] argv;
+    }
+    
+    int processCscript(BotClass *bot, Global &global, const std::string &filepath)
+    {
+        global.clearBuffer();
+        std::ifstream file(filepath);
+        if (file.is_open())
+        {
+            std::string line;
+            while (std::getline(file,line))
+                processCinput(bot,global,line);
+            file.close();
+            return 0;
+        }
+        return 1;
+    }
+    
     class BotClass : public SleepyDiscord::DiscordClient
     {
         public:
@@ -1227,6 +1299,24 @@ OPTIONS\n\
             return convertResponse(std::move(response));
         }
         
+        std::string serverCommand(const std::string &command)
+        {
+            Global *global = recallGlobal();
+            bool locked = global->bufferIsLocked();
+            if (!locked)
+                global->clearBuffer();
+            processCinput((BotClass*)(global->discord),*global,command);
+            std::string output;
+            if (!locked)
+            {
+                auto buffer = global->getBuffer();
+                for (auto it = buffer->begin(), ite = buffer->end();it != ite;++it)
+                    output = output + *it + '\n';
+                global->returnBuffer();
+            }
+            return output;
+        }
+        
         /*ObjectResponse<Server> getServer(const std::string &serverID);
         ObjectResponse<Server> deleteServer(const std::string &serverID);
         ArrayResponse<Channel> getServerChannels(const std::string &serverID);
@@ -1681,78 +1771,6 @@ OPTIONS\n\
         return ret;
     }
     
-    /*void processCinput(BotClass *bot, Global &global, const std::string &input)
-    {
-        int argc, ret = PLUGIN_CONTINUE;
-        std::string *argv = splitString(nospace(input)," ",argc);
-        auto plug = global.plugins.begin(), pluge = global.plugins.end();
-        bool done = false;
-        for (;plug != pluge;++plug)
-        {
-            if ((*plug)->getLoadPriority() != 0)
-                break;
-            if ((ret = (*plug)->callConsoleCmd(argv[0],argc,argv)) == PLUGIN_HANDLED)
-            {
-                done = true;
-                break;
-            }
-        }
-        if ((!done) && ((ret = internals.call(bot,global,argc,argv)) != PLUGIN_HANDLED))
-            for (;plug != pluge;++plug)
-                if ((ret = (*plug)->callConsoleCmd(argv[0],argc,argv)) == PLUGIN_HANDLED)
-                    break;
-        if (ret == PLUGIN_CONTINUE)
-            consoleOut("Unknown command: \"" + argv[0] + "\"");
-        delete[] argv;
-    }*/
-    
-    int processCinput(BotClass *bot, Global &global, int argc, const std::string argv[])
-    {
-        int ret = PLUGIN_CONTINUE;
-        auto plug = global.plugins.begin(), pluge = global.plugins.end();
-        bool done = false;
-        for (;plug != pluge;++plug)
-        {
-            if ((*plug)->getLoadPriority() != 0)
-                break;
-            if ((ret = (*plug)->callConsoleCmd(argv[0],argc,argv)) == PLUGIN_HANDLED)
-            {
-                done = true;
-                break;
-            }
-        }
-        if ((!done) && ((ret = internals.call(bot,global,argc,argv)) != PLUGIN_HANDLED))
-            for (;plug != pluge;++plug)
-                if ((ret = (*plug)->callConsoleCmd(argv[0],argc,argv)) == PLUGIN_HANDLED)
-                    break;
-        if (ret == PLUGIN_CONTINUE)
-            consoleOut("Unknown command: \"" + argv[0] + "\"");
-        return ret;
-    }
-    
-    void processCinput(BotClass *bot, Global &global, const std::string &input)
-    {
-        int argc;
-        std::string *argv = splitString(nospace(input)," ",argc);
-        processCinput(bot,global,argc,argv);
-        delete[] argv;
-    }
-    
-    int processCscript(BotClass *bot, Global &global, const std::string &filepath)
-    {
-        global.clearBuffer();
-        std::ifstream file(filepath);
-        if (file.is_open())
-        {
-            std::string line;
-            while (std::getline(file,line))
-                processCinput(bot,global,line);
-            file.close();
-            return 0;
-        }
-        return 1;
-    }
-    
     namespace Internal::Console
     {
         int version(Farage::BotClass *bot,Farage::Global &global,int argc,const std::string argv[])
@@ -2155,7 +2173,9 @@ OPTIONS\n\
         }
         int rcon(Farage::BotClass *bot,Farage::Global &global,int argc,const std::string argv[],const SleepyDiscord::Message &message)
         {
-            global.clearBuffer();
+            bool locked = global.bufferIsLocked();
+            if (!locked)
+                global.clearBuffer();
             if (argc < 2)
                 bot->sendMessage(message.channelID,"Usage: `" + global.prefix(message.serverID) + argv[0] + " <command ...>`");
             //else if (processCinput(bot,global,argc-1,argv+1) == PLUGIN_CONTINUE)
@@ -2163,11 +2183,14 @@ OPTIONS\n\
             else
             {
                 processCinput(bot,global,argc-1,argv+1);
-                auto buffer = global.getBuffer();
                 std::string output;
-                for (auto it = buffer->begin(), ite = buffer->end();it != ite;++it)
-                    output = output + *it + '\n';
-                global.returnBuffer();
+                if (!locked)
+                {
+                    auto buffer = global.getBuffer();
+                    for (auto it = buffer->begin(), ite = buffer->end();it != ite;++it)
+                        output = output + *it + '\n';
+                    global.returnBuffer();
+                }
                 if (output.size() > 0)
                     bot->sendMessage(message.channelID,"```\n" + output + "```");
                 else

@@ -153,6 +153,10 @@ namespace Farage
     {
         return recallGlobal()->callbacks.removeRecipient(channelID,userID);
     }
+    inline std::string serverCommand(const std::string &command)
+    {
+        return recallGlobal()->callbacks.serverCommand(command);
+    }
 };
 
 #endif

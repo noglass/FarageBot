@@ -39,6 +39,7 @@ namespace Farage
         BoolResponse (*unpinMessage)(const std::string&, const std::string&);
         Response (*addRecipient)(const std::string&, const std::string&);
         Response (*removeRecipient)(const std::string&, const std::string&);
+        std::string (*serverCommand)(const std::string&);
     };
 };
 
