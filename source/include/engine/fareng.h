@@ -2146,7 +2146,7 @@ OPTIONS\n\
     {
         int version(Farage::BotClass *bot,Farage::Global &global,int argc,const std::string argv[],const SleepyDiscord::Message &message)
         {
-            bot->sendMessage(message.channelID,"FarageBot " + std::string(FARAGE_ENGINE) + " written by nigel <https://github.com/nigelSaysHesHappy/FarageBot/>\n - Farage API `" + std::string(FARAGE_API_VERSION) + "`\n Powered by `" + std::string(SLEEPY_VERSION) + "` <https://github.com/yourWaifu/sleepy-discord/>");
+            bot->sendMessage(message.channelID,"`FarageBot " + std::string(FARAGE_ENGINE) + "` written by nigel <https://github.com/nigelSaysHesHappy/FarageBot/>\n - Farage API `" + std::string(FARAGE_API_VERSION) + "`\n Powered by `" + std::string(SLEEPY_VERSION) + "` <https://github.com/yourWaifu/sleepy-discord/>");
             return PLUGIN_HANDLED;
         }
         int setprefix(Farage::BotClass *bot,Farage::Global &global,int argc,const std::string argv[],const SleepyDiscord::Message &message)
@@ -2202,10 +2202,11 @@ OPTIONS\n\
             global.clearBuffer();
             if (argc < 2)
                 bot->sendMessage(message.channelID,"Usage: `" + global.prefix(message.serverID) + argv[0] + " <command ...>`");
-            else if (processCinput(bot,global,argc-1,argv+1) == PLUGIN_CONTINUE)
-                bot->addReaction(message.channelID,message.ID,"%E2%9D%97");
+            //else if (processCinput(bot,global,argc-1,argv+1) == PLUGIN_CONTINUE)
+            //    bot->addReaction(message.channelID,message.ID,"%E2%9D%97");
             else
             {
+                processCinput(bot,global,argc-1,argv+1);
                 auto buffer = global.getBuffer();
                 std::string output;
                 for (auto it = buffer->begin(), ite = buffer->end();it != ite;++it)
