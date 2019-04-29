@@ -5,6 +5,7 @@
 
 #include "api/internal.h"
 #include "api/admins.h"
+#include <mutex>
 
 namespace Farage
 {
@@ -32,9 +33,21 @@ namespace Farage
             AdminFlag getAdminFlags(const std::string &guildID, const std::string &userID);
             AdminFlag getAdminRoleFlags(const std::string &guildID, const std::string &roleID);
             Internals callbacks;
-            inline void clearBuffer() { consoleBuffer.clear(); }
-            inline std::vector<std::string>* getBuffer() { return &consoleBuffer; }
+            void clearBuffer()
+            {
+                bufferLock.lock();
+                consoleBuffer.clear();
+                bufferLock.unlock();
+            }
+            std::vector<std::string>* getBuffer()
+            {
+                bufferLock.lock();
+                return &consoleBuffer;
+            }
+            inline void returnBuffer() { bufferLock.unlock(); }
+            
         private:
+            std::mutex bufferLock;
             std::string engineVer;
             std::vector<std::string> consoleBuffer;
     };

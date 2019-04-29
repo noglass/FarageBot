@@ -2214,6 +2214,7 @@ OPTIONS\n\
                     bot->sendMessage(message.channelID,"```\n" + output + "```");
                 else
                     bot->addReaction(message.channelID,message.ID,"%E2%9C%85");
+                global.returnBuffer();
             }
             return PLUGIN_HANDLED;
         }
