@@ -7,7 +7,7 @@
 #include "shared/libini.h"
 using namespace Farage;
 
-#define VERSION "0.3.8"
+#define VERSION "0.3.9"
 
 extern "C" Info Module
 {
@@ -358,9 +358,9 @@ int chatRPS(Handle &handle, int argc, const std::string argv[], const Message &m
             }
             ServerMember t = getServerMember(message.guild_id,oppID);
             if (t.nick.size() > 0)
-                p.name = t.nick;
+                oppName = t.nick;
             else
-                p.name = t.user.username;
+                oppName = t.user.username;
         }
         if (isPlaying(oppID))
         {
