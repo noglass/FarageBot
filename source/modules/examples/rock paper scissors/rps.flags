@@ -1,0 +1,1 @@
+-I "examples/rock paper scissors" "examples/rock paper scissors/str_tok.cpp" "../src/shared/libini.cpp"

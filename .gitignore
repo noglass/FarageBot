@@ -1,4 +1,4 @@
-modules
+/modules
 config
 source/src/buildengine.sh
 source/src/bin
