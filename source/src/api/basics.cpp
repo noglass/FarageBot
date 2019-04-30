@@ -65,17 +65,15 @@ Farage::GlobVar* Farage::findGlobVar(const std::string &name)
 void Farage::consoleOut(const std::string &msg)
 {
     Farage::Global *global = Farage::recallGlobal();
-    global->getBuffer()->push_back(msg);
     std::cout<<msg<<std::endl;
-    global->returnBuffer();
+    global->getBuffer()->push_back(msg);
 }
 
 void Farage::errorOut(const std::string &msg)
 {
     Farage::Global *global = Farage::recallGlobal();
-    global->getBuffer()->push_back(msg);
     std::cerr<<msg<<std::endl;
-    global->returnBuffer();
+    global->getBuffer()->push_back(msg);
 }
 
 void Farage::debugOut(const std::string &msg)
@@ -83,9 +81,8 @@ void Farage::debugOut(const std::string &msg)
     Farage::Global *global = Farage::recallGlobal();
     if (global->debug)
     {
-        global->getBuffer()->push_back(msg);
         std::cerr<<msg<<std::endl;
-        global->returnBuffer();
+        global->getBuffer()->push_back(msg);
     }
 }
 
@@ -94,9 +91,8 @@ void Farage::verboseOut(const std::string &msg)
     Farage::Global *global = Farage::recallGlobal();
     if (global->verbose)
     {
-        global->getBuffer()->push_back(msg);
         std::cout<<msg<<std::endl;
-        global->returnBuffer();
+        global->getBuffer()->push_back(msg);
     }
 }
 

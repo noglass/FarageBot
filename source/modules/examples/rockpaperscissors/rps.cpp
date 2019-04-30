@@ -7,7 +7,7 @@
 #include "shared/libini.h"
 using namespace Farage;
 
-#define VERSION "0.3.9"
+#define VERSION "0.4.6"
 
 extern "C" Info Module
 {
@@ -133,8 +133,8 @@ extern "C" int onMessage(Handle &handle, Event event, void *message, void *nil, 
     //GET_MESSAGE(message,msg);
     //GET_EVENT_ARG1(event,message,msg);
     Message *msg = (Message*)message;
-    //Channel channel = getChannel(msg->channel_id).object;
-    Channel channel = getChannelCache(msg->guild_id,msg->channel_id);
+    Channel channel = getChannel(msg->channel_id).object;
+    //Channel channel = getChannelCache(msg->guild_id,msg->channel_id);
     if (msg->author.id == RPS::myBotID)
         return PLUGIN_CONTINUE;
     std::vector<rpsGame>::iterator game;
@@ -267,6 +267,16 @@ int chatRPS(Handle &handle, int argc, const std::string argv[], const Message &m
                     messageReply(message,"There is no game to join!");
                     return PLUGIN_HANDLED;
                 }
+                if (rpsGetPlayer(newGame,message.author.id) != newGame->player.end())
+                {
+                    messageReply(message,"You have already joined this match!");
+                    return PLUGIN_HANDLED;
+                }
+                if (isPlaying(message.author.id))
+                {
+                    messageReply(message,"You are already playing a game!");
+                    return PLUGIN_HANDLED;
+                }
                 if (newGame->accepted)
                 {
                     messageReply(message,"You are too late to join this game!");
@@ -275,11 +285,6 @@ int chatRPS(Handle &handle, int argc, const std::string argv[], const Message &m
                 if (!newGame->multi)
                 {
                     messageReply(message,"This is not a group match, use `" + prefix + "rps accept` to accept a challenge!");
-                    return PLUGIN_HANDLED;
-                }
-                if (rpsGetPlayer(newGame,message.author.id) != newGame->player.end())
-                {
-                    messageReply(message,"You have already joined this match!");
                     return PLUGIN_HANDLED;
                 }
                 Channel dmc = getDirectMessageChannel(message.author.id).object;
@@ -725,6 +730,7 @@ void rpsConclude(std::vector<rpsGame>::iterator &game)
             decider += " have ";
         else
             decider += " has ";
+        result = strreplace(result,"\"","\\\"");
         decider = decider + std::to_string(game->player[1].wins) + "!";
         std::string chan = game->chan;
         bool nextRound = true;
@@ -747,7 +753,10 @@ void rpsConclude(std::vector<rpsGame>::iterator &game)
         if (nextRound)
             rpsStartRound(game);
         //recallGlobal()->callbacks.messageChannelID(chan,out);
-        sendEmbed(chan,"{\"color\": 13415680, \"title\": \"" + title + "\", \"description\": \"" + desc + "\", \"fields\": [{\"name\": \"" + result + "\", \"value\": \"" + decider + "\"}]}");
+        if (result.size() < 1)
+            sendEmbed(chan,"{\"color\": 13415680, \"title\": \"" + title + "\", \"description\": \"" + decider + "\"}");
+        else
+            sendEmbed(chan,"{\"color\": 13415680, \"title\": \"" + title + "\", \"description\": \"" + desc + "\", \"fields\": [{\"name\": \"" + result + "\", \"value\": \"" + decider + "\"}]}");
     }
 }
 
@@ -933,6 +942,7 @@ int rpsGetWinner(const std::string &mode, const std::string &v1, const std::stri
         ret = 2;
         result = str;
     }
+    result = strreplace(result,"\"","\\\"");
     return ret;
 }
 

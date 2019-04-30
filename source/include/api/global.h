@@ -13,6 +13,22 @@ namespace Farage
     class Handle;
     class GlobVar;
     
+    template<typename T>
+    struct safe_ptr
+    {
+        std::unique_lock<std::mutex> lock;
+        T* ptr;
+        safe_ptr(std::unique_lock<std::mutex>&& l, T* data) : lock(std::move(l)), ptr(data) {}
+        safe_ptr() : ptr(nullptr) {}
+        inline T* operator->() { return ptr; }
+        inline bool owns_lock() { return !(ptr == nullptr); }
+        void clear()
+        {
+            if (owns_lock())
+                ptr->clear();
+        }
+    };
+    
     class Global
     {
         public:
@@ -34,35 +50,27 @@ namespace Farage
             AdminFlag getAdminFlags(const std::string &guildID, const std::string &userID);
             AdminFlag getAdminRoleFlags(const std::string &guildID, const std::string &roleID);
             Internals callbacks;
-            inline bool bufferIsLocked() { return isLocked; }
-            void clearBuffer()
+            safe_ptr<std::vector<std::string>> getBuffer()
             {
-                lock();
-                consoleBuffer.clear();
-                unlock();
+                std::unique_lock<std::mutex> lock(mut);
+                safe_ptr<std::vector<std::string>> ptr(std::move(lock),&buffer);
+                return ptr;
             }
-            std::vector<std::string>* getBuffer()
+            safe_ptr<std::vector<std::string>> tryGetBuffer()
             {
-                lock();
-                return &consoleBuffer;
+                std::unique_lock<std::mutex> lock(mut,std::try_to_lock);
+                if (lock.owns_lock())
+                {
+                    safe_ptr<std::vector<std::string>> ptr(std::move(lock),&buffer);
+                    return ptr;
+                }
+                return safe_ptr<std::vector<std::string>>();
             }
-            inline void returnBuffer() { unlock(); }
             
         private:
-            std::atomic<bool> isLocked;
-            std::mutex bufferLock;
-            inline void lock()
-            {
-                bufferLock.lock();
-                isLocked = true;
-            }
-            inline void unlock()
-            {
-                isLocked = false;
-                bufferLock.unlock();
-            }
+            std::mutex mut;
+            std::vector<std::string> buffer;
             std::string engineVer;
-            std::vector<std::string> consoleBuffer;
     };
 };
 

@@ -19,14 +19,14 @@ Farage::Handle::Handle(const std::string &pluginPath, Farage::Global *global, si
 
 Farage::Handle::~Handle()
 {
-    Farage::debugOut("Farage::Handle::~Handle() called.");
+    //Farage::debugOut("Farage::Handle::~Handle() called.");
     unload();
     //delete this;
 }
 
 void Farage::Handle::unload(Farage::Global *global)
 {
-    Farage::debugOut("Farage::Handle::unload() called.");
+    //Farage::debugOut("Farage::Handle::unload() called.");
     if (loaded)
     {
         if (global == nullptr)

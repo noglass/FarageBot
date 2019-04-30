@@ -410,7 +410,7 @@ OPTIONS\n\
     
     int processCscript(BotClass *bot, Global &global, const std::string &filepath)
     {
-        global.clearBuffer();
+        global.tryGetBuffer().clear();
         std::ifstream file(filepath);
         if (file.is_open())
         {
@@ -421,6 +421,29 @@ OPTIONS\n\
             return 0;
         }
         return 1;
+    }
+    
+    std::string runServerCommand(BotClass *discord, Global &global, int argc, const std::string argv[], bool deallo = false)
+    {
+        global.tryGetBuffer().clear();
+        processCinput(discord,global,argc,argv);
+        if (deallo)
+            delete[] argv;
+        std::string output;
+        auto buffer = global.tryGetBuffer();
+        if (buffer.owns_lock())
+        {
+            for (auto it = buffer->begin(), ite = buffer->end();it != ite;++it)
+                output = output + *it + '\n';
+        }
+        return output;
+    }
+    
+    std::string runServerCommand(BotClass *discord, Global &global, const std::string &command)
+    {
+        int argc;
+        std::string *argv = splitString(nospace(command)," ",argc);
+        return runServerCommand(discord,global,argc,argv,true);
     }
     
     class BotClass : public SleepyDiscord::DiscordClient
@@ -507,7 +530,6 @@ OPTIONS\n\
             void onRemoveMember(SleepyDiscord::Snowflake<SleepyDiscord::Server> serverID, SleepyDiscord::User user)
             {
                 Farage::Global *global = Farage::recallGlobal();
-                global->clearBuffer();
                 User fuser = convertUser(std::move(user));
                 std::string ID = serverID;
                 void *arg0 = (void*)(&ID);
@@ -1289,7 +1311,7 @@ OPTIONS\n\
             return convertResponse(std::move(response));
         }
         
-        std::string serverCommand(const std::string &command)
+        /*std::string serverCommand(const std::string &command)
         {
             Global *global = recallGlobal();
             bool locked = global->bufferIsLocked();
@@ -1305,6 +1327,12 @@ OPTIONS\n\
                 global->returnBuffer();
             }
             return output;
+        }*/
+        
+        std::string serverCommand(const std::string &command)
+        {
+            Global *global = recallGlobal();
+            return runServerCommand((BotClass*)(global->discord),*global,command);
         }
         
         /*ObjectResponse<Server> getServer(const std::string &serverID);
@@ -1621,7 +1649,7 @@ OPTIONS\n\
     //   whichever one needs to happen first
     timeval processTimers(BotClass *bot, Global &global)
     {
-        global.clearBuffer();
+        global.tryGetBuffer().clear();
         timeval ret;/*, queue;
         bool hasQueue;
         if (global.buffer.size() > 0)
@@ -2161,15 +2189,13 @@ OPTIONS\n\
             }
             return PLUGIN_HANDLED;
         }
-        int rcon(Farage::BotClass *bot,Farage::Global &global,int argc,const std::string argv[],const SleepyDiscord::Message &message)
+        /*int rcon(Farage::BotClass *bot,Farage::Global &global,int argc,const std::string argv[],const SleepyDiscord::Message &message)
         {
             bool locked = global.bufferIsLocked();
             if (!locked)
                 global.clearBuffer();
             if (argc < 2)
                 bot->sendMessage(message.channelID,"Usage: `" + global.prefix(message.serverID) + argv[0] + " <command ...>`");
-            //else if (processCinput(bot,global,argc-1,argv+1) == PLUGIN_CONTINUE)
-            //    bot->addReaction(message.channelID,message.ID,"%E2%9D%97");
             else
             {
                 processCinput(bot,global,argc-1,argv+1);
@@ -2181,6 +2207,20 @@ OPTIONS\n\
                         output = output + *it + '\n';
                     global.returnBuffer();
                 }
+                if (output.size() > 0)
+                    bot->sendMessage(message.channelID,"```\n" + output + "```");
+                else
+                    bot->addReaction(message.channelID,message.ID,"%E2%9C%85");
+            }
+            return PLUGIN_HANDLED;
+        }*/
+        int rcon(Farage::BotClass *bot,Farage::Global &global,int argc,const std::string argv[],const SleepyDiscord::Message &message)
+        {
+            if (argc < 2)
+                bot->sendMessage(message.channelID,"Usage: `" + global.prefix(message.serverID) + argv[0] + " <command ...>`");
+            else
+            {
+                std::string output = runServerCommand(bot,global,argc-1,argv+1);
                 if (output.size() > 0)
                     bot->sendMessage(message.channelID,"```\n" + output + "```");
                 else

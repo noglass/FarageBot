@@ -64,7 +64,7 @@ int main(int argc, char *argv[])
                 std::getline(std::cin,cinput);
                 if (cinput.size() > 0)
                 {
-                    global.clearBuffer();
+                    global.tryGetBuffer().clear();
                     Farage::processCinput(farage,global,cinput);
                 }
                 cinput.clear();
