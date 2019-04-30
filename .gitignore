@@ -5,6 +5,7 @@ source/src/bin
 source/include/conf/*.sh
 source/include/conf/sleepyversion.h
 source/include/conf/regex_style.h
+source/modules/compiled
 source/sleepy-discord
 source/pcre*
 *.tar.gz

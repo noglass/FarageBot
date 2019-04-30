@@ -1056,16 +1056,6 @@ OPTIONS\n\
             return ret;
         }*/
         
-        /*ObjectResponse<Message> messageChannel(const Channel &chan, const std::string &message)
-        {
-            return messageChannelID(chan.id,message);
-        }
-        
-        ObjectResponse<Message> messageReply(const Message &msg, const std::string &message)
-        {
-            return messageChannelID(msg.channel_id,message);
-        }*/
-        
         ObjectResponse<Reaction> reactToID(const std::string &channel, const std::string &messageID, const std::string &emoji)
         {
             std::string remoji = emoji;

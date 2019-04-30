@@ -35,12 +35,14 @@ while [ -f "$1" ]; do
     echo "Compiling '$1' . . ."
     src="$1"
     base=${src%.*}
-    fso="compiled/${base}.fso"
+    basename=${base##*/}
+    fso="compiled/${basename}.fso"
     flags=""
     if [ -f "${base}.flags" ]; then
         flags=$(cat "${base}.flags" | tr -d '\n\r')
     fi
-    g++ -o $fso $src -I "../include" -L"../src/bin" -lfarage -shared -fPIC $pcrelib $flags
+#    echo g++ -o "$fso" "$src" -I "../include" -L"../src/bin" -lfarage -shared -fPIC $pcrelib "$flags"
+    g++ -o "$fso" "$src" -I "../include" -L"../src/bin" -lfarage -shared -fPIC $pcrelib "$flags"
     err=$?
     if [[ $err == 0 ]]; then
         if $sInstall; then
