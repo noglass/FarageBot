@@ -7,7 +7,7 @@
 #include "shared/libini.h"
 using namespace Farage;
 
-#define VERSION "0.3.6"
+#define VERSION "0.3.7"
 
 extern "C" Info Module
 {
@@ -186,7 +186,7 @@ int chatRPS(Handle &handle, int argc, const std::string argv[], const Message &m
     {
         //consoleOut("displaying usage...");
         //global->callbacks.messageReply(message,"Usage: `" + prefix + "rps [mod] <@opponent> [multi] [rounds]` to challenge someone\nUsage: `" + prefix + "rps mods` to view loaded mods\nUsage: `" + prefix + "rps accept` to accept a challenge\nUsage: `" + prefix + "rps join` to join a group match\nUsage: `" + prefix + "rps start` to start a group match");
-        sendEmbed(message.channel_id,"","{\"color\": 2464071, \"title\": \"Rock Paper Scissors Usage\",  \"fields\": [{ \"name\": \"`" + prefix + "rps [mod=" + RPS::mod + "] <@opponent|multi|multibot> [rounds=" + std::to_string(RPS::rounds) + "]`\", \"value\": \"To challenge someone to a game.\" }, { \"name\": \"Currently loaded mods:\", \"value\": \"" + rpsModInfo() + "\" }, { \"name\": \"Accepting and joining a game:\", \"value\": \"Use `" + prefix + "rps accept` if you were challenged directly.\\nUse `" + prefix + "rps join` to join a group match.\\nIf you initiated the group match, you can start the game early with `" + prefix + "rps start`\" }]}");
+        sendEmbed(message.channel_id,"{\"color\": 2464071, \"title\": \"Rock Paper Scissors Usage\",  \"fields\": [{ \"name\": \"`" + prefix + "rps [mod=" + RPS::mod + "] <@opponent|multi|multibot> [rounds=" + std::to_string(RPS::rounds) + "]`\", \"value\": \"To challenge someone to a game.\" }, { \"name\": \"Currently loaded mods:\", \"value\": \"" + rpsModInfo() + "\" }, { \"name\": \"Accepting and joining a game:\", \"value\": \"Use `" + prefix + "rps accept` if you were challenged directly.\\nUse `" + prefix + "rps join` to join a group match.\\nIf you initiated the group match, you can start the game early with `" + prefix + "rps start`\" }]}");
         return PLUGIN_HANDLED;
     }
     std::string authorNick = getServerMember(message.guild_id,message.author.id).nick;
@@ -204,7 +204,7 @@ int chatRPS(Handle &handle, int argc, const std::string argv[], const Message &m
         else
         {
             //global->callbacks.messageReply(message,"Rounds must be a number greater than 0.\nUsage: `" + prefix + "rps [mod] <@opponent> [multi] [rounds]` to challenge someone\nUsage: `" + prefix + "rps mods` to view loaded mods\nUsage: `" + prefix + "rps accept` to accept a challenge\nUsage: `" + prefix + "rps join` to join a group match\nUsage: `" + prefix + "rps start` to start a group match");
-            sendEmbed(message.channel_id,"","{\"color\": 11741481, \"title\": \"Error: Rounds must be a number greater than 0!\", \"description\": \"Use `" + prefix + "rps` for help.\"}");
+            sendEmbed(message.channel_id,"{\"color\": 11741481, \"title\": \"Error: Rounds must be a number greater than 0!\", \"description\": \"Use `" + prefix + "rps` for help.\"}");
             return 1;
         }
     }
@@ -220,7 +220,7 @@ int chatRPS(Handle &handle, int argc, const std::string argv[], const Message &m
         else
         {
             //global->callbacks.messageReply(message,"Unknown mod: `" + arg1 + "`\nSee `" + prefix + "rps mods`");
-            sendEmbed(message.channel_id,"","{\"color\": 11741481, \"title\": \"Error: Unknown mod `" + arg1 + "`!\", \"description\": \"See `" + prefix + "rps mods`\"}");
+            sendEmbed(message.channel_id,"{\"color\": 11741481, \"title\": \"Error: Unknown mod `" + arg1 + "`!\", \"description\": \"See `" + prefix + "rps mods`\"}");
             return PLUGIN_HANDLED;
         }
     }
@@ -231,7 +231,7 @@ int chatRPS(Handle &handle, int argc, const std::string argv[], const Message &m
             if (arg1 == "mods")
             {
                 //global->callbacks.messageReply(message,"Currently loaded RPS mods:\n" + rpsModInfo());
-                sendEmbed(message.channel_id,"","{\"color\": 2464071, \"title\": \"Currently loaded RPS mods:\",  \"fields\": [" + rpsModInfo("",true) + "]}");
+                sendEmbed(message.channel_id,"{\"color\": 2464071, \"title\": \"Currently loaded RPS mods:\",  \"fields\": [" + rpsModInfo("",true) + "]}");
                 return PLUGIN_HANDLED;
             }
             else if (arg1 == "accept")
@@ -327,7 +327,7 @@ int chatRPS(Handle &handle, int argc, const std::string argv[], const Message &m
             else
             {
                 //global->callbacks.messageReply(message,"Unknown user `" + arg1 + "`\nUsage: `" + prefix + "rps [mod] <@opponent> [rounds]` to challenge someone\nUsage: `" + prefix + "rps mods` to view loaded mods\nUsage: `" + prefix + "rps accept` to accept a challenge\nUsage: `" + prefix + "rps join` to join a group match\nUsage: `" + prefix + "rps start` to start a group match");
-                sendEmbed(message.channel_id,"","{\"color\": 11741481, \"title\": \"Error: Unknown user `" + arg1 + "`!\", \"description\": \"Use `" + prefix + "rps` for help.\"}");
+                sendEmbed(message.channel_id,"{\"color\": 11741481, \"title\": \"Error: Unknown user `" + arg1 + "`!\", \"description\": \"Use `" + prefix + "rps` for help.\"}");
                 return PLUGIN_HANDLED;
             }
         }
@@ -386,7 +386,7 @@ int chatRPS(Handle &handle, int argc, const std::string argv[], const Message &m
             newGame.player.push_back(p);
             newGame.accepted = true;
             //global->callbacks.messageReply(message,message.author.username + " has challenged me to a game of " + rpsModInfo(mod) + round + "!\nCheck your DM's, " + message.author.username);
-            sendEmbed(message.channel_id,"","{\"color\": 2464071, \"title\": \"" + authorNick + " has challenged me to a game of " + rpsModInfo(mod) + round + "!\",  \"description\": \"Check your DM's, " + message.author.username + ".\"}");
+            sendEmbed(message.channel_id,"{\"color\": 2464071, \"title\": \"" + authorNick + " has challenged me to a game of " + rpsModInfo(mod) + round + "!\",  \"description\": \"Check your DM's, " + message.author.username + ".\"}");
         }
         else if (oppID.size() > 0)
         {
@@ -397,7 +397,7 @@ int chatRPS(Handle &handle, int argc, const std::string argv[], const Message &m
             p.name = oppName;
             newGame.player.push_back(p);
             //global->callbacks.messageReply(message,message.author.username + " has challenged " + oppName + " to a game of " + rpsModInfo(mod) + round + "!\n" + oppName + " use `" + prefix + "rps accept` to accept the challenge!");
-            sendEmbed(message.channel_id,"","{\"color\": 2464071, \"title\": \"" + authorNick + " has challenged " + oppName + " to a game of " + rpsModInfo(mod) + round + "!\",  \"description\": \"Use `" + prefix + "rps accept` to accept the challenge!\"}");
+            sendEmbed(message.channel_id,"{\"color\": 2464071, \"title\": \"" + authorNick + " has challenged " + oppName + " to a game of " + rpsModInfo(mod) + round + "!\",  \"description\": \"Use `" + prefix + "rps accept` to accept the challenge!\"}");
         }
         else
         {
@@ -414,7 +414,7 @@ int chatRPS(Handle &handle, int argc, const std::string argv[], const Message &m
             newGame.multi = true;
             newGame.expire += 30;
             //global->callbacks.messageReply(message,message.author.username + " has initiated a group game of " + rpsModInfo(mod) + round + "!\nUse `" + prefix + "rps join` if you would like to play!");
-            sendEmbed(message.channel_id,"","{\"color\": 2464071, \"title\": \"" + authorNick + " has initiated a group game of " + rpsModInfo(mod) + round + "!\",  \"description\": \"Use `" + prefix + "rps join` if you would like to play!\"}");
+            sendEmbed(message.channel_id,"{\"color\": 2464071, \"title\": \"" + authorNick + " has initiated a group game of " + rpsModInfo(mod) + round + "!\",  \"description\": \"Use `" + prefix + "rps join` if you would like to play!\"}");
         }
         RPS::rpsGames.push_back(newGame);
         if (oppID == RPS::myBotID)
@@ -512,7 +512,7 @@ int chatRPSStatus(Handle &handle, int argc, const std::string argv[], const Mess
             out = out + ",\"fields\":[{\"name\":\"" + fieldname + "\",\"value\":\"" + fieldvalue + "\"}]}";
         else
             out += "}";
-        sendEmbed(message.channel_id,"",out);
+        sendEmbed(message.channel_id,out);
     }
     else
         messageReply(message,"There is no active game here!");
@@ -736,7 +736,7 @@ void rpsConclude(std::vector<rpsGame>::iterator &game)
         if (nextRound)
             rpsStartRound(game);
         //recallGlobal()->callbacks.messageChannelID(chan,out);
-        sendEmbed(chan,"","{\"color\": 13415680, \"title\": \"" + title + "\", \"description\": \"" + desc + "\", \"fields\": [{\"name\": \"" + result + "\", \"value\": \"" + decider + "\"}]}");
+        sendEmbed(chan,"{\"color\": 13415680, \"title\": \"" + title + "\", \"description\": \"" + desc + "\", \"fields\": [{\"name\": \"" + result + "\", \"value\": \"" + decider + "\"}]}");
     }
 }
 
@@ -898,7 +898,7 @@ void rpsConcludeMulti(std::vector<rpsGame>::iterator &game)
         out = out + ",{\"name\":\"" + tailname + "\",\"value\":\"" + tailvalue + "\"}]}";
     else
         out += "]}";
-    sendEmbed(channel,"",out);
+    sendEmbed(channel,out);
 }
 
 int rpsGetWinner(const std::string &mode, const std::string &v1, const std::string &v2, std::string &result)
