@@ -7,7 +7,7 @@
 #include "shared/libini.h"
 using namespace Farage;
 
-#define VERSION "0.3.7"
+#define VERSION "0.3.8"
 
 extern "C" Info Module
 {
@@ -190,6 +190,8 @@ int chatRPS(Handle &handle, int argc, const std::string argv[], const Message &m
         return PLUGIN_HANDLED;
     }
     std::string authorNick = getServerMember(message.guild_id,message.author.id).nick;
+    if (authorNick.size() < 1)
+        authorNick = message.author.username;
     std::string arg1 = nospace(argv[1]);
     std::string mod = RPS::mod;
     int rounds = RPS::rounds;
@@ -284,7 +286,7 @@ int chatRPS(Handle &handle, int argc, const std::string argv[], const Message &m
                 rpsPlayer p;
                 p.ID = message.author.id;
                 p.DM = dmc.id;
-                p.name = message.author.username;
+                p.name = authorNick;
                 newGame->player.push_back(p);
                 reaction(message,"%E2%9C%85");
                 return PLUGIN_HANDLED;
@@ -348,12 +350,17 @@ int chatRPS(Handle &handle, int argc, const std::string argv[], const Message &m
             //debugOut("rpsParseMention(" + arg1 + ") == " + oppID);
             //User opp = getUser(oppID).object;
             //oppName = opp.username;
-            oppName = getServerMember(message.guild_id,oppID).nick;
+            //oppName = getServerMember(message.guild_id,oppID).nick;
             if (oppID == message.author.id)
             {
                 messageReply(message,randomComeback(message.author.username));
                 return PLUGIN_HANDLED;
             }
+            ServerMember t = getServerMember(message.guild_id,oppID);
+            if (t.nick.size() > 0)
+                p.name = t.nick;
+            else
+                p.name = t.user.username;
         }
         if (isPlaying(oppID))
         {
@@ -408,7 +415,11 @@ int chatRPS(Handle &handle, int argc, const std::string argv[], const Message &m
                 p.DM = "";
                 //User self = getUser(RPS::myBotID).object;
                 //p.name = self.username;
-                p.name = getServerMember(message.guild_id,RPS::myBotID).nick;
+                ServerMember t = getServerMember(message.guild_id,RPS::myBotID);
+                if (t.nick.size() > 0)
+                    p.name = t.nick;
+                else
+                    p.name = t.user.username;
                 newGame.player.push_back(p);
             }
             newGame.multi = true;
