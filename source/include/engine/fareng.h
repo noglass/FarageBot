@@ -1028,16 +1028,24 @@ OPTIONS\n\
     {
         ObjectResponse<Message> sendMessage(const std::string &chan, const std::string &message, const std::string &json, bool tts)
         {
-            if (json.size() < 1)
+            try
             {
-                /*SleepyDiscord::ObjectResponse<SleepyDiscord::Message> response = */((BotClass*)(recallGlobal()->discord))->sendMessage(chan,message,/*SleepyDiscord::Embed::Flag::INVALID_EMBED*/SleepyDiscord::Embed(),tts);
-                return ObjectResponse<Message>();//(std::move(convertResponse(response)),std::move(convertMessage(std::move(response.cast()))));
+                if (json.size() < 1)
+                {
+                    /*SleepyDiscord::ObjectResponse<SleepyDiscord::Message> response = */((BotClass*)(recallGlobal()->discord))->sendMessage(chan,message,/*SleepyDiscord::Embed::Flag::INVALID_EMBED*/SleepyDiscord::Embed(),tts);
+                    //return ObjectResponse<Message>(std::move(convertResponse(response)),std::move(convertMessage(std::move(response.cast()))));
+                }
+                else
+                {
+                    /*SleepyDiscord::ObjectResponse<SleepyDiscord::Message> response = */((BotClass*)(recallGlobal()->discord))->sendMessage(chan,message,SleepyDiscord::Embed(json),tts);
+                    //return ObjectResponse<Message>(std::move(convertResponse(response)),std::move(convertMessage(std::move(response.cast()))));
+                }
             }
-            else
+            catch (SleepyDiscord::ErrorCode err)
             {
-                /*SleepyDiscord::ObjectResponse<SleepyDiscord::Message> response = */((BotClass*)(recallGlobal()->discord))->sendMessage(chan,message,SleepyDiscord::Embed(json),tts);
-                return ObjectResponse<Message>();//(std::move(convertResponse(response)),std::move(convertMessage(std::move(response.cast()))));
+                errorOut("sendMessage: Error code " + std::to_string(int(err)));
             }
+            return ObjectResponse<Message>();
         }
         
         //ObjectResponse<Message> messageChannelID(const std::string &chan, const std::string &message)

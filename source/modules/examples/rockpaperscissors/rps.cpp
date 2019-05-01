@@ -7,7 +7,7 @@
 #include "shared/libini.h"
 using namespace Farage;
 
-#define VERSION "0.4.6"
+#define VERSION "0.6.3"
 
 extern "C" Info Module
 {
@@ -48,12 +48,97 @@ namespace RPS
     std::string myBotID;
     std::vector<rpsGame> rpsGames;
     INIObject rpsConf;
+    struct color
+    {
+        std::string info = "4565417";
+        std::string result = "13415680";
+        std::string conclude = "2464071";
+        std::string win = "6607510";
+        std::string lose = "5592405";
+        std::string draw = "3680312";
+        std::string knockout = "13132850";
+        std::string notify = "687534";
+        std::string error = "11741481";
+        
+        std::string Info(const std::string &mod = "")
+        {
+            std::string out = info;
+            if ((mod.size() > 0) && (rpsConf.exists(mod,"infocolor")))
+                out = rpsConf(mod,"infocolor");
+            return out;
+        }
+        
+        std::string Result(const std::string &mod = "")
+        {
+            std::string out = result;
+            if ((mod.size() > 0) && (rpsConf.exists(mod,"resultcolor")))
+                out = rpsConf(mod,"resultcolor");
+            return out;
+        }
+        
+        std::string Conclude(const std::string &mod = "")
+        {
+            std::string out = conclude;
+            if ((mod.size() > 0) && (rpsConf.exists(mod,"concludecolor")))
+                out = rpsConf(mod,"concludecolor");
+            return out;
+        }
+        
+        std::string Win(const std::string &mod = "")
+        {
+            std::string out = win;
+            if ((mod.size() > 0) && (rpsConf.exists(mod,"wincolor")))
+                out = rpsConf(mod,"wincolor");
+            return out;
+        }
+        
+        std::string Lose(const std::string &mod = "")
+        {
+            std::string out = lose;
+            if ((mod.size() > 0) && (rpsConf.exists(mod,"losecolor")))
+                out = rpsConf(mod,"losecolor");
+            return out;
+        }
+        
+        std::string Draw(const std::string &mod = "")
+        {
+            std::string out = draw;
+            if ((mod.size() > 0) && (rpsConf.exists(mod,"drawcolor")))
+                out = rpsConf(mod,"drawcolor");
+            return out;
+        }
+        
+        std::string Knockout(const std::string &mod = "")
+        {
+            std::string out = knockout;
+            if ((mod.size() > 0) && (rpsConf.exists(mod,"knockoutcolor")))
+                out = rpsConf(mod,"knockoutcolor");
+            return out;
+        }
+        
+        std::string Notify(const std::string &mod = "")
+        {
+            std::string out = notify;
+            if ((mod.size() > 0) && (rpsConf.exists(mod,"notifycolor")))
+                out = rpsConf(mod,"notifycolor");
+            return out;
+        }
+        
+        std::string Error(const std::string &mod = "")
+        {
+            std::string out = error;
+            if ((mod.size() > 0) && (rpsConf.exists(mod,"errorcolor")))
+                out = rpsConf(mod,"errorcolor");
+            return out;
+        }
+    } colors;
 };
 
 int chatRPS(Handle &handle, int argc, const std::string argv[], const Message &message);
 int chatRPSResult(Handle &handle, int argc, const std::string argv[], const Message &message);
 int chatRPSStatus(Handle &handle, int argc, const std::string argv[], const Message &message);
 int chatRPSReset(Handle &handle, int argc, const std::string argv[], const Message &message);
+int chatRPSReload(Handle &handle, int argc, const std::string argv[], const Message &message);
 int rpsExpireCheck(Handle &handle, Timer *timer, void *args);
 int modChange(Handle&,GlobVar*,const std::string&,const std::string&);
 int roundsChange(Handle&,GlobVar*,const std::string&,const std::string&);
@@ -72,6 +157,39 @@ void rpsConcludeMulti(std::vector<rpsGame>::iterator &game);
 int rpsGetWinner(const std::string &mode, const std::string &v1, const std::string &v2, std::string &result);
 std::string randomComeback(const std::string &name);
 
+void loadConfig()
+{
+    auto conf = RPS::rpsConf.topic_it("config");
+    std::string color;
+    color = conf->find("infocolor");
+    if (color.size() > 0)
+        RPS::colors.info = color;
+    color = conf->find("resultcolor");
+    if (color.size() > 0)
+        RPS::colors.result = color;
+    color = conf->find("concludecolor");
+    if (color.size() > 0)
+        RPS::colors.conclude = color;
+    color = conf->find("wincolor");
+    if (color.size() > 0)
+        RPS::colors.win = color;
+    color = conf->find("losecolor");
+    if (color.size() > 0)
+        RPS::colors.lose = color;
+    color = conf->find("drawcolor");
+    if (color.size() > 0)
+        RPS::colors.draw = color;
+    color = conf->find("knockoutcolor");
+    if (color.size() > 0)
+        RPS::colors.knockout = color;
+    color = conf->find("notifycolor");
+    if (color.size() > 0)
+        RPS::colors.notify = color;
+    color = conf->find("errorcolor");
+    if (color.size() > 0)
+        RPS::colors.error = color;
+}
+
 extern "C" int onModuleStart(Handle &handle, Global *global)
 {
     recallGlobal(global);
@@ -82,8 +200,15 @@ extern "C" int onModuleStart(Handle &handle, Global *global)
     handle.regChatCmd("rpsresult",chatRPSResult,NOFLAG,"View the result of two options on a RPS game.");
     handle.regChatCmd("rpsstatus",chatRPSStatus,NOFLAG,"Check the game status of the current channel.");
     handle.regChatCmd("rpsreset",chatRPSReset,CUSTOM1,"Reset the game status of the current channel.");
+    handle.regChatCmd("rpsreload",chatRPSReload,RCON,"Reload the rps.ini file.");
     handle.createTimer("rps_expire",60,&rpsExpireCheck);
-    RPS::rpsConf.open("rps.ini");
+    if (!RPS::rpsConf.open("rps.ini"))
+        loadConfig();
+    else
+    {
+        errorOut("RPS: Error loading rps.ini file!");
+        return 1;
+    }
     return 0;
 }
 
@@ -175,6 +300,18 @@ std::string randomtok(std::string text, std::string delim)
     return gettok(text,mtrand(1,numtok(text,delim)),delim);
 }
 
+int chatRPSReload(Handle &handle, int argc, const std::string argv[], const Message &message)
+{
+    if (RPS::rpsConf.open("rps.ini"))
+    {
+        loadConfig();
+        reaction(message,"%E2%9D%97");
+    }
+    else
+        reaction(message,"%E2%9C%85");
+    return PLUGIN_HANDLED;
+}
+
 int chatRPS(Handle &handle, int argc, const std::string argv[], const Message &message)
 {
     Global *global = recallGlobal();
@@ -186,7 +323,9 @@ int chatRPS(Handle &handle, int argc, const std::string argv[], const Message &m
     {
         //consoleOut("displaying usage...");
         //global->callbacks.messageReply(message,"Usage: `" + prefix + "rps [mod] <@opponent> [multi] [rounds]` to challenge someone\nUsage: `" + prefix + "rps mods` to view loaded mods\nUsage: `" + prefix + "rps accept` to accept a challenge\nUsage: `" + prefix + "rps join` to join a group match\nUsage: `" + prefix + "rps start` to start a group match");
-        sendEmbed(message.channel_id,"{\"color\": 2464071, \"title\": \"Rock Paper Scissors Usage\",  \"fields\": [{ \"name\": \"`" + prefix + "rps [mod=" + RPS::mod + "] <@opponent|multi|multibot> [rounds=" + std::to_string(RPS::rounds) + "]`\", \"value\": \"To challenge someone to a game.\" }, { \"name\": \"Currently loaded mods:\", \"value\": \"" + rpsModInfo() + "\" }, { \"name\": \"Accepting and joining a game:\", \"value\": \"Use `" + prefix + "rps accept` if you were challenged directly.\\nUse `" + prefix + "rps join` to join a group match.\\nIf you initiated the group match, you can start the game early with `" + prefix + "rps start`\" }]}");
+        //std::string out = "{\"color\": " + RPS::colors.Info() + ", \"title\": \"Rock Paper Scissors Usage\",  \"fields\": [{ \"name\": \"`" + prefix + "rps [mod=" + RPS::mod + "] <@opponent|multi|multibot> [rounds=" + std::to_string(RPS::rounds) + "]`\", \"value\": \"To challenge someone to a game.\" }, { \"name\": \"Currently loaded mods:\", \"value\": \"" + rpsModInfo() + "\" }, { \"name\": \"Accepting and joining a game:\", \"value\": \"Use `" + prefix + "rps accept` if you were challenged directly.\\nUse `" + prefix + "rps join` to join a group match.\\nIf you initiated the group match, you can start the game early with `" + prefix + "rps start`\" }]}";
+        //consoleOut(out);
+        sendEmbed(message.channel_id,"{\"color\": " + RPS::colors.Info() + ", \"title\": \"Rock Paper Scissors Usage\",  \"fields\": [{ \"name\": \"`" + prefix + "rps [mod=" + RPS::mod + "] <@opponent|multi|multibot> [rounds=" + std::to_string(RPS::rounds) + "]`\", \"value\": \"To challenge someone to a game.\" }, { \"name\": \"Currently loaded mods:\", \"value\": \"" + rpsModInfo() + "\" }, { \"name\": \"Accepting and joining a game:\", \"value\": \"Use `" + prefix + "rps accept` if you were challenged directly.\\nUse `" + prefix + "rps join` to join a group match.\\nIf you initiated the group match, you can start the game early with `" + prefix + "rps start`\" }]}");
         return PLUGIN_HANDLED;
     }
     std::string authorNick = getServerMember(message.guild_id,message.author.id).nick;
@@ -206,7 +345,7 @@ int chatRPS(Handle &handle, int argc, const std::string argv[], const Message &m
         else
         {
             //global->callbacks.messageReply(message,"Rounds must be a number greater than 0.\nUsage: `" + prefix + "rps [mod] <@opponent> [multi] [rounds]` to challenge someone\nUsage: `" + prefix + "rps mods` to view loaded mods\nUsage: `" + prefix + "rps accept` to accept a challenge\nUsage: `" + prefix + "rps join` to join a group match\nUsage: `" + prefix + "rps start` to start a group match");
-            sendEmbed(message.channel_id,"{\"color\": 11741481, \"title\": \"Error: Rounds must be a number greater than 0!\", \"description\": \"Use `" + prefix + "rps` for help.\"}");
+            sendEmbed(message.channel_id,"{\"color\": " + RPS::colors.Error(mod) + ", \"title\": \"Error: Rounds must be a number greater than 0!\", \"description\": \"Use `" + prefix + "rps` for help.\"}");
             return 1;
         }
     }
@@ -222,18 +361,18 @@ int chatRPS(Handle &handle, int argc, const std::string argv[], const Message &m
         else
         {
             //global->callbacks.messageReply(message,"Unknown mod: `" + arg1 + "`\nSee `" + prefix + "rps mods`");
-            sendEmbed(message.channel_id,"{\"color\": 11741481, \"title\": \"Error: Unknown mod `" + arg1 + "`!\", \"description\": \"See `" + prefix + "rps mods`\"}");
+            sendEmbed(message.channel_id,"{\"color\": " + RPS::colors.Error(mod) + ", \"title\": \"Error: Unknown mod `" + arg1 + "`!\", \"description\": \"See `" + prefix + "rps mods`\"}");
             return PLUGIN_HANDLED;
         }
     }
     if (argc == 1)
     {
-        if ((message.mentions.size() < 1) && (arg1 != "multi") && (arg1 != "multibot"))
+        if ((message.mentions.size() < 1) && (arg1 != "multi") && (arg1 != "multibot") && (arg1 != "@everyone"))
         {
             if (arg1 == "mods")
             {
                 //global->callbacks.messageReply(message,"Currently loaded RPS mods:\n" + rpsModInfo());
-                sendEmbed(message.channel_id,"{\"color\": 2464071, \"title\": \"Currently loaded RPS mods:\",  \"fields\": [" + rpsModInfo("",true) + "]}");
+                sendEmbed(message.channel_id,"{\"color\": " + RPS::colors.info + ", \"title\": \"Currently loaded RPS mods:\",  \"fields\": [" + rpsModInfo("",true) + "]}");
                 return PLUGIN_HANDLED;
             }
             else if (arg1 == "accept")
@@ -267,6 +406,14 @@ int chatRPS(Handle &handle, int argc, const std::string argv[], const Message &m
                     messageReply(message,"There is no game to join!");
                     return PLUGIN_HANDLED;
                 }
+                if (!newGame->multi)
+                {
+                    if (!rpsGameLookup(newGame,message.channel_id,message.author.id))
+                        messageReply(message,"This is not a group match and you were not challenged to it!");
+                    else
+                        messageReply(message,"This is not a group match, use `" + prefix + "rps accept` to accept a challenge!");
+                    return PLUGIN_HANDLED;
+                }
                 if (rpsGetPlayer(newGame,message.author.id) != newGame->player.end())
                 {
                     messageReply(message,"You have already joined this match!");
@@ -280,11 +427,6 @@ int chatRPS(Handle &handle, int argc, const std::string argv[], const Message &m
                 if (newGame->accepted)
                 {
                     messageReply(message,"You are too late to join this game!");
-                    return PLUGIN_HANDLED;
-                }
-                if (!newGame->multi)
-                {
-                    messageReply(message,"This is not a group match, use `" + prefix + "rps accept` to accept a challenge!");
                     return PLUGIN_HANDLED;
                 }
                 Channel dmc = getDirectMessageChannel(message.author.id).object;
@@ -334,7 +476,7 @@ int chatRPS(Handle &handle, int argc, const std::string argv[], const Message &m
             else
             {
                 //global->callbacks.messageReply(message,"Unknown user `" + arg1 + "`\nUsage: `" + prefix + "rps [mod] <@opponent> [rounds]` to challenge someone\nUsage: `" + prefix + "rps mods` to view loaded mods\nUsage: `" + prefix + "rps accept` to accept a challenge\nUsage: `" + prefix + "rps join` to join a group match\nUsage: `" + prefix + "rps start` to start a group match");
-                sendEmbed(message.channel_id,"{\"color\": 11741481, \"title\": \"Error: Unknown user `" + arg1 + "`!\", \"description\": \"Use `" + prefix + "rps` for help.\"}");
+                sendEmbed(message.channel_id,"{\"color\": " + RPS::colors.Error(mod) + ", \"title\": \"Error: Unknown user `" + arg1 + "`!\", \"description\": \"Use `" + prefix + "rps` for help.\"}");
                 return PLUGIN_HANDLED;
             }
         }
@@ -349,7 +491,7 @@ int chatRPS(Handle &handle, int argc, const std::string argv[], const Message &m
             return PLUGIN_HANDLED;
         }
         std::string oppID, oppName;
-        if ((arg1 != "multi") && (arg1 != "multibot"))
+        if ((arg1 != "multi") && (arg1 != "multibot") && (arg1 != "@everyone"))
         {
             oppID = rpsParseMention(arg1);
             //debugOut("rpsParseMention(" + arg1 + ") == " + oppID);
@@ -398,7 +540,11 @@ int chatRPS(Handle &handle, int argc, const std::string argv[], const Message &m
             newGame.player.push_back(p);
             newGame.accepted = true;
             //global->callbacks.messageReply(message,message.author.username + " has challenged me to a game of " + rpsModInfo(mod) + round + "!\nCheck your DM's, " + message.author.username);
-            sendEmbed(message.channel_id,"{\"color\": 2464071, \"title\": \"" + authorNick + " has challenged me to a game of " + rpsModInfo(mod) + round + "!\",  \"description\": \"Check your DM's, " + message.author.username + ".\"}");
+            std::string out = "{\"color\": " + RPS::colors.Notify(mod) + ", \"title\": \"" + authorNick + " has challenged me to a game of " + rpsModInfo(mod) + round + "!\",  \"description\": \"";
+            if (RPS::rpsConf.exists(mod,"desc"))
+                out = out + RPS::rpsConf.find(mod,"desc") + "\\n";
+            out = out + "Check your DM's, " + message.author.username + ".\"}";
+            sendEmbed(message.channel_id,out);
         }
         else if (oppID.size() > 0)
         {
@@ -409,11 +555,15 @@ int chatRPS(Handle &handle, int argc, const std::string argv[], const Message &m
             p.name = oppName;
             newGame.player.push_back(p);
             //global->callbacks.messageReply(message,message.author.username + " has challenged " + oppName + " to a game of " + rpsModInfo(mod) + round + "!\n" + oppName + " use `" + prefix + "rps accept` to accept the challenge!");
-            sendEmbed(message.channel_id,"{\"color\": 2464071, \"title\": \"" + authorNick + " has challenged " + oppName + " to a game of " + rpsModInfo(mod) + round + "!\",  \"description\": \"Use `" + prefix + "rps accept` to accept the challenge!\"}");
+            std::string out = "{\"color\": " + RPS::colors.Notify(mod) + ", \"title\": \"" + authorNick + " has challenged " + oppName + " to a game of " + rpsModInfo(mod) + round + "!\",  \"description\": \"";
+            if (RPS::rpsConf.exists(mod,"desc"))
+                out = out + RPS::rpsConf.find(mod,"desc") + "\\n";
+            out = out + "Use `" + prefix + "rps accept` to accept the challenge!\"}";
+            sendEmbed(message.channel_id,out);
         }
         else
         {
-            if (arg1 == "multibot")
+            if ((arg1 == "multibot") || (arg1 == "@everyone"))
             {
                 rpsPlayer p;
                 p.ID = RPS::myBotID;
@@ -430,7 +580,11 @@ int chatRPS(Handle &handle, int argc, const std::string argv[], const Message &m
             newGame.multi = true;
             newGame.expire += 30;
             //global->callbacks.messageReply(message,message.author.username + " has initiated a group game of " + rpsModInfo(mod) + round + "!\nUse `" + prefix + "rps join` if you would like to play!");
-            sendEmbed(message.channel_id,"{\"color\": 2464071, \"title\": \"" + authorNick + " has initiated a group game of " + rpsModInfo(mod) + round + "!\",  \"description\": \"Use `" + prefix + "rps join` if you would like to play!\"}");
+            std::string out = "{\"color\": " + RPS::colors.Notify(mod) + ", \"title\": \"" + authorNick + " has initiated a group game of " + rpsModInfo(mod) + round + "!\",  \"description\": \"";
+            if (RPS::rpsConf.exists(mod,"desc"))
+                out = out + RPS::rpsConf.find(mod,"desc") + "\\n";
+            out = out + "Use `" + prefix + "rps join` if you would like to play!\"}";
+            sendEmbed(message.channel_id,out);
         }
         RPS::rpsGames.push_back(newGame);
         if (oppID == RPS::myBotID)
@@ -451,7 +605,8 @@ int chatRPSResult(Handle &handle, int argc, const std::string argv[], const Mess
     argc--;
     if ((argc < 2) || (argc > 3))
     {
-        messageReply(message,"Usage: `" + prefix + "rpsresult [mod] <choiceA> <choiceB>`");
+        //messageReply(message,"Usage: `" + prefix + "rpsresult [mod] <choiceA> <choiceB>`");
+        sendEmbed(message.channel_id,"{\"color\": " + RPS::colors.info + ", \"title\": \"Usage: `" + prefix + "rpsresult [mod=" + RPS::mod + "] <choice1> <choice2>`\", \"description\": \"View the outcome of `choice1` vs `choice2` from `mod`!\"}");
         return 1;
     }
     std::string arg1 = nospace(argv[1]);
@@ -470,18 +625,35 @@ int chatRPSResult(Handle &handle, int argc, const std::string argv[], const Mess
     }
     else
     {
-        messageReply(message,"Invalid mod: `" + arg1 + "`!");
+        //messageReply(message,"Invalid mod: `" + arg1 + "`!");
+        sendEmbed(message.channel_id,"{\"color\": " + RPS::colors.error + ", \"title\": \"Invalid mod: `" + arg1 + "`!\", \"fields\":[{ \"name\": \"Valid mods:\", \"value\": \"" + rpsModInfo() + "\"}]}");
         return PLUGIN_HANDLED;
     }
-    std::string result;
+    std::string title, result, color = RPS::colors.Result(mod);
     int r = rpsGetWinner(mod,choices[0],choices[1],result);
-    if (r == 1)
-        result = "Player A wins!\n" + result;
+    //std::string desc = "Player 1 chose " + choices[0] + " and Player 2 chose " + choices[1] + ".\\n";
+    if (r < 0)
+    {
+        r = (r*-1)-1;
+        sendEmbed(message.channel_id,"{\"color\": " + RPS::colors.Error(mod) + ", \"title\": \"Invalid option: `" + choices[r] + "`!\", \"fields\":[{ \"name\": \"Valid options for mod `" + mod + "`:\", \"value\": \"" + rpsModInfo(mod,true) + "\"}]}");
+        return PLUGIN_HANDLED;
+    }
+    if (r == 0)
+    {
+        title = "The game ends in a draw!";
+        color = RPS::colors.Draw(mod);
+        //desc = desc.erase(desc.size()-2);
+        std::string name = getServerMember(message.guild_id,message.author.id).nick;
+        if (name.size() < 1)
+            name = message.author.username;
+        result = randomComeback(name);
+    }
+    else if (r == 1)
+        title = "Player 1 wins!";
     else if (r == 2)
-        result = "Player B Wins!\n" + result;
-    else
-        result = "It's a tie!\n" + result;
-    messageReply(message,result);
+        title = "Player 2 Wins!";
+    //messageReply(message,result);
+    sendEmbed(message.channel_id,"{\"color\": " + color + ", \"title\": \"" + title + "\", \"description\": \"" + result + "\"}");
     return PLUGIN_HANDLED;
 }
 
@@ -492,7 +664,8 @@ int chatRPSStatus(Handle &handle, int argc, const std::string argv[], const Mess
     {
         std::vector<rpsGame>::iterator game;
         rpsGameLookup(game,message.channel_id);
-        std::string title = rpsModInfo(game->gameMode);
+        std::string mod = rpsModInfo(game->gameMode);
+        std::string title = mod;
         if (game->wins > 1)
             title = title + " first to " + std::to_string(game->wins) + "!";
         if (game->multi)
@@ -502,7 +675,14 @@ int chatRPSStatus(Handle &handle, int argc, const std::string argv[], const Mess
         title = game->player[0].name + " initiated a " + title;
         std::string desc, fieldname, fieldvalue;
         if (!game->accepted)
-            desc = "The game hasn't started yet.";
+        {
+            desc = "The game will begin in ";
+            long ctime = long(time(NULL));
+            if (long(game->expire) < ctime)
+                desc = desc + "less than " + std::to_string(60-(ctime-long(game->expire))) + " seconds.";
+            else
+                desc = desc + "about " + std::to_string(game->expire-ctime) + " seconds.";
+        }
         else
         {
             desc = "The game will expire in ";
@@ -516,14 +696,24 @@ int chatRPSStatus(Handle &handle, int argc, const std::string argv[], const Mess
             {
                 fieldvalue = fieldvalue + "**" + it->name + "**";
                 if (it->choice.size() > 0)
-                    fieldvalue += " has made their selection.";
+                {
+                    if ((it->ID == RPS::myBotID) && (it->name == "I"))
+                        fieldvalue += " have made my selection.";
+                    else
+                        fieldvalue += " has made thier selection.";
+                }
                 else
-                    fieldvalue += " is still deciding.";
+                {
+                    if ((it->ID == RPS::myBotID) && (it->name == "I"))
+                        fieldvalue += " am still deciding. *Spooky.*";
+                    else
+                        fieldvalue += " is still deciding.";
+                }
                 fieldvalue += "\\n";
             }
             fieldvalue.erase(fieldvalue.size()-2);
         }
-        std::string out = "{\"color\":687534,\"title\":\"" + title + "\",\"description\":\"" + desc + "\"";
+        std::string out = "{\"color\":" + RPS::colors.Info(mod) + ",\"title\":\"" + title + "\",\"description\":\"" + desc + "\"";
         if (fieldname.size() > 0)
             out = out + ",\"fields\":[{\"name\":\"" + fieldname + "\",\"value\":\"" + fieldvalue + "\"}]}";
         else
@@ -663,13 +853,24 @@ std::string rpsModInfo(std::string mod, bool options)
         if (!options)
         {
             for (auto it = RPS::rpsConf.begin(), ite = RPS::rpsConf.end();it != ite;++it)
+            {
+                if (it->topic() == "config")
+                    continue;
                 ret = ret + "`" + it->topic() + "`: __" + it->find("info") + "__ written by " + it->find("author") + "\\n";
+            }
             ret.erase(ret.size()-2);
         }
         else
         {
             for (auto it = RPS::rpsConf.begin(), ite = RPS::rpsConf.end();it != ite;++it)
-                ret = ret + "{\"name\": \"`" + it->topic() + "`: " + it->find("info") + "\", \"value\": \"Written by __" + it->find("author") + "__\"},";
+            {
+                if (it->topic() == "config")
+                    continue;
+                ret = ret + "{\"name\": \"`" + it->topic() + "`: " + it->find("info") + "\", \"value\": \"";
+                if (it->exists("desc"))
+                    ret = ret + it->find("desc") + "\\n";
+                ret = ret + "Written by __" + it->find("author") + "__\"},";
+            }
             ret.erase(ret.size()-1);
         }
     }
@@ -706,13 +907,16 @@ void rpsConclude(std::vector<rpsGame>::iterator &game)
         auto mod = RPS::rpsConf.topic_it(game->gameMode);
         std::string opts = mod->find("opts");
         std::string desc = game->player[0].name + " chose " + game->player[0].choice + " and " + game->player[1].name + " chose " + game->player[1].choice + ".";
-        std::string title, result, decider;
+        std::string title, result, decider, color = RPS::colors.Result(game->gameMode);
         if (game->player[0].choice == game->player[1].choice)
+        {
             title = "The game ends in a draw!";
+            color = RPS::colors.Draw(game->gameMode);
+        }
         else if ((result = mod->find(game->player[0].choice,findtok(opts,game->player[1].choice,1," ")-1)) == "0")
         {
             game->player[0].wins++;
-            result = mod->find(game->player[1].choice,findtok(opts,game->player[0].choice,1," ")-1) + "!";
+            result = mod->find(game->player[1].choice,findtok(opts,game->player[0].choice,1," ")-1);
             title = game->player[0].name + " wins!";
         }
         else if (game->player[1].ID != RPS::myBotID)
@@ -724,6 +928,7 @@ void rpsConclude(std::vector<rpsGame>::iterator &game)
         {
             game->player[1].wins++;
             title = "You lose, " + game->player[0].name + ", better luck next time!";
+            color = RPS::colors.Lose(game->gameMode);
         }
         decider = game->player[0].name + " has " + std::to_string(game->player[0].wins) + " win(s) and " + game->player[1].name;
         if (game->player[1].ID == RPS::myBotID)
@@ -743,7 +948,10 @@ void rpsConclude(std::vector<rpsGame>::iterator &game)
                     if (game->player[i].ID == RPS::myBotID)
                         decider = game->player[i].name + " win the first to " + std::to_string(game->wins) + " wins!";
                     else
+                    {
                         decider = game->player[i].name + " wins the first to " + std::to_string(game->wins) + " wins!";
+                        color = RPS::colors.Win(game->gameMode);
+                    }
                 }
                 RPS::rpsGames.erase(game);
                 nextRound = false;
@@ -754,15 +962,15 @@ void rpsConclude(std::vector<rpsGame>::iterator &game)
             rpsStartRound(game);
         //recallGlobal()->callbacks.messageChannelID(chan,out);
         if (result.size() < 1)
-            sendEmbed(chan,"{\"color\": 13415680, \"title\": \"" + title + "\", \"description\": \"" + decider + "\"}");
+            sendEmbed(chan,"{\"color\": " + color + ", \"title\": \"" + title + "\", \"description\": \"" + decider + "\"}");
         else
-            sendEmbed(chan,"{\"color\": 13415680, \"title\": \"" + title + "\", \"description\": \"" + desc + "\", \"fields\": [{\"name\": \"" + result + "\", \"value\": \"" + decider + "\"}]}");
+            sendEmbed(chan,"{\"color\": " + color + ", \"title\": \"" + title + "\", \"description\": \"" + desc + "\", \"fields\": [{\"name\": \"" + result + "\", \"value\": \"" + decider + "\"}]}");
     }
 }
 
 void rpsConcludeMulti(std::vector<rpsGame>::iterator &game)
 {
-    std::string title, name, results, tailname, tailvalue, temp, channel = game->chan;
+    std::string title, name, results, tailname, tailvalue, temp, channel = game->chan, color = RPS::colors.Result(game->gameMode);
     if (game->player.size() == 2)
         name = game->player[0].name + " chose " + game->player[0].choice + " and " + game->player[1].name + " chose " + game->player[1].choice;
     else
@@ -798,11 +1006,14 @@ void rpsConcludeMulti(std::vector<rpsGame>::iterator &game)
                     noAdd = true;
             }
             if (!noAdd)
-                results = addtok(results,temp + "!","\\n");
+                results = addtok(results,temp,"\\n");
         }
     }
     if (results.size() < 1)
+    {
         results = "Looks like we have a mexican standoff!";
+        color = RPS::colors.Draw(game->gameMode);
+    }
     int w = 0;
     std::vector<std::string> realWinners;
     for (auto player = game->player.begin(), playere = game->player.end();player != playere;++player)
@@ -820,6 +1031,8 @@ void rpsConcludeMulti(std::vector<rpsGame>::iterator &game)
                 realWinners.push_back(player->name);
         }
     }
+    if (winners.size() > 1)
+        color = RPS::colors.Draw(game->gameMode);
     if (winners.size() == 1)
         title = (*winners.begin()) + " wins!";
     else if (winners.size() == 2)
@@ -840,12 +1053,14 @@ void rpsConcludeMulti(std::vector<rpsGame>::iterator &game)
     {
         if (realWinners.size() == 1)
         {
+            color = RPS::colors.Conclude(game->gameMode);
             tailname = realWinners[0] + " wins the first to " + std::to_string(game->wins) + " wins!";
             tailvalue = "Use `" + recallGlobal()->prefix(game->guild_id) + "rps` to play again!";
             RPS::rpsGames.erase(game);
         }
         else
         {
+            color = RPS::colors.Knockout(game->gameMode);
             std::vector<std::string> losers;
             for (auto it = game->player.begin();it != game->player.end();)
             {
@@ -913,7 +1128,7 @@ void rpsConcludeMulti(std::vector<rpsGame>::iterator &game)
         rpsStartRound(game);
     }
     //recallGlobal()->callbacks.messageChannelID(channel,out);
-    std::string out = "{\"color\": 13415680,\"title\":\"" + title + "\",\"fields\":[{\"name\":\"" + name + "\",\"value\":\"" + results + "\"}";
+    std::string out = "{\"color\": " + color + ",\"title\":\"" + title + "\",\"fields\":[{\"name\":\"" + name + "\",\"value\":\"" + results + "\"}";
     if (tailname.size() > 0)
         out = out + ",{\"name\":\"" + tailname + "\",\"value\":\"" + tailvalue + "\"}]}";
     else
@@ -927,7 +1142,11 @@ int rpsGetWinner(const std::string &mode, const std::string &v1, const std::stri
     std::string opts = mod->find("opts");
     int ret;
     std::string str;
-    if (v1 == v2)
+    if (!istok(opts,v1," "))
+        ret = -1;
+    else if (!istok(opts,v2," "))
+        ret = -2;
+    else if (v1 == v2)
     {
         ret = 0;
         result.clear();

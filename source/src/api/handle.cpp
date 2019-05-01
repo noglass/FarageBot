@@ -95,7 +95,7 @@ bool Farage::Handle::load(const std::string &pluginPath, Farage::Global *global,
     }
     if (!loaded)
     {
-        if (!(module = dlopen(pluginPath.c_str(),RTLD_NOW|RTLD_LOCAL)))
+        if (!(module = dlopen(pluginPath.c_str(),RTLD_LAZY|RTLD_LOCAL)))
         {
             Farage::errorOut("Error: Loading module \"" + pluginPath + "\": " + dlerror());
             module = nullptr;
