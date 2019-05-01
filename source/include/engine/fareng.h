@@ -1048,7 +1048,7 @@ OPTIONS\n\
                     errorOut("sendMessage: FORBIDDEN Cannot send message to " + chan);
                 return ObjectResponse<Message>(Response(err),SleepyDiscord::Message());
             }
-            return ObjectResponse<Message>(Response(0),SleepyDiscord::Message());
+            return ObjectResponse<Message>(Response(0),Message());
         }
         
         //ObjectResponse<Message> messageChannelID(const std::string &chan, const std::string &message)
