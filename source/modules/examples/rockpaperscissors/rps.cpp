@@ -1188,15 +1188,15 @@ void rpsStartRound(std::vector<rpsGame>::iterator game)
             auto response = messageChannelID(player->DM,"Respond with one of the following:\n" + temp);
             if (response.response.error())
             {
-                if (game->players.size() < 3)
+                if (game->player.size() < 3)
                 {
                     messageChannelID(game->chan,player->name + " has been removed from the match, due to their privacy settings!");
-                    player = game->players.erase(player);
+                    player = game->player.erase(player);
                 }
                 else
                 {
                     messageChannelID(game->chan,"The game has been cancelled due to " + player->name + "'s privacy settings!");
-                    rpsGames.erase(game);
+                    RPS::rpsGames.erase(game);
                     return;
                 }
             }
