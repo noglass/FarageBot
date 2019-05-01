@@ -222,6 +222,7 @@ namespace Farage
             return 400 <= statusCode;
         }
         Response() {}
+        Response(int32_t _statusCode) : statusCode(_statusCode) {}
         Response(int32_t _statusCode, std::string _text, std::map<std::string,std::string> _header)
         {
             statusCode = _statusCode;

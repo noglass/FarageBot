@@ -1044,8 +1044,11 @@ OPTIONS\n\
             catch (SleepyDiscord::ErrorCode err)
             {
                 errorOut("sendMessage: Error code " + std::to_string(int(err)));
+                if (err == FORBIDDEN)
+                    errorOut("sendMessage: FORBIDDEN Cannot send message to " + chan);
+                return ObjectResponse<Message>(Response(err),SleepyDiscord::Message());
             }
-            return ObjectResponse<Message>();
+            return ObjectResponse<Message>(Response(0),SleepyDiscord::Message());
         }
         
         //ObjectResponse<Message> messageChannelID(const std::string &chan, const std::string &message)
