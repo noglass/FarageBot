@@ -7,7 +7,7 @@
 #include "shared/libini.h"
 using namespace Farage;
 
-#define VERSION "0.6.4"
+#define VERSION "0.6.5"
 
 extern "C" Info Module
 {
@@ -1188,7 +1188,7 @@ void rpsStartRound(std::vector<rpsGame>::iterator game)
             auto response = messageChannelID(player->DM,"Respond with one of the following:\n" + temp);
             if (response.response.error())
             {
-                if (game->player.size() < 3)
+                if (game->player.size() > 2)
                 {
                     messageChannelID(game->chan,player->name + " has been removed from the match, due to their privacy settings!");
                     player = game->player.erase(player);
