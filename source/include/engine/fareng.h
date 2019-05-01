@@ -1044,9 +1044,9 @@ OPTIONS\n\
             catch (SleepyDiscord::ErrorCode err)
             {
                 errorOut("sendMessage: Error code " + std::to_string(int(err)));
-                if (err == FORBIDDEN)
+                if (err == SleepyDiscord::ErrorCode::FORBIDDEN)
                     errorOut("sendMessage: FORBIDDEN Cannot send message to " + chan);
-                return ObjectResponse<Message>(Response(err),SleepyDiscord::Message());
+                return ObjectResponse<Message>(Response(err),Message());
             }
             return ObjectResponse<Message>(Response(0),Message());
         }
