@@ -7,7 +7,7 @@
 #include "shared/libini.h"
 using namespace Farage;
 
-#define VERSION "0.7.0"
+#define VERSION "0.7.1"
 
 extern "C" Info Module
 {
@@ -695,7 +695,10 @@ int chatRPSStatus(Handle &handle, int argc, const std::string argv[], const Mess
             long expire = long(game->expire) - ctime;
             //consoleOut(timer.name + ": " + std::to_string(timer.interval) + ": " + std::to_string(expire) + " > " + std::to_string(check));
             for (;expire > check;check += timer.interval);
-            desc = desc + std::to_string(check) + " seconds.";
+            desc = desc + std::to_string(check) + " second";
+            if (check != 1)
+                desc += 's';
+            desc += '.';
         }
         else
         {
