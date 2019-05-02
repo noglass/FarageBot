@@ -1661,63 +1661,8 @@ OPTIONS\n\
     timeval processTimers(BotClass *bot, Global &global)
     {
         global.tryGetBuffer().clear();
-        timeval ret;/*, queue;
-        bool hasQueue;
-        if (global.buffer.size() > 0)
-        {
-            bool success;
-            for (auto it = global.buffer.begin();it != global.buffer.end();)
-            {
-                success = false;
-                switch (it->type)
-                {
-                    case FARAGE_BUFFER_MESSAGE:
-                    {
-                        SleepyDiscord::ObjectResponse<SleepyDiscord::Message> response = bot->sendMessage(it->channel.id,it->message);
-                        if (response.statusCode < SleepyDiscord::TOO_MANY_REQUESTS)
-                            success = true;
-                        //else if (msgResponse.statusCode == SleepyDiscord::TOO_MANY_REQUESTS)
-                        if (response.header["X-RateLimit-Remaining"] == "0")
-                        {
-                            queue.tv_sec = std::stoi(response.header["X-RateLimit-Reset"]);
-                            tm timem;
-                            strptime(response.header["Date"].c_str(),"%a, %d %b %Y %H:%M:%S GMT",&timem);
-                            queue.tv_sec -= mktime(&timem);
-                            hasQueue = true;
-                        }
-                        break;
-                    }
-                    case FARAGE_BUFFER_REACTION:
-                    {
-                        SleepyDiscord::ObjectResponse<SleepyDiscord::Reaction> response = bot->addReaction(it->channel.id,it->message,it->emoji);
-                        if (response.statusCode < SleepyDiscord::TOO_MANY_REQUESTS)
-                            success = true;
-                        if (response.header["X-RateLimit-Remaining"] == "0")
-                        {
-                            queue.tv_sec = std::stoi(response.header["X-RateLimit-Reset"]);
-                            tm timem;
-                            strptime(response.header["Date"].c_str(),"%a, %d %b %Y %H:%M:%S GMT",&timem);
-                            queue.tv_sec -= mktime(&timem);
-                            hasQueue = true;
-                        }
-                        break;
-                    }
-                    default:
-                        success = true;
-                }
-                if (!success)
-                    break;
-                it = global.buffer.erase(it);
-                if (hasQueue)
-                {
-                    global.isRateLimited = true;
-                    break;
-                }
-            }
-        }
-        if (!hasQueue)
-            global.isRateLimited = false;*/
         std::chrono::high_resolution_clock::time_point curTime = std::chrono::high_resolution_clock::now();
+        timeval ret;
         ret.tv_sec = FARAGE_TIMEOUT;
         ret.tv_usec = 0;
         int n;
@@ -1728,75 +1673,27 @@ OPTIONS\n\
             cap = (*ita)->timers.capacity();
             for (auto it = (*ita)->timers.begin();it != (*ita)->timers.end();)
             {
-                std::chrono::high_resolution_clock::time_point testTime = curTime;
-                timeval tv;
                 if ((*ita)->invalidTimers)
                     (*ita)->invalidTimers = false;
-                switch ((*it)->type)
+                if ((curTime >= (*it)->when()) && ((*it)->trigger(**ita)))
                 {
-                    case MILLISECONDS:
-                    {
-                        tv.tv_sec = (*it)->interval/1000;
-                        tv.tv_usec = ((*it)->interval%1000)*1000;
-                        testTime -= (std::chrono::milliseconds)((*it)->interval);
-                        break;
-                    }
-                    case MICROSECONDS:
-                    {
-                        tv.tv_sec = (*it)->interval/1000000;
-                        tv.tv_usec = ((*it)->interval%1000000);
-                        testTime -= (std::chrono::microseconds)((*it)->interval);
-                        break;
-                    }
-                    case NANOSECONDS:
-                    {
-                        tv.tv_sec = (*it)->interval/1000000000;
-                        tv.tv_usec = ((*it)->interval%1000000000)/1000;
-                        testTime -= (std::chrono::nanoseconds)((*it)->interval);
-                        break;
-                    }
-                    default:
-                    {
-                        tv.tv_sec = (*it)->interval;
-                        tv.tv_usec = 0;
-                        testTime -= (std::chrono::seconds)((*it)->interval);
-                    }
-                }
-                if ((*it)->last <= testTime)
-                {
-                    if ((*(*it)->func)(**ita,*it,(*it)->args))
-                    {
-                        if (((*ita)->invalidTimers) && (cap != (*ita)->timers.capacity()))
-                            it = (*ita)->timers.erase((*ita)->timers.begin()+n);
-                        else
-                            it = (*ita)->timers.erase(it);
-                    }
+                    if (((*ita)->invalidTimers) && (cap != (*ita)->timers.capacity()))
+                        it = (*ita)->timers.erase((*ita)->timers.begin()+n);
                     else
-                    {
-                        if ((tv.tv_sec < ret.tv_sec) || ((tv.tv_sec == ret.tv_sec) && (tv.tv_usec < ret.tv_usec)))
-                            ret = tv;
-                        if (((*ita)->invalidTimers) && (cap != (*ita)->timers.capacity()))
-                            it = (*ita)->timers.begin()+n;
-                        (*it)->last = curTime;
-                        it++;
-                        n++;
-                    }
+                        it = (*ita)->timers.erase(it);
                 }
                 else
                 {
-                    n++;
-                    std::chrono::nanoseconds ns = (*it)->last-testTime;
-                    tv.tv_sec = std::chrono::duration_cast<std::chrono::seconds>(ns).count();
-                    tv.tv_usec = std::chrono::duration_cast<std::chrono::microseconds>(ns).count()%1000000;
+                    timeval tv;
+                    tv.tv_sec = (*it)->remaining<std::chrono::seconds>().count();
+                    tv.tv_usec = (*it)->remaining<std::chrono::microseconds>().count() % 1000000;
                     if ((tv.tv_sec < ret.tv_sec) || ((tv.tv_sec == ret.tv_sec) && (tv.tv_usec < ret.tv_usec)))
                         ret = tv;
-                    it++;
+                    ++it;
+                    n++;
                 }
-                //n++;
             }
         }
-        /*if ((hasQueue) && (queue.tv_sec <= ret.tv_sec))
-            ret = queue;*/
         return ret;
     }
     

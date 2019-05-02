@@ -96,10 +96,13 @@ namespace Farage
             // returns a pointer to the timer
             //Timer* createTimer(const std::string &name, long interval, const std::string &function, const std::string &args = "", short type = SECONDS);
             //Timer* createTimer(const std::string &name, long interval, TimerCallback func, const std::string &args = "", short type = FARAGE_SECONDS);
+            //template<class T>
+            //Timer<T>* createTimer(const std::string &name, T interval, TimerCallback<T> func, void *args = nullptr);
             Timer* createTimer(const std::string &name, long interval, TimerCallback func, void *args = nullptr, TimeScale type = SECONDS);
             
             // kills a timer by pointer
             // returns total number of timers registered by the plugin
+            //template<class T>
             size_t killTimer(Timer *timer);
             
             // kills a timer by name
@@ -108,15 +111,16 @@ namespace Farage
             
             // set a timer to be triggered on the following tick
             // returns total number of triggered timers
-            size_t triggerTimer(Timer *timer);
+            //size_t triggerTimer(Timer *timer);
             
             // set all timers with 'name' to be triggered on the following tick
             // returns total number of triggered timers
             size_t triggerTimer(const std::string &name);
             
-            // sets timer to the first timer found matching name
-            // returns false if no timer was found
-            bool findTimer(const std::string &name, Timer &timer);
+            // returns the first timer found matching name
+            // returns nullptr if no timer was found
+            //template<class T>
+            Timer* findTimer(const std::string &name);
             
             bool invalidTimers = false;
             

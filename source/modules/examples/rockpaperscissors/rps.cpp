@@ -7,7 +7,7 @@
 #include "shared/libini.h"
 using namespace Farage;
 
-#define VERSION "0.7.1"
+#define VERSION "0.7.4"
 
 extern "C" Info Module
 {
@@ -684,17 +684,18 @@ int chatRPSStatus(Handle &handle, int argc, const std::string argv[], const Mess
         }
         else
             desc = "The game will expire in ";
-        Timer timer;
+        Timer *timer;
         long ctime = long(time(NULL));
-        if (handle.findTimer("rps_expire",timer))
+        if ((timer = handle.findTimer("rps_expire")) != nullptr)
         {
-            std::chrono::high_resolution_clock::time_point now = std::chrono::high_resolution_clock::now();
-            std::chrono::high_resolution_clock::time_point checkTime = timer.last;
-            checkTime += std::chrono::seconds(timer.interval);
-            long check = std::chrono::duration_cast<std::chrono::seconds>(checkTime-now).count();
+            //std::chrono::high_resolution_clock::time_point now = std::chrono::high_resolution_clock::now();
+            //std::chrono::high_resolution_clock::time_point checkTime = timer.last;
+            //checkTime += std::chrono::seconds(timer.interval);
+            //long check = std::chrono::duration_cast<std::chrono::seconds>(checkTime-now).count();
+            long check = timer->remaining<std::chrono::seconds>().count();
             long expire = long(game->expire) - ctime;
             //consoleOut(timer.name + ": " + std::to_string(timer.interval) + ": " + std::to_string(expire) + " > " + std::to_string(check));
-            for (;expire > check;check += timer.interval);
+            for (;expire > check;check += timer->interval);
             desc = desc + std::to_string(check) + " second";
             if (check != 1)
                 desc += 's';
@@ -1040,22 +1041,27 @@ void rpsConcludeMulti(std::vector<rpsGame>::iterator &game)
             w = player->multiWins;
     }
     std::vector<std::string> winners;
-    for (auto player = game->player.begin(), playere = game->player.end();player != playere;++player)
+    if (w > 0)
     {
-        if (player->multiWins == w)
+        for (auto player = game->player.begin(), playere = game->player.end();player != playere;++player)
         {
-            winners.push_back(player->name);
-            if (++player->wins >= game->wins)
-                realWinners.push_back(player->name);
+            if (player->multiWins == w)
+            {
+                winners.push_back(player->name);
+                if (++player->wins >= game->wins)
+                    realWinners.push_back(player->name);
+            }
         }
     }
+    else
+        title = "Everyone has tied!";
     if (winners.size() > 1)
         color = RPS::colors.Draw(game->gameMode);
     if (winners.size() == 1)
         title = (*winners.begin()) + " wins!";
     else if (winners.size() == 2)
         title = winners[0] + " and " + winners[1] + " have tied!";
-    else
+    else if (winners.size() > 2)
     {
         for (auto it = winners.begin(), ite = winners.end();it != ite;++it)
         {
@@ -1135,14 +1141,17 @@ void rpsConcludeMulti(std::vector<rpsGame>::iterator &game)
         for (auto it = game->player.begin(), ite = game->player.end();it != ite;++it)
             if (it->wins > top)
                 top = it->wins;
-        for (auto it = game->player.begin(), ite = game->player.end();it != ite;++it)
-            if (it->wins >= top)
-                tailvalue = tailvalue + it->name + "\\n";
-        tailname = "Current leaderboard with " + std::to_string(top) + " win";
-        if (top > 1)
-            tailname += "s";
-        tailname += ":";
-        tailvalue.erase(tailvalue.size()-2);
+        if (top > 0)
+        {
+            for (auto it = game->player.begin(), ite = game->player.end();it != ite;++it)
+                if (it->wins >= top)
+                    tailvalue = tailvalue + it->name + "\\n";
+            tailname = "Current leaderboard with " + std::to_string(top) + " win";
+            if (top > 1)
+                tailname += "s";
+            tailname += ":";
+            tailvalue.erase(tailvalue.size()-2);
+        }
         rpsStartRound(game);
     }
     //recallGlobal()->callbacks.messageChannelID(channel,out);

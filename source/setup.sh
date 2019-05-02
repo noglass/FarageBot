@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Setup script version 1.1
+# Setup script version 1.2
 
 chmod +x src/buildapi.sh
 chmod +x modules/build.sh
@@ -217,7 +217,7 @@ if $usePCRE2; then
     pcre=-lpcre2-8
     echo Using $pcre
 fi' >> build.tmp
-echo -n "g++ -std=c++11 -o ../../faragebot engine/faragebot.cpp shared/libini.cpp -I \"${sleepypath}/include\" -I \"${sleepypath}/deps\" -I \"${sleepypath}/deps/include\" -I \"${sleepypath}/include/sleepy_discord/IncludeNonexistent\" -I \"../include\" -I \"../include/shared\" -L\"${sleepypath}/buildtools\" -L\"${sleepypath}/deps/cpr\" ${sleepypath}/deps/cpr/cpr/*.o -L\"${curDir}/src/bin\" -L/usr/bin -pthread -lcurl -lssl -lcrypto -lsleepy_discord -lfarage " >> build.tmp
+echo -n "g++ -std=c++14 -o ../../faragebot engine/faragebot.cpp shared/libini.cpp -I \"${sleepypath}/include\" -I \"${sleepypath}/deps\" -I \"${sleepypath}/deps/include\" -I \"${sleepypath}/include/sleepy_discord/IncludeNonexistent\" -I \"../include\" -I \"../include/shared\" -L\"${sleepypath}/buildtools\" -L\"${sleepypath}/deps/cpr\" ${sleepypath}/deps/cpr/cpr/*.o -L\"${curDir}/src/bin\" -L/usr/bin -pthread -lcurl -lssl -lcrypto -lsleepy_discord -lfarage " >> build.tmp
 echo '$pcre -ldl "$@"
 if [[ $? -ne 0 ]]; then
     echo "#define FARAGE_ENGINE           \"$oldengversion\"" > ../include/conf/.farageEngineBuild.h

@@ -42,7 +42,7 @@ while [ -f "$1" ]; do
         flags=$(cat "${base}.flags" | tr -d '\n\r')
     fi
 #    echo g++ -o "$fso" "$src" -I "../include" -L"../src/bin" -lfarage -shared -fPIC $pcrelib $flags
-    g++ -o "$fso" "$src" -I "../include" -L"../src/bin" -lfarage -shared -fPIC $pcrelib $flags
+    g++ -std=c++14 -o "$fso" "$src" -I "../include" -L"../src/bin" -lfarage -shared -fPIC $pcrelib $flags
     err=$?
     if [[ $err == 0 ]]; then
         if $sInstall; then

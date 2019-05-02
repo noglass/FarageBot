@@ -382,19 +382,21 @@ int Farage::Handle::callEvent(Event event, void *first, void *second, void *thir
     return PLUGIN_CONTINUE;
 }
 
+//template<class T>
 Farage::Timer* Farage::Handle::createTimer(const std::string &name, long interval, Farage::TimerCallback func, void *args, Farage::TimeScale type)
 {
-    Farage::Timer *timer = new Farage::Timer;
-    timer->name = name;
+    Farage::Timer *timer = new Farage::Timer(name,interval,func,args,type);
+    /*timer->name = name;
     timer->interval = interval;
     timer->last = std::chrono::high_resolution_clock::now();
     timer->func = func;
     timer->args = args;
-    timer->type = type;
+    timer->type = type;*/
     timers.push_back(timer);
     return timer;
 }
 
+//template<class T>
 size_t Farage::Handle::killTimer(Farage::Timer *timer)
 {
     for (auto it = timers.begin();it != timers.end();)
@@ -425,7 +427,7 @@ size_t Farage::Handle::killTimer(const std::string &name)
     return timers.size();
 }
 
-size_t Farage::Handle::triggerTimer(Farage::Timer *timer)
+/*size_t Farage::Handle::triggerTimer(Farage::Timer *timer)
 {
     size_t count = 0;
     std::chrono::nanoseconds interval;
@@ -460,17 +462,17 @@ size_t Farage::Handle::triggerTimer(Farage::Timer *timer)
         }
     }
     return count;
-}
+}*/
 
 size_t Farage::Handle::triggerTimer(const std::string &name)
 {
     size_t count = 0;
-    std::chrono::nanoseconds interval;
+    //std::chrono::nanoseconds interval;
     for (auto it = timers.begin(), ite = timers.end();it != ite;++it)
     {
         if ((*it)->name == name)
         {
-            switch ((*it)->type)
+            /*switch ((*it)->type)
             {
                 case Farage::TimeScale::MILLISECONDS:
                 {
@@ -492,24 +494,21 @@ size_t Farage::Handle::triggerTimer(const std::string &name)
                     interval = (std::chrono::nanoseconds)((*it)->interval * 1000000000);
                 }
             }
-            (*it)->last -= interval;
+            (*it)->last -= interval;*/
+            (*it)->trigger(*this);
             count++;
         }
     }
     return count;
 }
 
-bool Farage::Handle::findTimer(const std::string &name, Farage::Timer &timer)
+//template<class T>
+Farage::Timer* Farage::Handle::findTimer(const std::string &name)
 {
     for (auto it = timers.begin(), ite = timers.end();it != ite;++it)
-    {
         if ((*it)->name == name)
-        {
-            timer = (**it);
-            return true;
-        }
-    }
-    return false;
+            return (*it);
+    return nullptr;
 }
 
 Farage::GlobVar* Farage::Handle::createGlobVar(const std::string &name, const std::string &defaultValue, const std::string &description, short flags, bool hasMin, float min, bool hasMax, float max)

@@ -40,7 +40,7 @@ succ=0
 if $usePCRE2; then
     echo "#define FARAGE_USE_PCRE2" > ../include/conf/regex_style.h
     if ! [[ -f "bin/pcre2_halfwrap.o" ]]; then
-        g++ -std=c++11 -o bin/pcre2_halfwrap.o -c shared/pcre2_halfwrap.cpp -I "../include/shared" -fPIC
+        g++ -std=c++14 -o bin/pcre2_halfwrap.o -c shared/pcre2_halfwrap.cpp -I "../include/shared" -fPIC
         succ=$?
     fi
 else
@@ -50,7 +50,7 @@ else
     fi
 fi
 if [[ $succ -eq 0 ]]; then
-    g++ -std=c++11 -c api/*.cpp -I "../include" -ldl -fPIC "$@" && mv *.o bin/. && ar rvs bin/libfarage.a bin/*.o
+    g++ -std=c++14 -c api/*.cpp -I "../include" -ldl -fPIC "$@" && mv *.o bin/. && ar rvs bin/libfarage.a bin/*.o
     succ=$?
 fi
 if [[ $succ -ne 0 ]]; then
