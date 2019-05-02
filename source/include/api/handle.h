@@ -116,7 +116,7 @@ namespace Farage
             
             // sets timer to the first timer found matching name
             // returns false if no timer was found
-            bool findTimer(const std::string &name, Timer *timer);
+            bool findTimer(const std::string &name, Timer &timer);
             
             bool invalidTimers = false;
             

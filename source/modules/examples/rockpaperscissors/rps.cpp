@@ -7,7 +7,7 @@
 #include "shared/libini.h"
 using namespace Farage;
 
-#define VERSION "0.6.5"
+#define VERSION "0.7.0"
 
 extern "C" Info Module
 {
@@ -367,7 +367,7 @@ int chatRPS(Handle &handle, int argc, const std::string argv[], const Message &m
     }
     if (argc == 1)
     {
-        if ((message.mentions.size() < 1) && (arg1 != "multi") && (arg1 != "multibot") && (arg1 != "@everyone"))
+        if ((message.mentions.size() < 1) && (arg1 != "multi") && (arg1 != "multibot") && (arg1 != "@everyone") && (arg1 != "@here"))
         {
             if (arg1 == "mods")
             {
@@ -434,6 +434,7 @@ int chatRPS(Handle &handle, int argc, const std::string argv[], const Message &m
                 p.ID = message.author.id;
                 p.DM = dmc.id;
                 p.name = authorNick;
+                newGame->expire = time(NULL)+120;
                 newGame->player.push_back(p);
                 reaction(message,"%E2%9C%85");
                 return PLUGIN_HANDLED;
@@ -491,7 +492,7 @@ int chatRPS(Handle &handle, int argc, const std::string argv[], const Message &m
             return PLUGIN_HANDLED;
         }
         std::string oppID, oppName;
-        if ((arg1 != "multi") && (arg1 != "multibot") && (arg1 != "@everyone"))
+        if ((arg1 != "multi") && (arg1 != "multibot") && (arg1 != "@everyone") && (arg1 != "@here"))
         {
             oppID = rpsParseMention(arg1);
             //debugOut("rpsParseMention(" + arg1 + ") == " + oppID);
@@ -563,7 +564,7 @@ int chatRPS(Handle &handle, int argc, const std::string argv[], const Message &m
         }
         else
         {
-            if ((arg1 == "multibot") || (arg1 == "@everyone"))
+            if ((arg1 == "multibot") || (arg1 == "@everyone") || (arg1 == "@here"))
             {
                 rpsPlayer p;
                 p.ID = RPS::myBotID;
@@ -676,21 +677,35 @@ int chatRPSStatus(Handle &handle, int argc, const std::string argv[], const Mess
         std::string desc, fieldname, fieldvalue;
         if (!game->accepted)
         {
-            desc = "The game will begin in ";
-            long ctime = long(time(NULL));
+            if (game->multi)
+                desc = "The game will begin in ";
+            else
+                desc = "The challenge will expire in ";
+        }
+        else
+            desc = "The game will expire in ";
+        Timer timer;
+        long ctime = long(time(NULL));
+        if (handle.findTimer("rps_expire",timer))
+        {
+            std::chrono::high_resolution_clock::time_point now = std::chrono::high_resolution_clock::now();
+            std::chrono::high_resolution_clock::time_point checkTime = timer.last;
+            checkTime += std::chrono::seconds(timer.interval);
+            long check = std::chrono::duration_cast<std::chrono::seconds>(checkTime-now).count();
+            long expire = long(game->expire) - ctime;
+            //consoleOut(timer.name + ": " + std::to_string(timer.interval) + ": " + std::to_string(expire) + " > " + std::to_string(check));
+            for (;expire > check;check += timer.interval);
+            desc = desc + std::to_string(check) + " seconds.";
+        }
+        else
+        {
             if (long(game->expire) < ctime)
                 desc = desc + "less than " + std::to_string(60-(ctime-long(game->expire))) + " seconds.";
             else
                 desc = desc + "about " + std::to_string(game->expire-ctime) + " seconds.";
         }
-        else
+        if (game->accepted)
         {
-            desc = "The game will expire in ";
-            long ctime = long(time(NULL));
-            if (long(game->expire) < ctime)
-                desc = desc + "less than " + std::to_string(60-(ctime-long(game->expire))) + " seconds.";
-            else
-                desc = desc + "about " + std::to_string(game->expire-ctime) + " seconds.";
             fieldname = "Players in this game:";
             for (auto it = game->player.begin(), ite = game->player.end();it != ite;++it)
             {
@@ -715,9 +730,8 @@ int chatRPSStatus(Handle &handle, int argc, const std::string argv[], const Mess
         }
         std::string out = "{\"color\":" + RPS::colors.Info(mod) + ",\"title\":\"" + title + "\",\"description\":\"" + desc + "\"";
         if (fieldname.size() > 0)
-            out = out + ",\"fields\":[{\"name\":\"" + fieldname + "\",\"value\":\"" + fieldvalue + "\"}]}";
-        else
-            out += "}";
+            out = out + ",\"fields\":[{\"name\":\"" + fieldname + "\",\"value\":\"" + fieldvalue + "\"}]";
+        out += "}";
         sendEmbed(message.channel_id,out);
     }
     else
@@ -742,6 +756,7 @@ int chatRPSReset(Handle &handle, int argc, const std::string argv[], const Messa
 
 int rpsExpireCheck(Handle &handle, Timer *timer, void *args)
 {
+    //consoleOut(timer->name + " triggering.");
     Global *global = recallGlobal();
     if (RPS::rpsGames.size() > 0)
     {

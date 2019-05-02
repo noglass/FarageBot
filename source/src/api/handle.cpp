@@ -499,13 +499,13 @@ size_t Farage::Handle::triggerTimer(const std::string &name)
     return count;
 }
 
-bool Farage::Handle::findTimer(const std::string &name, Farage::Timer *timer)
+bool Farage::Handle::findTimer(const std::string &name, Farage::Timer &timer)
 {
     for (auto it = timers.begin(), ite = timers.end();it != ite;++it)
     {
         if ((*it)->name == name)
         {
-            timer = *it;
+            timer = (**it);
             return true;
         }
     }
