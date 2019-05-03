@@ -1777,7 +1777,13 @@ OPTIONS\n\
                                     consoleOut("    Running Timers:");
                                     size_t c = 0;
                                     for (auto com = (*it)->timers.begin(), come = (*it)->timers.end();com != come;++com)
-                                        consoleOut("        [" + std::to_string(c++) + "]\t" + (*com)->name);
+                                    {
+                                        long remain = (*com)->remainingInterval();
+                                        std::string remainstr = std::to_string(remain) + " " + (*com)->intervalString();
+                                        if (remain != 1)
+                                            remainstr += 's';
+                                        consoleOut("        [" + std::to_string(c++) + "]\t" + (*com)->name + "\t" + remainstr + " remaining.");
+                                    }
                                 }
                                 if ((*it)->globVars.size() > 0)
                                 {

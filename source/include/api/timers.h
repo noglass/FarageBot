@@ -96,12 +96,32 @@ namespace Farage
         }
         template<class T>
         inline auto remaining() { return std::chrono::duration_cast<T>(when() - std::chrono::high_resolution_clock::now()); }
+        inline long remainingInterval()
+        {
+            switch (type)
+            {
+                case MILLISECONDS:  return remaining<std::chrono::milliseconds>().count();
+                case MICROSECONDS:  return remaining<std::chrono::microseconds>().count();
+                case NANOSECONDS:   return remaining<std::chrono::nanoseconds>().count();
+                default:            return remaining<std::chrono::seconds>().count();
+            }
+        }
         inline int trigger(Handle &handle)
         {
             last = std::chrono::high_resolution_clock::now();
             if (func != nullptr)
                 return (*func)(handle,this,args);
             return 1;
+        }
+        inline std::string intervalString()
+        {
+            switch (type)
+            {
+                case MILLISECONDS:  return "millisecond";
+                case MICROSECONDS:  return "microsecond";
+                case NANOSECONDS:   return "nanosecond";
+                default:            return "second";
+            }
         }
         
         private:
