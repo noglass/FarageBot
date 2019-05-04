@@ -50,6 +50,7 @@ namespace Farage
             int setroleflags(Farage::BotClass*,Farage::Global&,int,const std::string[]);
             int sendmsg(Farage::BotClass*,Farage::Global&,int,const std::string[]);
             int execute(Farage::BotClass*,Farage::Global&,int,const std::string[]);
+            int nick(Farage::BotClass*,Farage::Global&,int,const std::string[]);
         };
         
         namespace Chat
@@ -199,6 +200,7 @@ namespace Farage
                 add("sendmsg",{&Internal::Console::sendmsg,"Send a message to a channel."});
                 add("execute",{&Internal::Console::execute,"Execute a config script."});
                 add("exec",{&Internal::Console::execute,"Execute a config script."});
+                add("nick",{&Internal::Console::nick,"Change my nickname for a server."});
                 add("version",{&Internal::Chat::version,NOFLAG,"FarageBot version information."});
                 add("setprefix",{&Internal::Chat::setprefix,STATUS,"Change the command prefix."});
                 add("reloadadmins",{&Internal::Chat::reloadadmins,GENERIC,"Reload the admin config file."});
@@ -1355,9 +1357,15 @@ OPTIONS\n\
         ArrayResponse<ServerMember> listMembers(const std::string &serverID, uint16_t limit, const std::string &after);
         ObjectResponse<ServerMember> addMember(const std::string &serverID, const std::string &userID, const std::string &accesToken, const std::string &nick, const std::vector<Role> &roles, bool mute, bool deaf);
         BoolResponse editMember(const std::string &serverID, const std::string &userID, const std::string &nickname, const std::vector<std::string> &roles, int8_t mute, int8_t deaf, const std::string &channelID);
-        BoolResponse muteServerMember(const std::string &serverID, const std::string &userID, bool mute);
-        BoolResponse editNickname(const std::string &serverID, const std::string &newNickname);
-        BoolResponse addRole(const std::string &serverID, const std::string &userID, const std::string &roleID);
+        BoolResponse muteServerMember(const std::string &serverID, const std::string &userID, bool mute);*/
+        BoolResponse editNickname(const std::string &serverID, const std::string &newNickname)
+        {
+            if (newNickname.size() < 1)
+                return BoolResponse();
+            SleepyDiscord::BoolResponse response = ((BotClass*)(recallGlobal()->discord))->editNickname(serverID,newNickname);
+            return BoolResponse(std::move(convertResponse(response)),std::move(response.cast()));
+        }
+        /*BoolResponse addRole(const std::string &serverID, const std::string &userID, const std::string &roleID);
         BoolResponse removeRole(const std::string &serverID, const std::string &userID, const std::string &roleID);
         BoolResponse kickMember(const std::string &serverID, const std::string &userID);
         ArrayResponse<User> getBans(const std::string &serverID);
@@ -2044,6 +2052,14 @@ OPTIONS\n\
                 if ((processCscript(bot,global,file) != 0) && (processCscript(bot,global,file += ".cfg") != 0))
                     consoleOut(argv[0] + ": Cannot open file '" + file + '\'');
             }
+            return PLUGIN_HANDLED;
+        }
+        int nick(Farage::BotClass *bot,Farage::Global &global,int argc,const std::string argv[])
+        {
+            if (argc < 3)
+                consoleOut("Usage: " + argv[0] + " <server_id> <nickname>");
+            else
+                bot->editNickname(argv[1],argv[2]);
             return PLUGIN_HANDLED;
         }
     };

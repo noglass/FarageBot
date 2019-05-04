@@ -157,6 +157,10 @@ namespace Farage
     {
         return recallGlobal()->callbacks.serverCommand(command);
     }
+    inline BoolResponse editNickname(const std::string &serverID, const std::string &newNickname)
+    {
+        return recallGlobal()->callbacks.editNickname(serverID,newNickname);
+    }
 };
 
 #endif

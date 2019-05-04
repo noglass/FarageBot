@@ -40,6 +40,7 @@ namespace Farage
         Response (*addRecipient)(const std::string&, const std::string&);
         Response (*removeRecipient)(const std::string&, const std::string&);
         std::string (*serverCommand)(const std::string&);
+        BoolResponse (*editNickname)(const std::string&, const std::string&);
     };
 };
 
