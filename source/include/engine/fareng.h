@@ -141,15 +141,18 @@ namespace Farage
         bool open = false;
         for (size_t x = 0, slen = src.size(), dlen = delim.size(), last = 0; x < slen;)
         {
-            if (src.compare(x,1,"\"") == 0)
+            if (src.at(x) == '"')
             {
                 open = !open;
-                if ((open) && (src.find("\"",x+1,1) == std::string::npos))
+                if ((open) && (src.find('"',x+1) == std::string::npos))
                     open = false;
             }
             if ((!open) && ((src.compare(x,dlen,delim) == 0) || (x+1 >= slen)))
             {
-                list.push_back(nospace(src.substr(last,(x+=dlen)-last-((x+1 < slen) ? 1 : 0))));
+                std::string arg = nospace(src.substr(last,(x+=dlen)-last-((x+1 < slen) ? 1 : 0)));
+                if ((arg.front() == '"') && (arg.back() == '"'))
+                    arg = arg.substr(1,arg.size()-2);
+                list.push_back(arg);
                 last = x;
             }
             else
