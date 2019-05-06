@@ -244,6 +244,16 @@ namespace Farage
         bool suppress;
     };
     
+    struct VoiceRegion
+    {
+        std::string id;
+        std::string name;
+        bool vip;
+        bool optimal;
+        bool deprecated;
+        bool custom;
+    };
+    
     struct VoiceServerUpdate
     {
         std::string token;
@@ -263,6 +273,12 @@ namespace Farage
         std::string code;
         Server server;
         Channel channel;
+    };
+    
+    struct ServerEmbed
+    {
+        bool enabled;
+        std::string channel_id;
     };
     
     template<class T>

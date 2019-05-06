@@ -6,65 +6,65 @@ namespace Farage
     User convertUser(SleepyDiscord::User user)
     {
         return User{
-            user.ID,
-            user.username,
-            user.discriminator,
-            user.avatar,
-            user.bot,
-            user.mfa_enabled,
-            user.verified,
-            user.email,
+            std::move(user.ID),
+            std::move(user.username),
+            std::move(user.discriminator),
+            std::move(user.avatar),
+            std::move(user.bot),
+            std::move(user.mfa_enabled),
+            std::move(user.verified),
+            std::move(user.email)
         };
     }
     
     Channel convertChannel(SleepyDiscord::Channel channel)
     {
         Channel fchannel = {
-            channel.ID,
-            channel.type,
-            channel.serverID,
-            channel.position,
-            channel.name,
-            channel.topic,
-            channel.isNSFW,
-            channel.lastMessageID,
-            channel.bitrate,
-            channel.userLimit,
+            std::move(channel.ID),
+            std::move(channel.type),
+            std::move(channel.serverID),
+            std::move(channel.position),
+            std::move(channel.name),
+            std::move(channel.topic),
+            std::move(channel.isNSFW),
+            std::move(channel.lastMessageID),
+            std::move(channel.bitrate),
+            std::move(channel.userLimit),
             std::vector<User>(channel.recipients.size()),
-            channel.icon,
-            channel.ownerID,
-            channel.parentID,
-            channel.lastPinTimestamp
+            std::move(channel.icon),
+            std::move(channel.ownerID),
+            std::move(channel.parentID),
+            std::move(std::move(channel.lastPinTimestamp))
         };
         auto itt = fchannel.recipients.begin();
         for (auto it = channel.recipients.begin(), ite = channel.recipients.end();it != ite;++it,++itt)
-            *itt = convertUser(*it);
+            *itt = convertUser(std::move(*it));
         return std::move(fchannel);
     }
     
     Role convertRole(SleepyDiscord::Role role)
     {
         return Role{
-            role.ID,
-            role.name,
-            role.color,
-            role.hoist,
-            role.position,
-            role.permissions,
-            role.managed,
-            role.mentionable
+            std::move(role.ID),
+            std::move(role.name),
+            std::move(role.color),
+            std::move(role.hoist),
+            std::move(role.position),
+            std::move(role.permissions),
+            std::move(role.managed),
+            std::move(role.mentionable)
         };
     }
     
     ServerMember convertServerMember(SleepyDiscord::ServerMember member)
     {
         ServerMember fmember = {
-            convertUser(member.user),
-            member.nick,
+            std::move(convertUser(std::move(member.user))),
+            std::move(member.nick),
             std::vector<std::string>(member.roles.size()),
-            member.joinedAt,
-            member.deaf,
-            member.mute
+            std::move(member.joinedAt),
+            std::move(member.deaf),
+            std::move(member.mute)
         };
         fmember.roles.assign(member.roles.begin(),member.roles.end());
         return std::move(fmember);
@@ -73,41 +73,41 @@ namespace Farage
     Server convertServer(SleepyDiscord::Server server)
     {
         Server fserver = {
-            server.ID,
-            server.name,
-            server.icon,
-            server.splash,
-            server.ownerID,
-            server.permissions,
-            server.region,
-            server.AFKchannelID,
-            server.AFKTimeout,
-            server.embedEnable,
-            server.embedChannelID,
-            server.verificationLevel,
-            server.defaultMessageNotifications,
+            std::move(server.ID),
+            std::move(server.name),
+            std::move(server.icon),
+            std::move(server.splash),
+            std::move(server.ownerID),
+            std::move(server.permissions),
+            std::move(server.region),
+            std::move(server.AFKchannelID),
+            std::move(server.AFKTimeout),
+            std::move(server.embedEnable),
+            std::move(server.embedChannelID),
+            std::move(server.verificationLevel),
+            std::move(server.defaultMessageNotifications),
             std::vector<Role>(server.roles.size()),
-            server.MFALevel,
-            server.joinedAt,
-            server.large,
-            server.unavailable,
+            std::move(server.MFALevel),
+            std::move(server.joinedAt),
+            std::move(server.large),
+            std::move(server.unavailable),
             std::vector<ServerMember>(server.members.size()),
             std::vector<Channel>(server.channels.size())
         };
         {
             auto itt = fserver.roles.begin();
             for (auto it = server.roles.begin(), ite = server.roles.end();it != ite;++it,++itt)
-                *itt = std::move(convertRole(*it));
+                *itt = std::move(convertRole(std::move(*it)));
         }
         {
             auto itt = fserver.members.begin();
             for (auto it = server.members.begin(), ite = server.members.end();it != ite;++it,++itt)
-                *itt = std::move(convertServerMember(*it));
+                *itt = std::move(convertServerMember(std::move(*it)));
         }
         {
             auto itt = fserver.channels.begin();
             for (auto it = server.channels.begin(), ite = server.channels.end();it != ite;++it,++itt)
-                *itt = std::move(convertChannel(*it));
+                *itt = std::move(convertChannel(std::move(*it)));
         }
         return std::move(fserver);
     }
@@ -115,23 +115,23 @@ namespace Farage
     Message convertMessage(SleepyDiscord::Message message)
     {
         Message fmessage = {
-            message.ID,
-            message.channelID,
-            message.serverID,
-            convertUser(message.author),
-            message.content,
-            message.timestamp,
-            message.editedTimestamp,
-            message.tts,
-            message.mentionEveryone,
+            std::move(message.ID),
+            std::move(message.channelID),
+            std::move(message.serverID),
+            std::move(convertUser(std::move(message.author))),
+            std::move(message.content),
+            std::move(message.timestamp),
+            std::move(message.editedTimestamp),
+            std::move(message.tts),
+            std::move(message.mentionEveryone),
             std::vector<User>(message.mentions.size()),
             std::vector<std::string>(message.mentionRoles.size()),
-            message.pinned,
-            message.type
+            std::move(message.pinned),
+            std::move(message.type)
         };
         auto itt = fmessage.mentions.begin();
         for (auto it = message.mentions.begin(), ite = message.mentions.end();it != ite;++it,++itt)
-            *itt = std::move(convertUser(*it));
+            *itt = std::move(convertUser(std::move(*it)));
         fmessage.mention_roles.assign(message.mentionRoles.begin(),message.mentionRoles.end());
         return std::move(fmessage);
     }
@@ -139,21 +139,21 @@ namespace Farage
     Ready convertReady(SleepyDiscord::Ready readyData)
     {
         Ready fready = {
-            readyData.v,
-            convertUser(readyData.user),
+            std::move(readyData.v),
+            std::move(convertUser(std::move(readyData.user))),
             std::vector<Channel>(readyData.privateChannels.size()),
             std::vector<std::string>(readyData.servers.size()),
-            readyData.sessionID
+            std::move(readyData.sessionID)
         };
         {
             auto itt = fready.private_channels.begin();
             for (auto it = readyData.privateChannels.begin(), ite = readyData.privateChannels.end();it != ite;++it,++itt)
-                *itt = std::move(convertChannel(*it));
+                *itt = std::move(convertChannel(std::move(*it)));
         }
         {
             auto itt = fready.guilds.begin();
             for (auto it = readyData.servers.begin(), ite = readyData.servers.end();it != ite;++it,++itt)
-                itt->assign(it->ID);
+                itt->assign(std::move(it->ID));
         }
         //fready.guilds.assign(readyData.servers.begin(),readyData.servers.end());
         return std::move(fready);
@@ -162,55 +162,55 @@ namespace Farage
     Emoji convertEmoji(SleepyDiscord::Emoji emoji)
     {
         Emoji femoji = {
-            emoji.ID,
-            emoji.name,
+            std::move(emoji.ID),
+            std::move(emoji.name),
             std::vector<Role>(emoji.roles.size()),
-            convertUser(emoji.user),
-            emoji.requireColons,
-            emoji.managed,
+            std::move(convertUser(std::move(emoji.user))),
+            std::move(emoji.requireColons),
+            std::move(emoji.managed),
             false
         };
         auto itt = femoji.roles.begin();
         for (auto it = emoji.roles.begin(), ite = emoji.roles.end();it != ite;++it,++itt)
-            *itt = std::move(convertRole(*it));
+            *itt = std::move(convertRole(std::move(*it)));
         return std::move(femoji);
     }
     
     ActivityAssets convertActivityAssets(SleepyDiscord::ActivityAssets assets)
     {
-        return ActivityAssets{ assets.largeImage, assets.largeText, assets.smallImage, assets.smallText };
+        return ActivityAssets{ std::move(assets.largeImage), std::move(assets.largeText), std::move(assets.smallImage), std::move(assets.smallText) };
     }
     
     ActivitySecrets convertActivitySecrets(SleepyDiscord::ActivitySecrets secrets)
     {
-        return ActivitySecrets{ secrets.join, secrets.spectate, secrets.match };
+        return ActivitySecrets{ std::move(secrets.join), std::move(secrets.spectate), std::move(secrets.match) };
     }
     
     Activity convertActivity(SleepyDiscord::Activity activity)
     {
         return Activity{
-            activity.name,
-            activity.type,
-            activity.url,
-            std::pair<std::time_t,std::time_t>(activity.timestamps.start,activity.timestamps.end),
-            activity.applicationID,
-            activity.details,
-            activity.state,
-            convertActivityAssets(activity.assets),
-            convertActivitySecrets(activity.secrets),
-            activity.instance,
-            activity.flags
+            std::move(activity.name),
+            std::move(activity.type),
+            std::move(activity.url),
+            std::pair<std::time_t,std::time_t>(std::move(activity.timestamps.start),std::move(activity.timestamps.end)),
+            std::move(activity.applicationID),
+            std::move(activity.details),
+            std::move(activity.state),
+            std::move(convertActivityAssets(std::move(activity.assets))),
+            std::move(convertActivitySecrets(std::move(activity.secrets))),
+            std::move(activity.instance),
+            std::move(activity.flags)
         };
     }
     
     PresenceUpdate convertPresenceUpdate(SleepyDiscord::PresenceUpdate presence)
     {
         PresenceUpdate fpresence = {
-            convertUser(presence.user),
+            std::move(convertUser(presence.user)),
             std::vector<std::string>(presence.roleIDs.size()),
-            convertActivity(presence.currentActivity),
-            presence.serverID,
-            presence.status,
+            std::move(convertActivity(std::move(presence.currentActivity))),
+            std::move(presence.serverID),
+            std::move(presence.status),
             std::vector<Activity>(presence.activities.size())
         };
         fpresence.roles.assign(presence.roleIDs.begin(),presence.roleIDs.end());
@@ -222,34 +222,44 @@ namespace Farage
         {
             auto itt = fpresence.activities.begin();
             for (auto it = presence.activities.begin(), ite = presence.activities.end();it != ite;++it,++itt)
-                *itt = std::move(convertActivity(*it));
+                *itt = std::move(convertActivity(std::move(*it)));
         }
         return std::move(fpresence);
     }
     
     Response convertResponse(SleepyDiscord::Response response)
     {
-        return Response(response.statusCode,response.text,response.header);
+        return Response(std::move(response.statusCode),std::move(response.text),std::move(response.header));
     }
     
     VoiceState convertVoiceState(SleepyDiscord::VoiceState state)
     {
-        return VoiceState{ state.serverID, state.channelID, state.userID, state.sessionID, state.deaf, state.mute, state.selfDeaf, state.selfMute, state.suppress };
+        return VoiceState{ std::move(state.serverID), std::move(state.channelID), std::move(state.userID), std::move(state.sessionID), std::move(state.deaf), std::move(state.mute), std::move(state.selfDeaf), std::move(state.selfMute), std::move(state.suppress) };
+    }
+    
+    VoiceRegion convertVoiceRegion(SleepyDiscord::VoiceRegion region)
+    {
+        return VoiceRegion{ std::move(region.ID), std::move(region.name), std::move(region.vip), std::move(region.optimal), std::move(region.deprecated), std::move(region.custom) };
     }
     
     VoiceServerUpdate convertVoiceServerUpdate(SleepyDiscord::VoiceServerUpdate update)
     {
-        return VoiceServerUpdate{ update.token, update.serverID, update.endpoint };
+        return VoiceServerUpdate{ std::move(update.token), std::move(update.serverID), std::move(update.endpoint) };
     }
     
     Reaction convertReaction(SleepyDiscord::Reaction reaction)
     {
-        return Reaction{ reaction.count, reaction.me, convertEmoji(reaction.emoji) };
+        return Reaction{ std::move(reaction.count), std::move(reaction.me), std::move(convertEmoji(std::move(reaction.emoji))) };
     }
     
     Invite convertInvite(SleepyDiscord::Invite invite)
     {
-        return Invite{ invite.code, convertServer(invite.server), convertChannel(invite.channel) };
+        return Invite{ std::move(invite.code), std::move(convertServer(std::move(invite.server))), std::move(convertChannel(std::move(invite.channel))) };
+    }
+    
+    ServerEmbed convertServerEmbed(SleepyDiscord::ServerEmbed embed)
+    {
+        return ServerEmbed{ std::move(embed.enabled), std::move(embed.channelID) };
     }
                                                                                 
     inline User                convertObject(SleepyDiscord::User user)                 { return convertUser(std::move(user)); }
@@ -269,6 +279,8 @@ namespace Farage
     inline VoiceServerUpdate   convertObject(SleepyDiscord::VoiceServerUpdate update)  { return convertVoiceServerUpdate(std::move(update)); }
     inline Reaction            convertObject(SleepyDiscord::Reaction reaction)         { return convertReaction(std::move(reaction)); }
     inline Invite              convertObject(SleepyDiscord::Invite invite)             { return convertInvite(std::move(invite)); }
+    inline VoiceRegion         convertObject(SleepyDiscord::VoiceRegion region)        { return convertVoiceRegion(std::move(region)); }
+    inline ServerEmbed         convertObject(SleepyDiscord::ServerEmbed embed)         { return convertServerEmbed(std::move(embed)); }
     
     template<class FromType, class ToType>
     ArrayResponse<ToType> convertArrayResponse(SleepyDiscord::ArrayResponse<FromType> response)
@@ -277,7 +289,7 @@ namespace Farage
         std::vector<ToType> list;
         list.reserve(array.size());
         for (auto it = array.begin(), ite = array.end();it != ite;++it)
-            list.push_back(convertObject(*it));
+            list.push_back(std::move(convertObject(std::move(*it))));
         return ArrayResponse<ToType>(std::move(convertResponse(response)),std::move(list));
     }
 };

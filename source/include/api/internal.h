@@ -40,6 +40,16 @@ namespace Farage
         Response (*addRecipient)(const std::string&, const std::string&);
         Response (*removeRecipient)(const std::string&, const std::string&);
         std::string (*serverCommand)(const std::string&);
+        ObjectResponse<Server> (*getServer)(const std::string&);
+        ObjectResponse<Server> (*deleteServer)(const std::string&);
+        ArrayResponse<Channel> (*getServerChannels)(const std::string&);
+        ObjectResponse<Channel> (*createTextChannel)(const std::string&, const std::string&);
+        ArrayResponse<Channel> (*editChannelPositions)(const std::string&, std::vector<std::pair<std::string,uint64_t>>);
+        ObjectResponse<ServerMember> (*getMember)(const std::string&, const std::string&);
+        ArrayResponse<ServerMember> (*listMembers)(const std::string&, uint16_t, const std::string&);
+        ObjectResponse<ServerMember> (*addMember)(const std::string&, const std::string&, const std::string&, const std::string&, std::vector<Role>, bool, bool);
+        BoolResponse (*editMember)(const std::string&, const std::string&, const std::string&, std::vector<std::string>, int8_t, int8_t, const std::string&);
+        BoolResponse (*muteServerMember)(const std::string&, const std::string&, bool);
         BoolResponse (*editNickname)(const std::string&, const std::string&);
     };
 };

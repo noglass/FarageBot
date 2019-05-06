@@ -157,6 +157,46 @@ namespace Farage
     {
         return recallGlobal()->callbacks.serverCommand(command);
     }
+    inline ObjectResponse<Server> getServer(const std::string &serverID)
+    {
+        return recallGlobal()->callbacks.getServer(serverID);
+    }
+    inline ObjectResponse<Server> deleteServer(const std::string &serverID)
+    {
+        return recallGlobal()->callbacks.deleteServer(serverID);
+    }
+    inline ArrayResponse<Channel> getServerChannels(const std::string &serverID)
+    {
+        return recallGlobal()->callbacks.getServerChannels(serverID);
+    }
+    inline ObjectResponse<Channel> createTextChannel(const std::string &serverID, const std::string &name)
+    {
+        return recallGlobal()->callbacks.createTextChannel(serverID,name);
+    }
+    inline ArrayResponse<Channel> editChannelPositions(const std::string &serverID, std::vector<std::pair<std::string,uint64_t>> positions)
+    {
+        return recallGlobal()->callbacks.editChannelPositions(serverID,positions);
+    }
+    inline ObjectResponse<ServerMember> getMember(const std::string &serverID, const std::string &userID)
+    {
+        return recallGlobal()->callbacks.getMember(serverID,userID);
+    }
+    inline ArrayResponse<ServerMember> listMembers(const std::string &serverID, uint16_t limit, const std::string &after)
+    {
+        return recallGlobal()->callbacks.listMembers(serverID,limit,after);
+    }
+    inline ObjectResponse<ServerMember> addMember(const std::string &serverID, const std::string &userID, const std::string &accessToken, const std::string &nick, const std::vector<Role> &roles, bool mute, bool deaf)
+    {
+        return recallGlobal()->callbacks.addMember(serverID,userID,accessToken,nick,roles,mute,deaf);
+    }
+    inline BoolResponse editMember(const std::string &serverID, const std::string &userID, const std::string &nickname, const std::vector<std::string> &roles, int8_t mute, int8_t deaf, const std::string &channelID)
+    {
+        return recallGlobal()->callbacks.editMember(serverID,userID,nickname,roles,mute,deaf,channelID);
+    }
+    inline BoolResponse muteServerMember(const std::string &serverID, const std::string &userID, bool mute)
+    {
+        return recallGlobal()->callbacks.muteServerMember(serverID,userID,mute);
+    }
     inline BoolResponse editNickname(const std::string &serverID, const std::string &newNickname)
     {
         return recallGlobal()->callbacks.editNickname(serverID,newNickname);
