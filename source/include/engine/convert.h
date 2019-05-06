@@ -161,18 +161,19 @@ namespace Farage
     
     Emoji convertEmoji(SleepyDiscord::Emoji emoji)
     {
-        Emoji femoji = {
+        std::vector<Role> roles;
+        roles.reserve(emoji.roles.size());
+        for (auto it = emoji.roles.begin(), ite = emoji.roles.end();it != ite;++it)
+            roles.push_back(std::move(convertRole(std::move(*it))));
+        Emoji femoji(
             std::move(emoji.ID),
             std::move(emoji.name),
-            std::vector<Role>(emoji.roles.size()),
+            std::move(roles),
             std::move(convertUser(std::move(emoji.user))),
-            std::move(emoji.requireColons),
-            std::move(emoji.managed),
+            emoji.requireColons,
+            emoji.managed,
             false
-        };
-        auto itt = femoji.roles.begin();
-        for (auto it = emoji.roles.begin(), ite = emoji.roles.end();it != ite;++it,++itt)
-            *itt = std::move(convertRole(std::move(*it)));
+        );
         return std::move(femoji);
     }
     

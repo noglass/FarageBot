@@ -116,6 +116,10 @@ namespace Farage
     
     struct Emoji
     {
+        Emoji() {}
+        Emoji(const std::string &_name, const std::string &_id = "") : name(_name), id(_id) {}
+        Emoji(std::string _id, std::string _name, std::vector<Role>&& _roles, User&& _user, bool _require_colons, bool _managed, bool _animated) :
+            id(std::move(_id)), name(std::move(_name)), roles(std::move(_roles)), user(std::move(_user)), require_colons(_require_colons), managed(_managed), animated(_animated) {}
         std::string id;
         std::string name;
         std::vector<Role> roles;
@@ -123,6 +127,17 @@ namespace Farage
         bool require_colons;
         bool managed;
         bool animated;
+        inline bool operator==(const Emoji &r) { return ((id.size() > 0) ? (id == r.id) : (name == r.name)); }
+        inline bool operator!=(const Emoji &r) { return !operator==(r); }
+        std::string display() const
+        {
+            std::string out = name;
+            if (require_colons)
+                out = ":" + out + ':';
+            if (id.size() > 0)
+                out = "<" + out + id + '>';
+            return out;
+        }
     };
     
     struct ServerMember

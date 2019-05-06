@@ -785,18 +785,68 @@ OPTIONS\n\
             void onReaction(SleepyDiscord::Snowflake<SleepyDiscord::User> userID, SleepyDiscord::Snowflake<SleepyDiscord::Channel> channelID, SleepyDiscord::Snowflake<SleepyDiscord::Message> messageID, SleepyDiscord::Emoji emoji)
             {
                 Farage::Global *global = Farage::recallGlobal();
-                std::string user = userID, channel = channelID, message = messageID;
+                std::string user = userID, message = messageID;
                 for (auto it = global->ignoredUsers.begin(), ite = global->ignoredUsers.end();it != ite;++it)
                     if (*it == user)
                         return;
                 Emoji femoji = convertEmoji(std::move(emoji));
-                void *arg0 = (void*)(&user);
-                void *arg1 = (void*)(&channel);
-                void *arg2 = (void*)(&message);
-                void *arg3 = (void*)(&femoji);
-                for (auto it = global->plugins.begin(), ite = global->plugins.end();it != ite;++it)
-                    if ((*it)->callEvent(Event::ONREACTION,arg0,arg1,arg2,arg3) == PLUGIN_HANDLED)
+                auto cache = ((BotClass*)(global->discord))->getServerCache();
+                std::string guild, guildName;
+                ServerMember member;
+                Channel channel;
+                for (auto it = cache->begin(), ite = cache->end();it != ite;++it)
+                {
+                    auto chanIt = it->findChannel(channelID);
+                    if (chanIt != it->channels.end())
+                    {
+                        guild = it->ID;
+                        guildName = it->name;
+                        member = convertServerMember(*it->findMember(userID));
+                        channel = convertChannel(*chanIt);
                         break;
+                    }
+                }
+                bool blockEvent = false;
+                for (auto it = global->plugins.begin(), ite = global->plugins.end();it != ite;++it)
+                {
+                    for (auto pit = (*it)->reactHooks.begin();pit != (*it)->reactHooks.end();)
+                    {
+                        if ((*pit)->matches(member.user.id,channel.id,message,guild,convertEmoji(emoji)))
+                        {
+                            int flags = (*pit)->flags;
+                            if ((flags & HOOK_PRINT) == HOOK_PRINT)
+                                consoleOut("[" + (*pit)->name + "][" + guildName + "](#" + channel.name + ")(" + message + ")<" + member.user.username + "> Reaction: " + femoji.display());
+                            int ret = PLUGIN_CONTINUE;
+                            if ((*pit)->func != nullptr)
+                                ret = (*(*pit)->func)(**it,*pit,member,channel,message,guild,femoji);
+                            if (ret & PLUGIN_ERASE)
+                            {
+                                delete *pit;
+                                pit = (*it)->reactHooks.erase(pit);
+                            }
+                            else
+                                pit++;
+                            if (ret & PLUGIN_HANDLED)
+                                return;
+                            if ((flags & HOOK_BLOCK_EVENT) == HOOK_BLOCK_EVENT)
+                                blockEvent = true;
+                            if ((flags & HOOK_BLOCK_HOOK) == HOOK_BLOCK_HOOK)
+                                break;
+                        }
+                        else
+                            pit++;
+                    }
+                }
+                if (!blockEvent)
+                {
+                    void *arg0 = (void*)(&member);
+                    void *arg1 = (void*)(&channel);
+                    void *arg2 = (void*)(&message);
+                    void *arg3 = (void*)(&femoji);
+                    for (auto it = global->plugins.begin(), ite = global->plugins.end();it != ite;++it)
+                        if ((*it)->callEvent(Event::ONREACTION,arg0,arg1,arg2,arg3) == PLUGIN_HANDLED)
+                            break;
+                }
             }
             
             void onDeleteReaction(SleepyDiscord::Snowflake<SleepyDiscord::User> userID, SleepyDiscord::Snowflake<SleepyDiscord::Channel> channelID, SleepyDiscord::Snowflake<SleepyDiscord::Message> messageID, SleepyDiscord::Emoji emoji)
@@ -845,11 +895,12 @@ OPTIONS\n\
                 bool blockCmd = false;
                 for (auto it = global->plugins.begin(), ite = global->plugins.end();it != ite;++it)
                 {
-                    for (auto pit = (*it)->chatHooks.begin(), pite = (*it)->chatHooks.end();pit != pite;++pit)
+                    for (auto pit = (*it)->chatHooks.begin();pit != (*it)->chatHooks.end();)
                     {
                         if (rens::regex_search(fmessage.content,ml,(*pit)->pattern))
                         {
-                            if (((*pit)->flags & HOOK_PRINT) == HOOK_PRINT)
+                            int flags = (*pit)->flags;
+                            if ((flags & HOOK_PRINT) == HOOK_PRINT)
                             {
                                 auto cache = ((BotClass*)(global->discord))->getServerCache();
                                 std::string guild = fmessage.guild_id;
@@ -864,15 +915,27 @@ OPTIONS\n\
                                 }
                                 consoleOut("[" + (*pit)->name + "][" + guild + "](#" + channel + "): <" + fmessage.author.username + "> " + fmessage.content);
                             }
-                            if (((*pit)->func != nullptr) && ((*(*pit)->func)(**it,*pit,ml,fmessage) == PLUGIN_HANDLED))
+                            int ret = PLUGIN_CONTINUE;
+                            if ((*pit)->func != nullptr)
+                                ret = (*(*pit)->func)(**it,*pit,ml,fmessage);
+                            if (ret & PLUGIN_ERASE)
+                            {
+                                delete *pit;
+                                pit = (*it)->chatHooks.erase(pit);
+                            }
+                            else
+                                pit++;
+                            if (ret & PLUGIN_HANDLED)
                                 return;
-                            if (((*pit)->flags & HOOK_BLOCK_EVENT) == HOOK_BLOCK_EVENT)
+                            if ((flags & HOOK_BLOCK_EVENT) == HOOK_BLOCK_EVENT)
                                 blockEvent = true;
-                            if (((*pit)->flags & HOOK_BLOCK_CMD) == HOOK_BLOCK_CMD)
+                            if ((flags & HOOK_BLOCK_CMD) == HOOK_BLOCK_CMD)
                                 blockCmd = true;
-                            if (((*pit)->flags & HOOK_BLOCK_HOOK) == HOOK_BLOCK_HOOK)
+                            if ((flags & HOOK_BLOCK_HOOK) == HOOK_BLOCK_HOOK)
                                 break;
                         }
+                        else
+                            pit++;
                     }
                 }
                 std::string prefix = global->prefix(fmessage.guild_id);

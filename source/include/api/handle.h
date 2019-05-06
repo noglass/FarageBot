@@ -34,6 +34,7 @@ namespace Farage
             std::vector<ChatHook*> chatHooks;
             std::vector<Timer*> timers;
             std::vector<GlobVar*> globVars;
+            std::vector<ReactHook*> reactHooks;
             
             void unload(Global *global = nullptr);
             
@@ -58,7 +59,7 @@ namespace Farage
             // returns the internal name of the plugin
             std::string getModule() { return moduleName; }
             
-            size_t getLoadPriority();
+            inline size_t getLoadPriority() { return priority; }
             int setLoadPriority(size_t loadPriority, bool write = false, short shift = 0);
             
             // register an event hook
@@ -145,6 +146,19 @@ namespace Farage
             size_t unhookChatPattern(ChatHook *hook);
             
             ChatHook* findChatHook(const std::string &name);
+            
+            ReactHook* hookReactionMessage(const std::string &name, ReactHookCallback func, int flags, const std::string &messageID, const std::string &emoji = "", const std::string &userID = "");
+            ReactHook* hookReactionMessage(const std::string &name, ReactHookCallback func, int flags, const std::string &messageID, const Emoji &emoji = {}, const std::string &userID = "");
+            ReactHook* hookReactionGuild(const std::string &name, ReactHookCallback func, int flags, const std::string &guildID, const std::string &emoji = "", const std::string &userID = "");
+            ReactHook* hookReactionGuild(const std::string &name, ReactHookCallback func, int flags, const std::string &guildID, const Emoji &emoji = {}, const std::string &userID = "");
+            ReactHook* hookReactionChannel(const std::string &name, ReactHookCallback func, int flags, const std::string &channelID, const std::string &emoji = "", const std::string &userID = "");
+            ReactHook* hookReactionChannel(const std::string &name, ReactHookCallback func, int flags, const std::string &channelID, const Emoji &emoji = {}, const std::string &userID = "");
+            ReactHook* hookReaction(const std::string &name, ReactHookCallback func, int flags = 0, const std::string &emoji = "", const std::string &userID = "");
+            ReactHook* hookReaction(const std::string &name, ReactHookCallback func, int flags, const Emoji &emoji, const std::string &userID = "");
+            size_t unhookReaction(const std::string &name);
+            size_t unhookReaction(Farage::ReactHook* hook);
+            //ReactHook* hookReaction(const std::string &name, ReactHookCallback func, const std::string &emoji);
+            //ReactHook* hookReaction(const std::string &name, ReactHookCallback func, const Emoji &emoji);
             
             //size_t totalChatCmds() { return chatCommands.size(); }
             //size_t totalConsoleCmds() { return consoleCommands.size(); }

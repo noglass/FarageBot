@@ -10,6 +10,7 @@
 #define PLUGIN_CONTINUE                    0
 #define PLUGIN_HANDLED                     1
 #define PLUGIN_STOP                        2
+#define PLUGIN_ERASE                       4
 
 #include "api/global.h"
 
