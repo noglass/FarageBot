@@ -67,6 +67,12 @@ void Farage::Handle::unload(Farage::Global *global)
                 *it = nullptr;
             }
             chatHooks.clear();
+            for (auto it = reactHooks.begin(), ite = reactHooks.end();it != ite;++it)
+            {
+                delete *it;
+                *it = nullptr;
+            }
+            reactHooks.clear();
             for (auto it = global->plugins.begin(), ite = global->plugins.end();it != ite;++it)
             {
                 if (*it == this)

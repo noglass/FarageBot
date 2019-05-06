@@ -2002,10 +2002,17 @@ OPTIONS\n\
                                 }
                                 if ((*it)->chatHooks.size() > 0)
                                 {
-                                    consoleOut("    Registered Hooks:");
+                                    consoleOut("    Registered Chat Hooks:");
                                     size_t c = 0;
                                     for (auto com = (*it)->chatHooks.begin(), come = (*it)->chatHooks.end();com != come;++com)
                                         consoleOut("        [" + std::to_string(c++) + "]\t" + (*com)->name + "\t(" + std::to_string((*com)->flags) + ")");
+                                }
+                                if ((*it)->reactHooks.size() > 0)
+                                {
+                                    consoleOut("    Registered React Hooks:");
+                                    size_t c = 0;
+                                    for (auto com = (*it)->reactHooks.begin(), come = (*it)->reactHooks.end();com != come;++com)
+                                        consoleOut("        [" + std::to_string(c++) + "]\t" + (*com)->name + "\t(" + std::to_string((*com)->flags) + ")\t Type: " + std::to_string(int((*com)->type)));
                                 }
                                 if ((*it)->timers.size() > 0)
                                 {
