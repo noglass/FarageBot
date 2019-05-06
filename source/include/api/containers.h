@@ -132,10 +132,8 @@ namespace Farage
         std::string display() const
         {
             std::string out = name;
-            if (require_colons)
-                out = ":" + out + ':';
             if (id.size() > 0)
-                out = "<" + out + id + '>';
+                out = "<:" + out + ':' + id + '>';
             return out;
         }
     };
