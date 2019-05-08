@@ -385,18 +385,14 @@ OPTIONS\n\
     {
         int ret = PLUGIN_CONTINUE;
         auto plug = global.plugins.begin(), pluge = global.plugins.end();
-        bool done = false;
         for (;plug != pluge;++plug)
         {
             if ((*plug)->getLoadPriority() != 0)
                 break;
             if ((ret = (*plug)->callConsoleCmd(argv[0],argc,argv)) == PLUGIN_HANDLED)
-            {
-                done = true;
-                break;
-            }
+                return ret;
         }
-        if ((!done) && ((ret = internals.call(bot,global,argc,argv)) != PLUGIN_HANDLED))
+        if ((ret = internals.call(bot,global,argc,argv)) != PLUGIN_HANDLED)
             for (;plug != pluge;++plug)
                 if ((ret = (*plug)->callConsoleCmd(argv[0],argc,argv)) == PLUGIN_HANDLED)
                     break;
@@ -461,6 +457,7 @@ OPTIONS\n\
                 Farage::Global *global = Farage::recallGlobal();
                 createServerCache();
                 Ready fready = convertReady(std::move(readyData));
+                global->self = fready.user;
                 void *arg0 = (void*)(&fready);
                 for (auto it = global->plugins.begin(), ite = global->plugins.end();it != ite;++it)
                     if ((*it)->callEvent(Event::ONREADY,arg0,nullptr,nullptr,nullptr) == PLUGIN_HANDLED)
@@ -958,7 +955,7 @@ OPTIONS\n\
                             return;
                     }
                 }
-                if ((!blockCmd) && (prefixed))
+                if ((!blockCmd) && (prefixed) && (ID != global->self.id))
                 {
                     std::string command = fmessage.content;
                     command.erase(0,prefix.size());
@@ -1187,8 +1184,10 @@ OPTIONS\n\
         
         ObjectResponse<User> getSelf()
         {
-            SleepyDiscord::ObjectResponse<SleepyDiscord::User> response = ((BotClass*)(recallGlobal()->discord))->getCurrentUser();
-            return ObjectResponse<User>(std::move(convertResponse(response)),std::move(convertUser(std::move(response.cast()))));
+            Global *global = recallGlobal();
+            SleepyDiscord::ObjectResponse<SleepyDiscord::User> response = ((BotClass*)(global->discord))->getCurrentUser();
+            global->self = std::move(convertUser(std::move(response.cast())));
+            return ObjectResponse<User>(std::move(convertResponse(response)),global->self);
         }
         
         BoolResponse sendTyping(const std::string &channel)
@@ -2118,8 +2117,10 @@ OPTIONS\n\
                                 }
                                 else
                                 {
+                                    std::string name = mod->getModule();
                                     global.plugins.erase(it);
                                     delete mod;
+                                    consoleOut("Module '" + name + "' has been unloaded.");
                                 }
                                 found = true;
                                 break;

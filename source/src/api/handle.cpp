@@ -89,6 +89,7 @@ void Farage::Handle::unload(Farage::Global *global)
         priority = DEFAULT_PRIORITY;
         modulePath.clear();
         moduleName.clear();
+        dlerror(); // clear any errors
     }
 }
 
@@ -108,6 +109,7 @@ bool Farage::Handle::load(const std::string &pluginPath, Farage::Global *global,
         }
         else
         {
+            dlerror();
             modulePath = pluginPath;
             info = reinterpret_cast<Info*>(dlsym(module,"Module"));
             char *error;
@@ -213,6 +215,7 @@ bool Farage::Handle::load(const std::string &pluginPath, Farage::Global *global,
             }
         }
     }
+    dlerror(); // clear any errors
     return loaded;
 }
 
@@ -639,6 +642,8 @@ int Farage::Handle::setLoadPriority(size_t loadPriority, bool write, short shift
             case SHIFT_UP:
             {
                 bool found = false;
+                if (orig == global->plugins.end())
+                    orig--;
                 for (auto ite = global->plugins.begin();orig != ite;--orig)
                 {
                     if ((!found) && (shift == SHIFT_UP))
