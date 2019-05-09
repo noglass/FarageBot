@@ -51,6 +51,7 @@ namespace Farage
             int sendmsg(Farage::BotClass*,Farage::Global&,int,const std::string[]);
             int execute(Farage::BotClass*,Farage::Global&,int,const std::string[]);
             int nick(Farage::BotClass*,Farage::Global&,int,const std::string[]);
+            int leave(Farage::BotClass*,Farage::Global&,int,const std::string[]);
         };
         
         namespace Chat
@@ -204,6 +205,7 @@ namespace Farage
                 add("execute",{&Internal::Console::execute,"Execute a config script."});
                 add("exec",{&Internal::Console::execute,"Execute a config script."});
                 add("nick",{&Internal::Console::nick,"Change my nickname for a server."});
+                add("leave",{&Internal::Console::leave,"Leave a server."});
                 add("version",{&Internal::Chat::version,NOFLAG,"FarageBot version information."});
                 add("setprefix",{&Internal::Chat::setprefix,STATUS,"Change the command prefix."});
                 add("reloadadmins",{&Internal::Chat::reloadadmins,GENERIC,"Reload the admin config file."});
@@ -2295,6 +2297,14 @@ OPTIONS\n\
                 consoleOut("Usage: " + argv[0] + " <server_id> <nickname>");
             else
                 bot->editNickname(argv[1],argv[2]);
+            return PLUGIN_HANDLED;
+        }
+        int leave(Farage::BotClass *bot,Farage::Global &global,int argc,const std::string argv[])
+        {
+            if (argc < 3)
+                consoleOut("Usage: " + argv[0] + " <server_id>");
+            else
+                bot->leaveServer(argv[1]);
             return PLUGIN_HANDLED;
         }
     };
