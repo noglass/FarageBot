@@ -2301,7 +2301,7 @@ OPTIONS\n\
         }
         int leave(Farage::BotClass *bot,Farage::Global &global,int argc,const std::string argv[])
         {
-            if (argc < 3)
+            if (argc < 2)
                 consoleOut("Usage: " + argv[0] + " <server_id>");
             else
                 bot->leaveServer(argv[1]);
