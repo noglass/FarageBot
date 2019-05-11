@@ -14,8 +14,15 @@ int main(int argc, char *argv[])
         return 101;
     }
     #endif
+    int timerTrigger[2];
+    if (pipe(timerTrigger) < 0)
+    {
+        std::cerr<<"Fatal: Error creating timer trigger pipe."<<std::endl;
+        return 1;
+    }
     Farage::Global global(
         FARAGE_ENGINE,
+        timerTrigger[1],
         {
             &Farage::Engine::sendMessage,
             &Farage::Engine::reactToID,
@@ -68,7 +75,7 @@ int main(int argc, char *argv[])
     std::string error = Farage::loadConfig(global,FARAGE_TOKEN);
     if (error.size() > 0)
     {
-        Farage::errorOut(error);
+        std::cerr<<error<<std::endl;
         return 1;
     }
     std::vector<std::string> autoexec(1,"./config/script/autoexec.cfg");
@@ -77,7 +84,7 @@ int main(int argc, char *argv[])
         return clr;
     if (FARAGE_TOKEN.size() < 1)
     {
-        Farage::errorOut(std::string("Error: Discord Bot Token not defined in \"config/farage.conf\".\nYou can also use the '--token' switch to set this at run time. '") + argv[0] + " --help' for help.");
+        std::cerr<<"Error: Discord Bot Token not defined in \"config/farage.conf\".\nYou can also use the '--token' switch to set this at run time. \n'"<<argv[0]<<" --help' for help."<<std::endl;
         return 1;
     }
     Farage::loadAssets(global);
@@ -91,6 +98,7 @@ int main(int argc, char *argv[])
     fd_set cinset;
     timeval timeout;
     std::string cinput;
+    char bufClear;
     while (running)
     {
         for (int i = 0;!online;i++)
@@ -104,8 +112,9 @@ int main(int argc, char *argv[])
         }
         FD_ZERO(&cinset);
         FD_SET(0,&cinset);
+        FD_SET(timerTrigger[0],&cinset);
         timeout = Farage::processTimers(farage,global);
-        if (select(1,&cinset,NULL,NULL,&timeout) > 0)
+        if (select(timerTrigger[0]+1,&cinset,NULL,NULL,&timeout) > 0)
         {
             if (FD_ISSET(0,&cinset))
             {
@@ -117,6 +126,8 @@ int main(int argc, char *argv[])
                 }
                 cinput.clear();
             }
+            else
+                read(timerTrigger[0],&bufClear,1);
         }
     }
     return 0;

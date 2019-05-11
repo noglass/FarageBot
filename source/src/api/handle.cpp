@@ -395,13 +395,8 @@ int Farage::Handle::callEvent(Event event, void *first, void *second, void *thir
 Farage::Timer* Farage::Handle::createTimer(const std::string &name, long interval, Farage::TimerCallback func, void *args, Farage::TimeScale type)
 {
     Farage::Timer *timer = new Farage::Timer(name,interval,func,args,type);
-    /*timer->name = name;
-    timer->interval = interval;
-    timer->last = std::chrono::high_resolution_clock::now();
-    timer->func = func;
-    timer->args = args;
-    timer->type = type;*/
     timers.push_back(timer);
+    recallGlobal()->processTimersEarly();
     return timer;
 }
 

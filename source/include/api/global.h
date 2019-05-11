@@ -7,6 +7,7 @@
 #include "api/admins.h"
 #include <mutex>
 #include <atomic>
+#include <unistd.h>
 
 namespace Farage
 {
@@ -32,7 +33,7 @@ namespace Farage
     class Global
     {
         public:
-            Global(std::string version, Internals cbs) : engineVer(version), callbacks(cbs) {}
+            Global(std::string version, int timerTrigger, Internals cbs) : engineVer(version), triggerFD(timerTrigger), callbacks(cbs) {}
             std::unordered_map<std::string,AdminFlag> admins;
             std::unordered_map<std::string,std::unordered_map<std::string,AdminFlag>> adminRoles;
             std::vector<Handle*> plugins;
@@ -66,11 +67,13 @@ namespace Farage
                 }
                 return safe_ptr<std::vector<std::string>>();
             }
+            inline void processTimersEarly() { write(triggerFD,"\0",1); }
             
         private:
             std::mutex mut;
             std::vector<std::string> buffer;
             std::string engineVer;
+            int triggerFD;
     };
 };
 
