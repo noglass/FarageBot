@@ -7,7 +7,11 @@
 #include "api/admins.h"
 #include <mutex>
 #include <atomic>
+#ifdef _WIN32
+#include <windows.h>
+#else
 #include <unistd.h>
+#endif
 
 namespace Farage
 {
@@ -33,7 +37,11 @@ namespace Farage
     class Global
     {
         public:
+#ifdef _WIN32
+            Global(std::string version, HANDLE timerTrigger, Internals cbs) : engineVer(version), triggerFD(timerTrigger), callbacks(cbs) {}
+#else
             Global(std::string version, int timerTrigger, Internals cbs) : engineVer(version), triggerFD(timerTrigger), callbacks(cbs) {}
+#endif
             std::unordered_map<std::string,AdminFlag> admins;
             std::unordered_map<std::string,std::unordered_map<std::string,AdminFlag>> adminRoles;
             std::vector<Handle*> plugins;
@@ -67,13 +75,21 @@ namespace Farage
                 }
                 return safe_ptr<std::vector<std::string>>();
             }
+#ifdef _WIN32
+            inline void processTimersEarly() { DWORD annoyingWindows; WriteFile(triggerFD,"\0",1,&annoyingWindows,NULL); }
+#else
             inline void processTimersEarly() { write(triggerFD,"\0",1); }
+#endif
             
         private:
             std::mutex mut;
             std::vector<std::string> buffer;
             std::string engineVer;
+#ifdef _WIN32
+            HANDLE triggerFD;
+#else
             int triggerFD;
+#endif
     };
 };
 

@@ -8,7 +8,11 @@
 #include <ratio>
 #include <ctime>
 #include <atomic>
+#ifdef _WIN32
+#include <windows.h>
+#else
 #include <unistd.h>
+#endif
 #include <dirent.h>
 #include <dlfcn.h>
 #include "conf/.farageEngineBuild.h"
@@ -1754,9 +1758,9 @@ OPTIONS\n\
     {
         global.plugins.clear();
         std::vector<std::pair<size_t,std::string>> priority, sorted;
+        std::string dir = "./modules/";
         DIR *wd;
         struct dirent *entry;
-        std::string dir = "./modules/";
         if ((wd = opendir(dir.c_str())))
         {
             std::string file;
@@ -1894,13 +1898,22 @@ OPTIONS\n\
     // handles discord request queue and timers
     // returns the amount of time until either the next discord request can be made, the next timer needs to fire, or the MAX timeout time
     //   whichever one needs to happen first
+#ifdef _WIN32
+    DWORD processTimers(BotClass *bot, Global &global)
+#else
     timeval processTimers(BotClass *bot, Global &global)
+#endif
     {
+        std::cout<<"Processing timers..."<<std::endl;
         global.tryGetBuffer().clear();
         std::chrono::high_resolution_clock::time_point curTime = std::chrono::high_resolution_clock::now();
+#ifdef _WIN32
+        DWORD ret = FARAGE_TIMEOUT*1000;
+#else
         timeval ret;
         ret.tv_sec = FARAGE_TIMEOUT;
         ret.tv_usec = 0;
+#endif
         int n;
         size_t cap;
         for (auto ita = global.plugins.begin(), ite = global.plugins.end();ita != ite;++ita)
@@ -1920,11 +1933,17 @@ OPTIONS\n\
                 }
                 else
                 {
+#ifdef _WIN32
+                    DWORD t = (*it)->remaining<std::chrono::milliseconds>().count();
+                    if (t < ret)
+                        ret = t;
+#else
                     timeval tv;
                     tv.tv_sec = (*it)->remaining<std::chrono::seconds>().count();
                     tv.tv_usec = (*it)->remaining<std::chrono::microseconds>().count() % 1000000;
                     if ((tv.tv_sec < ret.tv_sec) || ((tv.tv_sec == ret.tv_sec) && (tv.tv_usec < ret.tv_usec)))
                         ret = tv;
+#endif
                     ++it;
                     n++;
                 }
