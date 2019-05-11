@@ -1904,7 +1904,6 @@ OPTIONS\n\
     timeval processTimers(BotClass *bot, Global &global)
 #endif
     {
-        std::cout<<"Processing timers..."<<std::endl;
         global.tryGetBuffer().clear();
         std::chrono::high_resolution_clock::time_point curTime = std::chrono::high_resolution_clock::now();
 #ifdef _WIN32
