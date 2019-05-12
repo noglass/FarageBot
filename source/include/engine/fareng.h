@@ -2651,8 +2651,10 @@ OPTIONS\n\
             //Usage: cmdhelp [criteria] [page]
             AdminFlag flags = NOFLAG;
             std::string warning, embed, channel = message.channelID;
-            if (message.type != GUILD_TEXT)
+            bool guildMsg = true;
+            if (std::string(message.serverID).size() < 1)
             {
+                guildMsg = false;
                 if ((flags = global.getAdminFlags(message.author.ID)) != RCON)
                     warning = "**By using this command outside of a guild channel, you will not see any commands that are granted via roles.**";
             }
@@ -2701,7 +2703,7 @@ OPTIONS\n\
             else
                 embed = embed + "No entries found.\" }";
             std::string dm;
-            if (message.type == GUILD_TEXT)
+            if (guildMsg)
                 dm = bot->createDirectMessageChannel(message.author.ID).cast().ID;
             else
                 dm = channel;
