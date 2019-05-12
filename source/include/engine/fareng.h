@@ -1106,16 +1106,19 @@ OPTIONS\n\
     {
         ObjectResponse<Message> sendMessage(const std::string &chan, const std::string &message, const std::string &json, bool tts)
         {
+            void *bot = recallGlobal()->discord;
+            if (bot == nullptr)
+                return ObjectResponse<Message>();
             try
             {
                 if (json.size() < 1)
                 {
-                    /*SleepyDiscord::ObjectResponse<SleepyDiscord::Message> response = */((BotClass*)(recallGlobal()->discord))->sendMessage(chan,message,/*SleepyDiscord::Embed::Flag::INVALID_EMBED*/SleepyDiscord::Embed(),tts);
+                    /*SleepyDiscord::ObjectResponse<SleepyDiscord::Message> response = */((BotClass*)(bot))->sendMessage(chan,message,/*SleepyDiscord::Embed::Flag::INVALID_EMBED*/SleepyDiscord::Embed(),tts);
                     //return ObjectResponse<Message>(std::move(convertResponse(response)),std::move(convertMessage(std::move(response.cast()))));
                 }
                 else
                 {
-                    /*SleepyDiscord::ObjectResponse<SleepyDiscord::Message> response = */((BotClass*)(recallGlobal()->discord))->sendMessage(chan,message,SleepyDiscord::Embed(json),tts);
+                    /*SleepyDiscord::ObjectResponse<SleepyDiscord::Message> response = */((BotClass*)(bot))->sendMessage(chan,message,SleepyDiscord::Embed(json),tts);
                     //return ObjectResponse<Message>(std::move(convertResponse(response)),std::move(convertMessage(std::move(response.cast()))));
                 }
             }
@@ -1169,43 +1172,61 @@ OPTIONS\n\
         
         ObjectResponse<Reaction> reactToID(const std::string &channel, const std::string &messageID, const std::string &emoji)
         {
+            void *bot = recallGlobal()->discord;
+            if (bot == nullptr)
+                return ObjectResponse<Reaction>();
             std::string remoji = emoji;
             if (remoji == "randomNegativeEmoji")
                 remoji = randomNegativeEmoji();
-            /*SleepyDiscord::ObjectResponse<SleepyDiscord::Reaction> response = */((BotClass*)(recallGlobal()->discord))->addReaction(channel,messageID,remoji);
+            /*SleepyDiscord::ObjectResponse<SleepyDiscord::Reaction> response = */((BotClass*)(bot))->addReaction(channel,messageID,remoji);
             //Farage::verboseOut("[reactToID>>" + channel + "," + messageID + "] " + emoji);
             return ObjectResponse<Reaction>();//(std::move(convertResponse(response)),std::move(convertReaction(std::move(response.cast()))));
         }
         
         ObjectResponse<Channel> getChannel(const std::string &ID)
         {
-            SleepyDiscord::ObjectResponse<SleepyDiscord::Channel> response = ((BotClass*)(recallGlobal()->discord))->getChannel(ID);
+            void *bot = recallGlobal()->discord;
+            if (bot == nullptr)
+                return ObjectResponse<Channel>();
+            SleepyDiscord::ObjectResponse<SleepyDiscord::Channel> response = ((BotClass*)(bot))->getChannel(ID);
             return ObjectResponse<Channel>(std::move(convertResponse(response)),std::move(convertChannel(std::move(response.cast()))));
         }
         
         ObjectResponse<Channel> getDirectMessageChannel(const std::string &userID)
         {
-            SleepyDiscord::ObjectResponse<SleepyDiscord::Channel> response = ((BotClass*)(recallGlobal()->discord))->createDirectMessageChannel(userID);
+            void *bot = recallGlobal()->discord;
+            if (bot == nullptr)
+                return ObjectResponse<Channel>();
+            SleepyDiscord::ObjectResponse<SleepyDiscord::Channel> response = ((BotClass*)(bot))->createDirectMessageChannel(userID);
             return ObjectResponse<Channel>(std::move(convertResponse(response)),std::move(convertChannel(std::move(response.cast()))));
         }
         
         ObjectResponse<User> getUser(const std::string &ID)
         {
-            SleepyDiscord::ObjectResponse<SleepyDiscord::User> response = ((BotClass*)(recallGlobal()->discord))->getUser(ID);
+            void *bot = recallGlobal()->discord;
+            if (bot == nullptr)
+                return ObjectResponse<User>();
+            SleepyDiscord::ObjectResponse<SleepyDiscord::User> response = ((BotClass*)(bot))->getUser(ID);
             return ObjectResponse<User>(std::move(convertResponse(response)),std::move(convertUser(std::move(response.cast()))));
         }
         
         ObjectResponse<User> getSelf()
         {
             Global *global = recallGlobal();
-            SleepyDiscord::ObjectResponse<SleepyDiscord::User> response = ((BotClass*)(global->discord))->getCurrentUser();
+            void *bot = global->discord;
+            if (bot == nullptr)
+                return ObjectResponse<User>();
+            SleepyDiscord::ObjectResponse<SleepyDiscord::User> response = ((BotClass*)(bot))->getCurrentUser();
             global->self = std::move(convertUser(std::move(response.cast())));
             return ObjectResponse<User>(std::move(convertResponse(response)),global->self);
         }
         
         BoolResponse sendTyping(const std::string &channel)
         {
-            SleepyDiscord::BoolResponse response = ((BotClass*)(recallGlobal()->discord))->sendTyping(channel);
+            void *bot = recallGlobal()->discord;
+            if (bot == nullptr)
+                return BoolResponse();
+            SleepyDiscord::BoolResponse response = ((BotClass*)(bot))->sendTyping(channel);
             return BoolResponse();//(std::move(convertResponse(std::move(response))),response.cast());
         }
         
@@ -1218,7 +1239,10 @@ OPTIONS\n\
         
         ObjectResponse<Message> sendFile(const std::string &chan, const std::string &filepath, const std::string &message)
         {
-            /*SleepyDiscord::ObjectResponse<SleepyDiscord::Message> response = */((BotClass*)(recallGlobal()->discord))->uploadFile(chan,filepath,message);
+            void *bot = recallGlobal()->discord;
+            if (bot == nullptr)
+                return ObjectResponse<Message>();
+            /*SleepyDiscord::ObjectResponse<SleepyDiscord::Message> response = */((BotClass*)(bot))->uploadFile(chan,filepath,message);
             //verboseOut("[sendFile>>" + chan + "] " + message + " || " + filepath);
             return ObjectResponse<Message>();//(std::move(convertResponse(response)),std::move(convertMessage(std::move(response.cast()))));
         }
@@ -1226,7 +1250,10 @@ OPTIONS\n\
         Server getGuildCache(const std::string &guildID)
         {
             Server guild;
-            auto cache = ((BotClass*)(recallGlobal()->discord))->getServerCache();
+            void *bot = recallGlobal()->discord;
+            if (bot == nullptr)
+                return guild;
+            auto cache = ((BotClass*)(bot))->getServerCache();
             auto server = cache->findServer(guildID);
             if (server != cache->end())
                 guild = convertServer(*server);
@@ -1236,7 +1263,10 @@ OPTIONS\n\
         ServerMember getServerMember(const std::string &guildID, const std::string &userID)
         {
             ServerMember user;
-            auto cache = ((BotClass*)(recallGlobal()->discord))->getServerCache();
+            void *bot = recallGlobal()->discord;
+            if (bot == nullptr)
+                return user;
+            auto cache = ((BotClass*)(bot))->getServerCache();
             auto server = cache->findServer(guildID);
             if (server != cache->end())
             {
@@ -1249,8 +1279,11 @@ OPTIONS\n\
         
         Channel getChannelCache(const std::string &guildID, const std::string &channelID)
         {
+            void *bot = recallGlobal()->discord;
+            if (bot == nullptr)
+                return Channel{};
             //Channel chan;
-            const auto cache = ((BotClass*)(recallGlobal()->discord))->getServerCache();
+            const auto cache = ((BotClass*)(bot))->getServerCache();
             SleepyDiscord::Channel channel;
             auto server = cache->findServer(guildID);
             if (server != cache->end())
@@ -1277,128 +1310,191 @@ OPTIONS\n\
         
         ObjectResponse<Channel> editChannel(const std::string &channelID, const std::string &name, const std::string &topic)
         {
-            /*SleepyDiscord::ObjectResponse<SleepyDiscord::Channel> response = */((BotClass*)(recallGlobal()->discord))->editChannel(channelID,name,topic);
+            void *bot = recallGlobal()->discord;
+            if (bot == nullptr)
+                return ObjectResponse<Channel>();
+            /*SleepyDiscord::ObjectResponse<SleepyDiscord::Channel> response = */((BotClass*)(bot))->editChannel(channelID,name,topic);
             return ObjectResponse<Channel>();//(std::move(convertResponse(response)),std::move(convertChannel(std::move(response.cast()))));
         }
         
         ObjectResponse<Channel> editChannelName(const std::string &channelID, const std::string &name)
         {
-            /*SleepyDiscord::ObjectResponse<SleepyDiscord::Channel> response = */((BotClass*)(recallGlobal()->discord))->editChannelName(channelID,name);
+            void *bot = recallGlobal()->discord;
+            if (bot == nullptr)
+                return ObjectResponse<Channel>();
+            /*SleepyDiscord::ObjectResponse<SleepyDiscord::Channel> response = */((BotClass*)(bot))->editChannelName(channelID,name);
             return ObjectResponse<Channel>();//(std::move(convertResponse(response)),std::move(convertChannel(std::move(response.cast()))));
         }
         
         ObjectResponse<Channel> editChannelTopic(const std::string &channelID, const std::string &topic)
         {
-            /*SleepyDiscord::ObjectResponse<SleepyDiscord::Channel> response = */((BotClass*)(recallGlobal()->discord))->editChannelTopic(channelID,topic);
+            void *bot = recallGlobal()->discord;
+            if (bot == nullptr)
+                return ObjectResponse<Channel>();
+            /*SleepyDiscord::ObjectResponse<SleepyDiscord::Channel> response = */((BotClass*)(bot))->editChannelTopic(channelID,topic);
             return ObjectResponse<Channel>();//(std::move(convertResponse(response)),std::move(convertChannel(std::move(response.cast()))));
         }
         
         ObjectResponse<Channel> deleteChannel(const std::string &channelID)
         {
-            /*SleepyDiscord::ObjectResponse<SleepyDiscord::Channel> response = */((BotClass*)(recallGlobal()->discord))->deleteChannel(channelID);
+            void *bot = recallGlobal()->discord;
+            if (bot == nullptr)
+                return ObjectResponse<Channel>();
+            /*SleepyDiscord::ObjectResponse<SleepyDiscord::Channel> response = */((BotClass*)(bot))->deleteChannel(channelID);
             return ObjectResponse<Channel>();//(std::move(convertResponse(response)),std::move(convertChannel(std::move(response.cast()))));
         }
         
         ArrayResponse<Message> getMessages(const std::string &channelID, GetMessagesKey when, const std::string &messageID, uint8_t limit)
         {
-            SleepyDiscord::ArrayResponse<SleepyDiscord::Message> response = ((BotClass*)(recallGlobal()->discord))->getMessages(channelID,(SleepyDiscord::BaseDiscordClient::GetMessagesKey)when,messageID,limit);
+            void *bot = recallGlobal()->discord;
+            if (bot == nullptr)
+                return ArrayResponse<Message>();
+            SleepyDiscord::ArrayResponse<SleepyDiscord::Message> response = ((BotClass*)(bot))->getMessages(channelID,(SleepyDiscord::BaseDiscordClient::GetMessagesKey)when,messageID,limit);
             return convertArrayResponse<SleepyDiscord::Message,Message>(std::move(response));
         }
         
         ObjectResponse<Message> getMessage(const std::string &channelID, const std::string &messageID)
         {
-            SleepyDiscord::ObjectResponse<SleepyDiscord::Message> response = ((BotClass*)(recallGlobal()->discord))->getMessage(channelID,messageID);
+            void *bot = recallGlobal()->discord;
+            if (bot == nullptr)
+                return ObjectResponse<Message>();
+            SleepyDiscord::ObjectResponse<SleepyDiscord::Message> response = ((BotClass*)(bot))->getMessage(channelID,messageID);
             return ObjectResponse<Message>(std::move(convertResponse(response)),std::move(convertMessage(std::move(response.cast()))));
         }
         
         BoolResponse removeReaction(const std::string &channelID, const std::string &messageID, const std::string &emoji, const std::string &userID)
         {
-            SleepyDiscord::BoolResponse response = ((BotClass*)(recallGlobal()->discord))->removeReaction(channelID,messageID,emoji,userID);
+            void *bot = recallGlobal()->discord;
+            if (bot == nullptr)
+                return BoolResponse();
+            SleepyDiscord::BoolResponse response = ((BotClass*)(bot))->removeReaction(channelID,messageID,emoji,userID);
             return BoolResponse(std::move(convertResponse(response)),std::move(response.cast()));
         }
         
         ArrayResponse<Reaction> getReactions(const std::string &channelID, const std::string &messageID, const std::string &emoji)
         {
-            SleepyDiscord::ArrayResponse<SleepyDiscord::Reaction> response = ((BotClass*)(recallGlobal()->discord))->getReactions(channelID,messageID,emoji);
+            void *bot = recallGlobal()->discord;
+            if (bot == nullptr)
+                return ArrayResponse<Reaction>();
+            SleepyDiscord::ArrayResponse<SleepyDiscord::Reaction> response = ((BotClass*)(bot))->getReactions(channelID,messageID,emoji);
             return convertArrayResponse<SleepyDiscord::Reaction,Reaction>(std::move(response));
         }
         
         Response removeAllReactions(const std::string &channelID, const std::string &messageID)
         {
-            SleepyDiscord::StandardResponse response = ((BotClass*)(recallGlobal()->discord))->removeAllReactions(channelID,messageID);
+            void *bot = recallGlobal()->discord;
+            if (bot == nullptr)
+                return Response();
+            SleepyDiscord::StandardResponse response = ((BotClass*)(bot))->removeAllReactions(channelID,messageID);
             return convertResponse(std::move(response));
         }
         
         ObjectResponse<Message> editMessage(const std::string &channelID, const std::string &messageID, const std::string &newMessage)
         {
-            /*SleepyDiscord::ObjectResponse<SleepyDiscord::Message> response = */((BotClass*)(recallGlobal()->discord))->editMessage(channelID,messageID,newMessage);
+            void *bot = recallGlobal()->discord;
+            if (bot == nullptr)
+                return ObjectResponse<Message>();
+            /*SleepyDiscord::ObjectResponse<SleepyDiscord::Message> response = */((BotClass*)(bot))->editMessage(channelID,messageID,newMessage);
             return ObjectResponse<Message>();//(std::move(convertResponse(response)),std::move(convertMessage(std::move(response.cast()))));
         }
         
         BoolResponse deleteMessage(const std::string &channelID, const std::string &messageID)
         {
-            SleepyDiscord::BoolResponse response = ((BotClass*)(recallGlobal()->discord))->deleteMessage(channelID,messageID);
+            void *bot = recallGlobal()->discord;
+            if (bot == nullptr)
+                return BoolResponse();
+            SleepyDiscord::BoolResponse response = ((BotClass*)(bot))->deleteMessage(channelID,messageID);
             return BoolResponse(std::move(convertResponse(response)),std::move(response.cast()));
         }
         
         BoolResponse bulkDeleteMessages(const std::string &channelID, const std::vector<std::string> &messageIDs)
         {
+            void *bot = recallGlobal()->discord;
+            if (bot == nullptr)
+                return BoolResponse();
             std::vector<SleepyDiscord::Snowflake<SleepyDiscord::Message>> ids(messageIDs.begin(),messageIDs.end());
-            SleepyDiscord::BoolResponse response = ((BotClass*)(recallGlobal()->discord))->bulkDeleteMessages(channelID,ids);
+            SleepyDiscord::BoolResponse response = ((BotClass*)(bot))->bulkDeleteMessages(channelID,ids);
             return BoolResponse(std::move(convertResponse(response)),std::move(response.cast()));
         }
         
         BoolResponse editChannelPermissions(const std::string &channelID, const std::string &overwriteID, int allow, int deny, const std::string &type)
         {
-            SleepyDiscord::BoolResponse response = ((BotClass*)(recallGlobal()->discord))->editChannelPermissions(channelID,overwriteID,allow,deny,type);
+            void *bot = recallGlobal()->discord;
+            if (bot == nullptr)
+                return BoolResponse();
+            SleepyDiscord::BoolResponse response = ((BotClass*)(bot))->editChannelPermissions(channelID,overwriteID,allow,deny,type);
             return BoolResponse(std::move(convertResponse(response)),std::move(response.cast()));
         }
         
         ArrayResponse<Invite> getChannelInvites(const std::string &channelID)
         {
-            SleepyDiscord::ArrayResponse<SleepyDiscord::Invite> response = ((BotClass*)(recallGlobal()->discord))->getChannelInvites(channelID);
+            void *bot = recallGlobal()->discord;
+            if (bot == nullptr)
+                return ArrayResponse<Invite>();
+            SleepyDiscord::ArrayResponse<SleepyDiscord::Invite> response = ((BotClass*)(bot))->getChannelInvites(channelID);
             return convertArrayResponse<SleepyDiscord::Invite,Invite>(std::move(response));
         }
         
         ObjectResponse<Invite> createChannelInvite(const std::string &channelID, const uint64_t maxAge, const uint64_t maxUses, const bool temporary, const bool unique)
         {
-            SleepyDiscord::ObjectResponse<SleepyDiscord::Invite> response = ((BotClass*)(recallGlobal()->discord))->createChannelInvite(channelID,maxAge,maxUses,temporary,unique);
+            void *bot = recallGlobal()->discord;
+            if (bot == nullptr)
+                return ObjectResponse<Invite>();
+            SleepyDiscord::ObjectResponse<SleepyDiscord::Invite> response = ((BotClass*)(bot))->createChannelInvite(channelID,maxAge,maxUses,temporary,unique);
             return ObjectResponse<Invite>(std::move(convertResponse(response)),std::move(convertInvite(std::move(response.cast()))));
         }
         
         BoolResponse removeChannelPermission(const std::string &channelID,const std::string &ID)
         {
-            SleepyDiscord::BoolResponse response = ((BotClass*)(recallGlobal()->discord))->removeChannelPermission(channelID,ID);
+            void *bot = recallGlobal()->discord;
+            if (bot == nullptr)
+                return BoolResponse();
+            SleepyDiscord::BoolResponse response = ((BotClass*)(bot))->removeChannelPermission(channelID,ID);
             return BoolResponse(std::move(convertResponse(response)),std::move(response.cast()));
         }
         
         ArrayResponse<Message> getPinnedMessages(const std::string &channelID)
         {
-            SleepyDiscord::ArrayResponse<SleepyDiscord::Message> response = ((BotClass*)(recallGlobal()->discord))->getPinnedMessages(channelID);
+            void *bot = recallGlobal()->discord;
+            if (bot == nullptr)
+                return ArrayResponse<Message>();
+            SleepyDiscord::ArrayResponse<SleepyDiscord::Message> response = ((BotClass*)(bot))->getPinnedMessages(channelID);
             return convertArrayResponse<SleepyDiscord::Message,Message>(std::move(response));
         }
         
         BoolResponse pinMessage(const std::string &channelID, const std::string &messageID)
         {
-            SleepyDiscord::BoolResponse response = ((BotClass*)(recallGlobal()->discord))->pinMessage(channelID,messageID);
+            void *bot = recallGlobal()->discord;
+            if (bot == nullptr)
+                return BoolResponse();
+            SleepyDiscord::BoolResponse response = ((BotClass*)(bot))->pinMessage(channelID,messageID);
             return BoolResponse(std::move(convertResponse(response)),std::move(response.cast()));
         }
         
         BoolResponse unpinMessage(const std::string &channelID, const std::string &messageID)
         {
-            SleepyDiscord::BoolResponse response = ((BotClass*)(recallGlobal()->discord))->unpinMessage(channelID,messageID);
+            void *bot = recallGlobal()->discord;
+            if (bot == nullptr)
+                return BoolResponse();
+            SleepyDiscord::BoolResponse response = ((BotClass*)(bot))->unpinMessage(channelID,messageID);
             return BoolResponse(std::move(convertResponse(response)),std::move(response.cast()));
         }
         
         Response addRecipient(const std::string &channelID, const std::string &userID)
         {
-            SleepyDiscord::StandardResponse response = ((BotClass*)(recallGlobal()->discord))->addRecipient(channelID,userID);
+            void *bot = recallGlobal()->discord;
+            if (bot == nullptr)
+                return Response();
+            SleepyDiscord::StandardResponse response = ((BotClass*)(bot))->addRecipient(channelID,userID);
             return convertResponse(std::move(response));
         }
         
         Response removeRecipient(const std::string &channelID, const std::string &userID)
         {
-            SleepyDiscord::StandardResponse response = ((BotClass*)(recallGlobal()->discord))->removeRecipient(channelID,userID);
+            void *bot = recallGlobal()->discord;
+            if (bot == nullptr)
+                return Response();
+            SleepyDiscord::StandardResponse response = ((BotClass*)(bot))->removeRecipient(channelID,userID);
             return convertResponse(std::move(response));
         }
         
@@ -1428,48 +1524,72 @@ OPTIONS\n\
         //
         ObjectResponse<Server> getServer(const std::string &serverID)
         {
-            SleepyDiscord::ObjectResponse<SleepyDiscord::Server> response = ((BotClass*)(recallGlobal()->discord))->getServer(serverID);
+            void *bot = recallGlobal()->discord;
+            if (bot == nullptr)
+                return ObjectResponse<Server>();
+            SleepyDiscord::ObjectResponse<SleepyDiscord::Server> response = ((BotClass*)(bot))->getServer(serverID);
             return ObjectResponse<Server>(std::move(convertResponse(response)),std::move(convertServer(std::move(response.cast()))));
         }
         
         ObjectResponse<Server> deleteServer(const std::string &serverID)
         {
-            SleepyDiscord::ObjectResponse<SleepyDiscord::Server> response = ((BotClass*)(recallGlobal()->discord))->deleteServer(serverID);
+            void *bot = recallGlobal()->discord;
+            if (bot == nullptr)
+                return ObjectResponse<Server>();
+            SleepyDiscord::ObjectResponse<SleepyDiscord::Server> response = ((BotClass*)(bot))->deleteServer(serverID);
             return ObjectResponse<Server>(std::move(convertResponse(response)),std::move(convertServer(std::move(response.cast()))));
         }
         
         ArrayResponse<Channel> getServerChannels(const std::string &serverID)
         {
-            SleepyDiscord::ArrayResponse<SleepyDiscord::Channel> response = ((BotClass*)(recallGlobal()->discord))->getServer(serverID);
+            void *bot = recallGlobal()->discord;
+            if (bot == nullptr)
+                return ArrayResponse<Channel>();
+            SleepyDiscord::ArrayResponse<SleepyDiscord::Channel> response = ((BotClass*)(bot))->getServer(serverID);
             return convertArrayResponse<SleepyDiscord::Channel,Channel>(std::move(response));
         }
         
         ObjectResponse<Channel> createTextChannel(const std::string &serverID, const std::string &name)
         {
-            SleepyDiscord::ObjectResponse<SleepyDiscord::Channel> response = ((BotClass*)(recallGlobal()->discord))->createTextChannel(serverID,name);
+            void *bot = recallGlobal()->discord;
+            if (bot == nullptr)
+                return ObjectResponse<Channel>();
+            SleepyDiscord::ObjectResponse<SleepyDiscord::Channel> response = ((BotClass*)(bot))->createTextChannel(serverID,name);
             return ObjectResponse<Channel>(std::move(convertResponse(response)),std::move(convertChannel(std::move(response.cast()))));
         }
         
         ArrayResponse<Channel> editChannelPositions(const std::string &serverID, std::vector<std::pair<std::string,uint64_t>> positions)
         {
-            SleepyDiscord::ArrayResponse<SleepyDiscord::Channel> response = ((BotClass*)(recallGlobal()->discord))->editChannelPositions(serverID,positions);
+            void *bot = recallGlobal()->discord;
+            if (bot == nullptr)
+                return ArrayResponse<Channel>();
+            SleepyDiscord::ArrayResponse<SleepyDiscord::Channel> response = ((BotClass*)(bot))->editChannelPositions(serverID,positions);
             return convertArrayResponse<SleepyDiscord::Channel,Channel>(std::move(response));
         }
         
         ObjectResponse<ServerMember> getMember(const std::string &serverID, const std::string &userID)
         {
-            SleepyDiscord::ObjectResponse<SleepyDiscord::ServerMember> response = ((BotClass*)(recallGlobal()->discord))->getMember(serverID,userID);
+            void *bot = recallGlobal()->discord;
+            if (bot == nullptr)
+                return ObjectResponse<ServerMember>();
+            SleepyDiscord::ObjectResponse<SleepyDiscord::ServerMember> response = ((BotClass*)(bot))->getMember(serverID,userID);
             return ObjectResponse<ServerMember>(std::move(convertResponse(response)),std::move(convertServerMember(std::move(response.cast()))));
         }
         
         ArrayResponse<ServerMember> listMembers(const std::string &serverID, uint16_t limit, const std::string &after)
         {
-            SleepyDiscord::ArrayResponse<SleepyDiscord::ServerMember> response = ((BotClass*)(recallGlobal()->discord))->listMembers(serverID,limit,after);
+            void *bot = recallGlobal()->discord;
+            if (bot == nullptr)
+                return ArrayResponse<ServerMember>();
+            SleepyDiscord::ArrayResponse<SleepyDiscord::ServerMember> response = ((BotClass*)(bot))->listMembers(serverID,limit,after);
             return convertArrayResponse<SleepyDiscord::ServerMember,ServerMember>(std::move(response));
         }
         
         ObjectResponse<ServerMember> addMember(const std::string &serverID, const std::string &userID, const std::string &accessToken, const std::string &nick, std::vector<Role> roles, bool mute, bool deaf)
         {
+            void *bot = recallGlobal()->discord;
+            if (bot == nullptr)
+                return ObjectResponse<ServerMember>();
             std::vector<SleepyDiscord::Role> sleepyRoles;
             sleepyRoles.reserve(roles.size());
             for (auto it = roles.begin(), ite = roles.end();it != ite;++it)
@@ -1485,85 +1605,121 @@ OPTIONS\n\
                 role.mentionable = std::move(it->mentionable);
                 sleepyRoles.push_back(std::move(role));
             }
-            SleepyDiscord::ObjectResponse<SleepyDiscord::ServerMember> response = ((BotClass*)(recallGlobal()->discord))->addMember(serverID,userID,accessToken,nick,std::move(sleepyRoles),mute,deaf);
+            SleepyDiscord::ObjectResponse<SleepyDiscord::ServerMember> response = ((BotClass*)(bot))->addMember(serverID,userID,accessToken,nick,std::move(sleepyRoles),mute,deaf);
             return ObjectResponse<ServerMember>(std::move(convertResponse(response)),std::move(convertServerMember(std::move(response.cast()))));
         }
         
         BoolResponse editMember(const std::string &serverID, const std::string &userID, const std::string &nickname, std::vector<std::string> roles, int8_t mute, int8_t deaf, const std::string &channelID)
         {
+            void *bot = recallGlobal()->discord;
+            if (bot == nullptr)
+                return BoolResponse();
             std::vector<SleepyDiscord::Snowflake<SleepyDiscord::Role>> sleepyRoles;
             sleepyRoles.reserve(roles.size());
             for (auto it = roles.begin(), ite = roles.end();it != ite;++it)
                 sleepyRoles.emplace_back(*it);
-            SleepyDiscord::BoolResponse response = ((BotClass*)(recallGlobal()->discord))->editMember(serverID,userID,nickname,std::move(sleepyRoles),mute,deaf,channelID);
+            SleepyDiscord::BoolResponse response = ((BotClass*)(bot))->editMember(serverID,userID,nickname,std::move(sleepyRoles),mute,deaf,channelID);
             return BoolResponse(std::move(convertResponse(response)),std::move(response.cast()));
         }
         
         BoolResponse muteServerMember(const std::string &serverID, const std::string &userID, bool mute)
         {
-            SleepyDiscord::BoolResponse response = ((BotClass*)(recallGlobal()->discord))->muteServerMember(serverID,userID,mute);
+            void *bot = recallGlobal()->discord;
+            if (bot == nullptr)
+                return BoolResponse();
+            SleepyDiscord::BoolResponse response = ((BotClass*)(bot))->muteServerMember(serverID,userID,mute);
             return BoolResponse(std::move(convertResponse(response)),std::move(response.cast()));
         }
         
         BoolResponse editNickname(const std::string &serverID, const std::string &newNickname)
         {
+            void *bot = recallGlobal()->discord;
+            if (bot == nullptr)
+                return BoolResponse();
             if (newNickname.size() < 1)
                 return BoolResponse();
-            SleepyDiscord::BoolResponse response = ((BotClass*)(recallGlobal()->discord))->editNickname(serverID,newNickname);
+            SleepyDiscord::BoolResponse response = ((BotClass*)(bot))->editNickname(serverID,newNickname);
             return BoolResponse(std::move(convertResponse(response)),std::move(response.cast()));
         }
         
         BoolResponse addRole(const std::string &serverID, const std::string &userID, const std::string &roleID)
         {
-            SleepyDiscord::BoolResponse response = ((BotClass*)(recallGlobal()->discord))->addRole(serverID,userID,roleID);
+            void *bot = recallGlobal()->discord;
+            if (bot == nullptr)
+                return BoolResponse();
+            SleepyDiscord::BoolResponse response = ((BotClass*)(bot))->addRole(serverID,userID,roleID);
             return BoolResponse(std::move(convertResponse(response)),std::move(response.cast()));
         }
         
         BoolResponse removeRole(const std::string &serverID, const std::string &userID, const std::string &roleID)
         {
-            SleepyDiscord::BoolResponse response = ((BotClass*)(recallGlobal()->discord))->removeRole(serverID,userID,roleID);
+            void *bot = recallGlobal()->discord;
+            if (bot == nullptr)
+                return BoolResponse();
+            SleepyDiscord::BoolResponse response = ((BotClass*)(bot))->removeRole(serverID,userID,roleID);
             return BoolResponse(std::move(convertResponse(response)),std::move(response.cast()));
         }
         
         BoolResponse kickMember(const std::string &serverID, const std::string &userID)
         {
-            SleepyDiscord::BoolResponse response = ((BotClass*)(recallGlobal()->discord))->kickMember(serverID,userID);
+            void *bot = recallGlobal()->discord;
+            if (bot == nullptr)
+                return BoolResponse();
+            SleepyDiscord::BoolResponse response = ((BotClass*)(bot))->kickMember(serverID,userID);
             return BoolResponse(std::move(convertResponse(response)),std::move(response.cast()));
         }
         
         ArrayResponse<User> getBans(const std::string &serverID)
         {
-            SleepyDiscord::ArrayResponse<SleepyDiscord::User> response = ((BotClass*)(recallGlobal()->discord))->getBans(serverID);
+            void *bot = recallGlobal()->discord;
+            if (bot == nullptr)
+                return ArrayResponse<User>();
+            SleepyDiscord::ArrayResponse<SleepyDiscord::User> response = ((BotClass*)(bot))->getBans(serverID);
             return convertArrayResponse<SleepyDiscord::User,User>(std::move(response));
         }
         
         BoolResponse banMember(const std::string &serverID, const std::string &userID)
         {
-            SleepyDiscord::BoolResponse response = ((BotClass*)(recallGlobal()->discord))->banMember(serverID,userID);
+            void *bot = recallGlobal()->discord;
+            if (bot == nullptr)
+                return BoolResponse();
+            SleepyDiscord::BoolResponse response = ((BotClass*)(bot))->banMember(serverID,userID);
             return BoolResponse(std::move(convertResponse(response)),std::move(response.cast()));
         }
         
         BoolResponse unbanMember(const std::string &serverID, const std::string &userID)
         {
-            SleepyDiscord::BoolResponse response = ((BotClass*)(recallGlobal()->discord))->unbanMember(serverID,userID);
+            void *bot = recallGlobal()->discord;
+            if (bot == nullptr)
+                return BoolResponse();
+            SleepyDiscord::BoolResponse response = ((BotClass*)(bot))->unbanMember(serverID,userID);
             return BoolResponse(std::move(convertResponse(response)),std::move(response.cast()));
         }
         
         ArrayResponse<Role> getRoles(const std::string &serverID)
         {
-            SleepyDiscord::ArrayResponse<SleepyDiscord::Role> response = ((BotClass*)(recallGlobal()->discord))->getRoles(serverID);
+            void *bot = recallGlobal()->discord;
+            if (bot == nullptr)
+                return ArrayResponse<Role>();
+            SleepyDiscord::ArrayResponse<SleepyDiscord::Role> response = ((BotClass*)(bot))->getRoles(serverID);
             return convertArrayResponse<SleepyDiscord::Role,Role>(std::move(response));
         }
         
         ObjectResponse<Role> createRole(const std::string &serverID, const std::string &name, Permission permissions, unsigned int color, bool hoist, bool mentionable)
         {
-            SleepyDiscord::ObjectResponse<SleepyDiscord::Role> response = ((BotClass*)(recallGlobal()->discord))->createRole(serverID,name,SleepyDiscord::Permission(permissions),color,hoist,mentionable);
+            void *bot = recallGlobal()->discord;
+            if (bot == nullptr)
+                return ObjectResponse<Role>();
+            SleepyDiscord::ObjectResponse<SleepyDiscord::Role> response = ((BotClass*)(bot))->createRole(serverID,name,SleepyDiscord::Permission(permissions),color,hoist,mentionable);
             return ObjectResponse<Role>(std::move(convertResponse(response)),std::move(convertRole(std::move(response.cast()))));
         }
         
         ArrayResponse<Role> editRolePosition(const std::string &serverID, const std::vector<std::pair<std::string,uint64_t>> &positions)
         {
-            SleepyDiscord::ArrayResponse<SleepyDiscord::Role> response = ((BotClass*)(recallGlobal()->discord))->editRolePosition(serverID,positions);
+            void *bot = recallGlobal()->discord;
+            if (bot == nullptr)
+                return ArrayResponse<Role>();
+            SleepyDiscord::ArrayResponse<SleepyDiscord::Role> response = ((BotClass*)(bot))->editRolePosition(serverID,positions);
             return convertArrayResponse<SleepyDiscord::Role,Role>(std::move(response));
         }
         
@@ -1571,25 +1727,37 @@ OPTIONS\n\
         
         BoolResponse deleteRole(const std::string &serverID, const std::string &roleID)
         {
-            SleepyDiscord::BoolResponse response = ((BotClass*)(recallGlobal()->discord))->deleteRole(serverID,roleID);
+            void *bot = recallGlobal()->discord;
+            if (bot == nullptr)
+                return BoolResponse();
+            SleepyDiscord::BoolResponse response = ((BotClass*)(bot))->deleteRole(serverID,roleID);
             return BoolResponse(std::move(convertResponse(response)),std::move(response.cast()));
         }
         
         Response pruneMembers(const std::string &serverID, const unsigned int numOfDays)
         {
-            SleepyDiscord::StandardResponse response = ((BotClass*)(recallGlobal()->discord))->pruneMembers(serverID,numOfDays);
+            void *bot = recallGlobal()->discord;
+            if (bot == nullptr)
+                return Response();
+            SleepyDiscord::StandardResponse response = ((BotClass*)(bot))->pruneMembers(serverID,numOfDays);
             return convertResponse(std::move(response));
         }
         
         ArrayResponse<VoiceRegion> getVoiceRegions()
         {
-            SleepyDiscord::ArrayResponse<SleepyDiscord::VoiceRegion> response = ((BotClass*)(recallGlobal()->discord))->getVoiceRegions();
+            void *bot = recallGlobal()->discord;
+            if (bot == nullptr)
+                return ArrayResponse<VoiceRegion>();
+            SleepyDiscord::ArrayResponse<SleepyDiscord::VoiceRegion> response = ((BotClass*)(bot))->getVoiceRegions();
             return convertArrayResponse<SleepyDiscord::VoiceRegion,VoiceRegion>(std::move(response));
         }
         
         ArrayResponse<Invite> getServerInvites(const std::string &serverID)
         {
-            SleepyDiscord::ArrayResponse<SleepyDiscord::Invite> response = ((BotClass*)(recallGlobal()->discord))->getServerInvites(serverID);
+            void *bot = recallGlobal()->discord;
+            if (bot == nullptr)
+                return ArrayResponse<Invite>();
+            SleepyDiscord::ArrayResponse<SleepyDiscord::Invite> response = ((BotClass*)(bot))->getServerInvites(serverID);
             return convertArrayResponse<SleepyDiscord::Invite,Invite>(std::move(response));
         }
         
@@ -1597,37 +1765,55 @@ OPTIONS\n\
         
         BoolResponse createIntegration(const std::string &serverID, const std::string &type, const std::string &integrationID)
         {
-            SleepyDiscord::BoolResponse response = ((BotClass*)(recallGlobal()->discord))->createIntegration(serverID,type,integrationID);
+            void *bot = recallGlobal()->discord;
+            if (bot == nullptr)
+                return BoolResponse();
+            SleepyDiscord::BoolResponse response = ((BotClass*)(bot))->createIntegration(serverID,type,integrationID);
             return BoolResponse(std::move(convertResponse(response)),std::move(response.cast()));
         }
         
         BoolResponse editIntegration(const std::string &serverID, const std::string &integrationID, int expireBehavior, int expireGracePeriod, bool enableEmoticons)
         {
-            SleepyDiscord::BoolResponse response = ((BotClass*)(recallGlobal()->discord))->editIntergration(serverID,integrationID,expireBehavior,expireGracePeriod,enableEmoticons);
+            void *bot = recallGlobal()->discord;
+            if (bot == nullptr)
+                return BoolResponse();
+            SleepyDiscord::BoolResponse response = ((BotClass*)(bot))->editIntergration(serverID,integrationID,expireBehavior,expireGracePeriod,enableEmoticons);
             return BoolResponse(std::move(convertResponse(response)),std::move(response.cast()));
         }
         
         BoolResponse deleteIntegration(const std::string &serverID, const std::string &integrationID)
         {
-            SleepyDiscord::BoolResponse response = ((BotClass*)(recallGlobal()->discord))->deleteIntegration(serverID,integrationID);
+            void *bot = recallGlobal()->discord;
+            if (bot == nullptr)
+                return BoolResponse();
+            SleepyDiscord::BoolResponse response = ((BotClass*)(bot))->deleteIntegration(serverID,integrationID);
             return BoolResponse(std::move(convertResponse(response)),std::move(response.cast()));
         }
         
         BoolResponse syncIntegration(const std::string &serverID, const std::string &integrationID)
         {
-            SleepyDiscord::BoolResponse response = ((BotClass*)(recallGlobal()->discord))->syncIntegration(serverID,integrationID);
+            void *bot = recallGlobal()->discord;
+            if (bot == nullptr)
+                return BoolResponse();
+            SleepyDiscord::BoolResponse response = ((BotClass*)(bot))->syncIntegration(serverID,integrationID);
             return BoolResponse(std::move(convertResponse(response)),std::move(response.cast()));
         }
         
         ObjectResponse<ServerEmbed> getServerEmbed(const std::string &serverID)
         {
-            SleepyDiscord::ObjectResponse<SleepyDiscord::ServerEmbed> response = ((BotClass*)(recallGlobal()->discord))->getServerEmbed(serverID);
+            void *bot = recallGlobal()->discord;
+            if (bot == nullptr)
+                return ObjectResponse<ServerEmbed>();
+            SleepyDiscord::ObjectResponse<SleepyDiscord::ServerEmbed> response = ((BotClass*)(bot))->getServerEmbed(serverID);
             return ObjectResponse<ServerEmbed>(std::move(convertResponse(response)),std::move(convertServerEmbed(std::move(response.cast()))));
         }
         
         bool isReady()
         {
-            return ((BotClass*)(recallGlobal()->discord))->isReady();
+            void *bot = recallGlobal()->discord;
+            if (bot == nullptr)
+                return false;
+            return ((BotClass*)(bot))->isReady();
         }
     };
     

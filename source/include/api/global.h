@@ -53,7 +53,7 @@ namespace Farage
             std::vector<std::string> ignoredChannels;
             std::vector<std::string> ignoredUsers;
             User self;
-            void *discord;
+            void *discord = nullptr;
             inline std::string engineVersion() { return engineVer; }
             AdminFlag getAdminFlags(const std::string &userID);
             AdminFlag getAdminFlags(const std::string &guildID, const std::string &userID);
