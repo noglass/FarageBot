@@ -7,7 +7,7 @@
 #include "shared/libini.h"
 using namespace Farage;
 
-#define VERSION "0.7.4"
+#define VERSION "0.7.5"
 
 extern "C" Info Module
 {
@@ -43,8 +43,10 @@ struct rpsGame
 
 namespace RPS
 {
-    int rounds = 2;
-    std::string mod = "Ultimate";
+    //int rounds = 2;
+    //std::string mod = "Ultimate";
+    GlobVar *rounds = nullptr;
+    GlobVar *mod = nullptr;
     std::string myBotID;
     std::vector<rpsGame> rpsGames;
     INIObject rpsConf;
@@ -140,8 +142,8 @@ int chatRPSStatus(Handle &handle, int argc, const std::string argv[], const Mess
 int chatRPSReset(Handle &handle, int argc, const std::string argv[], const Message &message);
 int chatRPSReload(Handle &handle, int argc, const std::string argv[], const Message &message);
 int rpsExpireCheck(Handle &handle, Timer *timer, void *args);
-int modChange(Handle&,GlobVar*,const std::string&,const std::string&);
-int roundsChange(Handle&,GlobVar*,const std::string&,const std::string&);
+int modChange(Handle&,GlobVar*,const std::string&,const std::string&,const std::string&);
+//int roundsChange(Handle&,GlobVar*,const std::string&,const std::string&,const std::string&);
 
 bool isPlaying(const std::string &ID);
 bool isChannelActive(const std::string &ID);
@@ -194,8 +196,8 @@ extern "C" int onModuleStart(Handle &handle, Global *global)
 {
     recallGlobal(global);
     handle.createGlobVar("rps_version",VERSION,"Rock Paper Scissors Version",GVAR_CONSTANT);
-    handle.createGlobVar("rps_def_rounds",std::to_string(RPS::rounds),"Rock Paper Scissors default rounds",0,true,1.0)->hookChange(&roundsChange);
-    handle.createGlobVar("rps_def_mod",RPS::mod,"Rock Paper Scissors default mod",0)->hookChange(&modChange);
+    RPS::rounds = handle.createGlobVar("rps_def_rounds","2","Rock Paper Scissors default rounds",GVAR_DUPLICATE,true,1.0);//->hookChange(&roundsChange);
+    (RPS::mod = handle.createGlobVar("rps_def_mod","Ulimate","Rock Paper Scissors default mod",GVAR_DUPLICATE))->hookChange(&modChange);
     handle.regChatCmd("rps",&chatRPS,NOFLAG,"Challenge someone to a game of Rock Paper Scissors!");
     handle.regChatCmd("rpsresult",chatRPSResult,NOFLAG,"View the result of two options on a RPS game.");
     handle.regChatCmd("rpsstatus",chatRPSStatus,NOFLAG,"Check the game status of the current channel.");
@@ -212,27 +214,29 @@ extern "C" int onModuleStart(Handle &handle, Global *global)
     return 0;
 }
 
-int modChange(Handle &handle, GlobVar *gvar, const std::string &newvalue, const std::string &oldvalue)
+int modChange(Handle &handle, GlobVar *gvar, const std::string &newvalue, const std::string &oldvalue, const std::string &guild)
 {
-    RPS::mod = newvalue;
-    if (!rpsIsValidMod(RPS::mod))
+    //RPS::mod = newvalue;
+    std::string mod = newvalue;
+    if (!rpsIsValidMod(mod))
     {
-        RPS::mod = oldvalue;
-        if (rpsIsValidMod(RPS::mod))
-            gvar->setString(oldvalue);
+        //RPS::mod = oldvalue;
+        mod = oldvalue;
+        if (rpsIsValidMod(mod))
+            gvar->setString(mod,guild);
         else
-            gvar->reset();
+            gvar->reset(guild);
     }
     else
-        gvar->setString(RPS::mod);
+        gvar->setString(mod,guild);
     return PLUGIN_HANDLED;
 }
 
-int roundsChange(Handle &handle, GlobVar *gvar, const std::string &newvalue, const std::string &oldvalue)
+/*int roundsChange(Handle &handle, GlobVar *gvar, const std::string &newvalue, const std::string &oldvalue, const std::string &guild)
 {
-    RPS::rounds = gvar->getAsInt();
+    RPS::rounds = gvar->getAsInt(guild);
     return PLUGIN_HANDLED;
-}
+}*/
 
 extern "C" int onReady(Handle &handle, Event event, void *data, void *nil, void *foo, void *bar)
 {
@@ -319,21 +323,23 @@ int chatRPS(Handle &handle, int argc, const std::string argv[], const Message &m
     //global->callbacks.getChannel(message.channel_id,channel);
     std::string prefix = global->prefix(message.guild_id);
     argc--;
+    std::string mod = RPS::mod->getAsString(message.guild_id);
+    int rounds = RPS::rounds->getAsInt(message.guild_id);
     if ((argc < 1) || (argc > 3))
     {
         //consoleOut("displaying usage...");
         //global->callbacks.messageReply(message,"Usage: `" + prefix + "rps [mod] <@opponent> [multi] [rounds]` to challenge someone\nUsage: `" + prefix + "rps mods` to view loaded mods\nUsage: `" + prefix + "rps accept` to accept a challenge\nUsage: `" + prefix + "rps join` to join a group match\nUsage: `" + prefix + "rps start` to start a group match");
         //std::string out = "{\"color\": " + RPS::colors.Info() + ", \"title\": \"Rock Paper Scissors Usage\",  \"fields\": [{ \"name\": \"`" + prefix + "rps [mod=" + RPS::mod + "] <@opponent|multi|multibot> [rounds=" + std::to_string(RPS::rounds) + "]`\", \"value\": \"To challenge someone to a game.\" }, { \"name\": \"Currently loaded mods:\", \"value\": \"" + rpsModInfo() + "\" }, { \"name\": \"Accepting and joining a game:\", \"value\": \"Use `" + prefix + "rps accept` if you were challenged directly.\\nUse `" + prefix + "rps join` to join a group match.\\nIf you initiated the group match, you can start the game early with `" + prefix + "rps start`\" }]}";
         //consoleOut(out);
-        sendEmbed(message.channel_id,"{\"color\": " + RPS::colors.Info() + ", \"title\": \"Rock Paper Scissors Usage\",  \"fields\": [{ \"name\": \"`" + prefix + "rps [mod=" + RPS::mod + "] <@opponent|multi|multibot> [rounds=" + std::to_string(RPS::rounds) + "]`\", \"value\": \"To challenge someone to a game.\" }, { \"name\": \"Currently loaded mods:\", \"value\": \"" + rpsModInfo() + "\" }, { \"name\": \"Accepting and joining a game:\", \"value\": \"Use `" + prefix + "rps accept` if you were challenged directly.\\nUse `" + prefix + "rps join` to join a group match.\\nIf you initiated the group match, you can start the game early with `" + prefix + "rps start`\" }]}");
+        sendEmbed(message.channel_id,"{\"color\": " + RPS::colors.Info() + ", \"title\": \"Rock Paper Scissors Usage\",  \"fields\": [{ \"name\": \"`" + prefix + "rps [mod=" + mod + "] <@opponent|multi|multibot> [rounds=" + std::to_string(rounds) + "]`\", \"value\": \"To challenge someone to a game.\" }, { \"name\": \"Currently loaded mods:\", \"value\": \"" + rpsModInfo() + "\" }, { \"name\": \"Accepting and joining a game:\", \"value\": \"Use `" + prefix + "rps accept` if you were challenged directly.\\nUse `" + prefix + "rps join` to join a group match.\\nIf you initiated the group match, you can start the game early with `" + prefix + "rps start`\" }]}");
         return PLUGIN_HANDLED;
     }
     std::string authorNick = getServerMember(message.guild_id,message.author.id).nick;
     if (authorNick.size() < 1)
         authorNick = message.author.username;
     std::string arg1 = nospace(argv[1]);
-    std::string mod = RPS::mod;
-    int rounds = RPS::rounds;
+    //std::string mod = RPS::mod;
+    //int rounds = RPS::rounds;
     if (argc == 3)
     {
         std::string r = nospace(argv[3]);
@@ -604,14 +610,15 @@ int chatRPSResult(Handle &handle, int argc, const std::string argv[], const Mess
     //Channel channel = getChannelCache(message.guild_id,message.channel_id);
     std::string prefix = global->prefix(message.guild_id);
     argc--;
+    std::string mod = RPS::mod->getAsString(message.guild_id);
     if ((argc < 2) || (argc > 3))
     {
         //messageReply(message,"Usage: `" + prefix + "rpsresult [mod] <choiceA> <choiceB>`");
-        sendEmbed(message.channel_id,"{\"color\": " + RPS::colors.info + ", \"title\": \"Usage: `" + prefix + "rpsresult [mod=" + RPS::mod + "] <choice1> <choice2>`\", \"description\": \"View the outcome of `choice1` vs `choice2` from `mod`!\"}");
+        sendEmbed(message.channel_id,"{\"color\": " + RPS::colors.info + ", \"title\": \"Usage: `" + prefix + "rpsresult [mod=" + mod + "] <choice1> <choice2>`\", \"description\": \"View the outcome of `choice1` vs `choice2` from `mod`!\"}");
         return 1;
     }
     std::string arg1 = nospace(argv[1]);
-    std::string mod, choices[2];
+    std::string choices[2];
     if ((argc == 3) && (rpsIsValidMod(arg1)))
     {
         choices[0] = nospace(argv[2]);
@@ -622,7 +629,7 @@ int chatRPSResult(Handle &handle, int argc, const std::string argv[], const Mess
     {
         choices[0] = arg1;
         choices[1] = nospace(argv[2]);
-        mod = RPS::mod;
+        //mod = mod;
     }
     else
     {

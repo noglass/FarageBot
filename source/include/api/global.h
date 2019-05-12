@@ -58,6 +58,7 @@ namespace Farage
             AdminFlag getAdminFlags(const std::string &userID);
             AdminFlag getAdminFlags(const std::string &guildID, const std::string &userID);
             AdminFlag getAdminRoleFlags(const std::string &guildID, const std::string &roleID);
+            Ready lastReady;
             Internals callbacks;
             safe_ptr<std::vector<std::string>> getBuffer()
             {

@@ -1,1 +1,1 @@
-#define FARAGE_API_VERSION      "Revision: 58 build-0.088"
+#define FARAGE_API_VERSION      "Revision: 59 build-0.089"

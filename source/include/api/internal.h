@@ -51,6 +51,7 @@ namespace Farage
         BoolResponse (*editMember)(const std::string&, const std::string&, const std::string&, std::vector<std::string>, int8_t, int8_t, const std::string&);
         BoolResponse (*muteServerMember)(const std::string&, const std::string&, bool);
         BoolResponse (*editNickname)(const std::string&, const std::string&);
+        bool (*isReady)();
     };
 };
 

@@ -76,7 +76,8 @@ int main(int argc, char *argv[])
             &Farage::Engine::addMember,
             &Farage::Engine::editMember,
             &Farage::Engine::muteServerMember,
-            &Farage::Engine::editNickname
+            &Farage::Engine::editNickname,
+            &Farage::Engine::isReady
         }
     );
     Farage::recallGlobal(&global);

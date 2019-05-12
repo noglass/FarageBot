@@ -201,6 +201,10 @@ namespace Farage
     {
         return recallGlobal()->callbacks.editNickname(serverID,newNickname);
     }
+    inline bool isReady()
+    {
+        return recallGlobal()->callbacks.isReady();
+    }
 };
 
 #endif

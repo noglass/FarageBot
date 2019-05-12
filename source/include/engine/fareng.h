@@ -77,6 +77,7 @@ namespace Farage
             int setroleflags(Farage::BotClass*,Farage::Global&,int,const std::string[],const SleepyDiscord::Message&);
             int execute(Farage::BotClass*,Farage::Global&,int,const std::string[],const SleepyDiscord::Message&);
             int cmdhelp(Farage::BotClass*,Farage::Global&,int,const std::string[],const SleepyDiscord::Message&);
+            int gvarhelp(Farage::BotClass*,Farage::Global&,int,const std::string[],const SleepyDiscord::Message&);
         };
     };
     
@@ -216,7 +217,7 @@ namespace Farage
                 add("version",{&Internal::Chat::version,NOFLAG,"FarageBot version information."});
                 add("setprefix",{&Internal::Chat::setprefix,STATUS,"Change the command prefix."});
                 add("reloadadmins",{&Internal::Chat::reloadadmins,GENERIC,"Reload the admin config file."});
-                add("gvar",{&Internal::Chat::gvar,GENERIC,"Change or view GlobVar values."});
+                add("gvar",{&Internal::Chat::gvar,GLOBVAR,"Change or view GlobVar values."});
                 add("rcon",{&Internal::Chat::rcon,RCON,"Execute commands directly through the console."});
                 add("ignoreuser",{&Internal::Chat::ignoreuser,GAG,"Ignore or unignore a user."});
                 add("ignorechannel",{&Internal::Chat::ignorechannel,GAG,"Ignore or unignore a channel."});
@@ -224,6 +225,7 @@ namespace Farage
                 add("execute",{&Internal::Chat::execute,CONFIG,"Execute a config script."});
                 add("exec",{&Internal::Chat::execute,CONFIG,"Execute a config script."});
                 add("cmdhelp",{&Internal::Chat::cmdhelp,NOFLAG,"View information about commands."});
+                add("gvarhelp",{&Internal::Chat::gvarhelp,GLOBVAR,"View information about gvars."});
             };
             void add(const std::string &cmd, const Internal::Console::Command &command)
             {
@@ -467,6 +469,7 @@ OPTIONS\n\
                 Farage::Global *global = Farage::recallGlobal();
                 createServerCache();
                 Ready fready = convertReady(std::move(readyData));
+                global->lastReady = fready;
                 global->self = fready.user;
                 void *arg0 = (void*)(&fready);
                 for (auto it = global->plugins.begin(), ite = global->plugins.end();it != ite;++it)
@@ -1621,6 +1624,11 @@ OPTIONS\n\
             SleepyDiscord::ObjectResponse<SleepyDiscord::ServerEmbed> response = ((BotClass*)(recallGlobal()->discord))->getServerEmbed(serverID);
             return ObjectResponse<ServerEmbed>(std::move(convertResponse(response)),std::move(convertServerEmbed(std::move(response.cast()))));
         }
+        
+        bool isReady()
+        {
+            return ((BotClass*)(recallGlobal()->discord))->isReady();
+        }
     };
     
     int loadAdminRoles(Global &global)
@@ -2186,13 +2194,16 @@ OPTIONS\n\
         int gvar(Farage::BotClass *bot,Farage::Global &global,int argc,const std::string argv[])
         {
             if (argc < 2)
-                consoleOut("Usage: " + argv[0] + " <gvar> [value]");
+                consoleOut("Usage: " + argv[0] + " <gvar> [value] [guild_id]");
             else
             {
                 bool change;
                 GlobVar *gvar = nullptr;
                 if (argc > 2)
                     change = true;
+                std::string guild;
+                if (argc > 3)
+                    guild = argv[3];
                 for (auto it = global.globVars.begin(), ite = global.globVars.end();it != ite;++it)
                 {
                     if ((*it)->getName() == argv[1])
@@ -2206,8 +2217,8 @@ OPTIONS\n\
                 else
                 {
                     if (change)
-                        gvar->setString(argv[2]);
-                    consoleOut(" \"" + argv[1] + "\" == \"" + gvar->getAsString() + "\"");
+                        gvar->setString(argv[2],guild);
+                    consoleOut(" \"" + argv[1] + "\" == \"" + gvar->getAsString(guild) + "\"");
                 }
             }
             return PLUGIN_HANDLED;
@@ -2484,8 +2495,8 @@ OPTIONS\n\
                 else
                 {
                     if (change)
-                        gvar->setString(argv[2]);
-                    bot->sendMessage(message.channelID," \"" + argv[1] + "\" == `" + gvar->getAsString() + "`");
+                        gvar->setString(argv[2],message.serverID);
+                    bot->sendMessage(message.channelID," \"" + argv[1] + "\" == `" + gvar->getAsString(message.serverID) + "`");
                 }
             }
             return PLUGIN_HANDLED;
@@ -2720,6 +2731,67 @@ OPTIONS\n\
             }
             return PLUGIN_HANDLED;
         }
+        int gvarhelp(Farage::BotClass *bot,Farage::Global &global,int argc,const std::string argv[],const SleepyDiscord::Message &message)
+        {
+            //Usage: cmdhelp [criteria] [page]
+            std::string embed, channel = message.channelID;
+            bool guildMsg = true;
+            if (std::string(message.serverID).size() < 1)
+                guildMsg = false;
+            std::string criteriastr = ".*";
+            rens::regex criteria;
+            std::vector<std::string> output;
+            size_t page = 1;
+            if (argc > 1)
+            {
+                if (argc > 2)
+                {
+                    criteriastr = argv[1];
+                    if (std::isdigit(argv[2].front()))
+                        page = std::stoi(argv[2]);
+                }
+                else if (std::isdigit(argv[1].front()))
+                    page = std::stoi(argv[1]);
+                else
+                    criteriastr = argv[1];
+            }
+            criteria = criteriastr;
+            for (auto it = global.globVars.begin(), ite = global.globVars.end();it != ite;++it)
+                if ((rens::regex_search((*it)->getName(),criteria)) || (rens::regex_search((*it)->getDesc(),criteria)))
+                    output.push_back("`" + (*it)->getName() + "` - " + (*it)->getDesc() + " = `" + (*it)->getAsString(message.serverID) + "` Default: `" + (*it)->getDefault() + '`');
+            size_t pages = output.size()/10;
+            if ((output.size()%10) > 0)
+                pages++;
+            if (page > pages)
+                page = pages;
+            embed = "{ \"color\": 14343648, \"title\": \"Displaying Page " + std::to_string(page) + '/' + std::to_string(pages) + " matching: `" + criteriastr + "`\", \"description\": \"";
+            if (page > 0)
+            {
+                int i = (page-1)*10, j = i+10;
+                for (auto it = output.begin()+i, ite = output.end();((i < j) && (it != ite));++it,++i)
+                    embed = embed + *it + "\\n";
+                embed = embed.substr(0,embed.size()-2) + "\" }";
+            }
+            else
+                embed = embed + "No entries found.\" }";
+            std::string dm;
+            if (guildMsg)
+                dm = bot->createDirectMessageChannel(message.author.ID).cast().ID;
+            else
+                dm = channel;
+            try
+            {
+                bot->sendMessage(dm,"",SleepyDiscord::Embed(embed));
+                if (dm != channel)
+                    bot->addReaction(message.channelID,message.ID,"%E2%9C%85");
+            }
+            catch (SleepyDiscord::ErrorCode err)
+            {
+                if (err == SleepyDiscord::ErrorCode::FORBIDDEN)
+                    bot->sendMessage(message.channelID,"Please enable DM's with me.");
+            }
+            return PLUGIN_HANDLED;
+        }
     };
     
     int InternalObject::call(BotClass *bot, Global &global, AdminFlag flags, int argc, const std::string argv[], const SleepyDiscord::Message &message)
@@ -2736,81 +2808,6 @@ OPTIONS\n\
         return ret;
     }
 };
-
-/*extern "C"
-{
-    void messageChannel(const Farage::Channel &chan, const std::string &message)
-    {
-        Farage::Global *global = Farage::recallGlobal();
-        Farage::ObjectBuffer buff;
-        buff.type = FARAGE_BUFFER_MESSAGE;
-        buff.channel = chan;
-        buff.message = message;
-        global->buffer.push_back(buff);
-    }
-    
-    void messageChannelID(const std::string &chan, const std::string &message)
-    {
-        Farage::Global *global = Farage::recallGlobal();
-        Farage::ObjectBuffer buff;
-        buff.type = FARAGE_BUFFER_MESSAGE;
-        buff.channel.id = chan;
-        buff.message = message;
-        global->buffer.push_back(buff);
-    }
-    
-    void messageReply(const Farage::Message &msg, const std::string &message)
-    {
-        Farage::Global *global = Farage::recallGlobal();
-        Farage::ObjectBuffer buff;
-        buff.type = FARAGE_BUFFER_MESSAGE;
-        buff.channel.id = msg.channel_id;
-        buff.message = message;
-        global->buffer.push_back(buff);
-    }
-    
-    void reaction(const Farage::Message &message, const std::string &emoji)
-    {
-        Farage::Global *global = Farage::recallGlobal();
-        Farage::ObjectBuffer buff;
-        buff.type = FARAGE_BUFFER_REACTION;
-        buff.channel.id = message.channel_id;
-        buff.message = message.id;
-        buff.emoji = emoji;
-        global->buffer.push_back(buff);
-    }
-    
-    void reactToID(const std::string &channel, const std::string &messageID, const std::string &emoji)
-    {
-        Farage::Global *global = Farage::recallGlobal();
-        Farage::ObjectBuffer buff;
-        buff.type = FARAGE_BUFFER_REACTION;
-        buff.channel.id = channel;
-        buff.message = messageID;
-        buff.emoji = emoji;
-        global->buffer.push_back(buff);
-    }
-    
-    void getChannel(const std::string &ID, Farage::Channel &channel)
-    {
-        channel = Farage::convertChannel(((Farage::BotClass*)(Farage::recallGlobal()->discord))->getChannel((SleepyDiscord::Snowflake<SleepyDiscord::Channel>)ID));
-    }
-    
-    void getDirectMessageChannelID(const std::string &userID, std::string &ID)
-    {
-        ID = ((Farage::BotClass*)(Farage::recallGlobal()->discord))->createDirectMessageChannel(userID).cast().ID;
-    }
-    
-    void getUser(const std::string &ID, Farage::User &user)
-    {
-        user = Farage::convertUser(((Farage::BotClass*)(Farage::recallGlobal()->discord))->getUser((SleepyDiscord::Snowflake<SleepyDiscord::User>)ID));
-    }
-    
-    void getSelf(Farage::User &user)
-    {
-        user = Farage::convertUser(((Farage::BotClass*)(Farage::recallGlobal()->discord))->getCurrentUser());
-    }
-}*/
 
 #endif
 

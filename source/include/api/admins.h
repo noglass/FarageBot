@@ -29,10 +29,10 @@ namespace Farage
         CUSTOM4               =   262144,    // s
         CUSTOM5               =   524288,    // t
         CUSTOM6               =  1048576,    // u
-        CUSTOM7               =  2097152,    // v
-        CUSTOM8               =  4194304,    // w
-        CUSTOM9               =  8388608,    // x
-        CUSTOM10              = 16777216,    // y
+        GLOBVAR               =  2097152,    // v
+        CUSTOM7               =  4194304,    // w
+        CUSTOM8               =  8388608,    // x
+        CUSTOM9               = 16777216,    // y
         ROOT                  = 33554431     // z
     };
     inline AdminFlag operator~(AdminFlag a)
