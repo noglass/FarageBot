@@ -110,17 +110,35 @@ void Farage::GlobVar::setString(const std::string &val, const std::string &guild
         if (((hasMin) && (fstr < min)) || ((hasMax) && (fstr > max)))
             return;
         std::string old, cur;
-        if ((flags & GVAR_DUPLICATE) && (guild.size() > 0))
+        bool changed = false;
+        if (flags & GVAR_DUPLICATE)
         {
-            old = guildValues[guild];
-            cur = guildValues[guild] = val;
+            if (guild.size() < 1)
+            {
+                for (auto it = guildValues.begin(), ite = guildValues.end();it != ite;++it)
+                {
+                    old = it->second;
+                    cur = it->second = val;
+                    if (old != cur)
+                        changed = true;
+                }
+            }
+            else
+            {
+                old = guildValues[guild];
+                cur = guildValues[guild] = val;
+                if (old != cur)
+                    changed = true;
+            }
         }
         else
         {
             old = value;
             cur = value = val;
+            if (old != cur)
+                changed = true;
         }
-        if (old != cur)
+        if (changed)
             for (auto it = hooks.begin(), end = hooks.end();it != end;++it)
                 if ((*it)(*handle,this,val,old,guild) == PLUGIN_HANDLED)
                     break;
