@@ -2329,7 +2329,7 @@ OPTIONS\n\
         }
         int help(Farage::BotClass *bot,Farage::Global &global,int argc,const std::string argv[])
         {
-            if ((argc < 2) || ((argv[1] != "chat") && (argv[1] != "console")))
+            if ((argc < 2) || ((argv[1] != "chat") && (argv[1] != "console") && (argv[1] != "gvar")))
                 consoleOut("FarageBot Command and GlobVar Help System\n View information on registered commands and gvars.\n Usage: " + argv[0] + " <chat|console|gvar> [criteria] [page]\n criteria is a regex pattern that must match anywhere within an entry's name or description.");
             else
             {
