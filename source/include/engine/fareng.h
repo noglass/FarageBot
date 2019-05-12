@@ -2330,12 +2330,14 @@ OPTIONS\n\
         int help(Farage::BotClass *bot,Farage::Global &global,int argc,const std::string argv[])
         {
             if ((argc < 2) || ((argv[1] != "chat") && (argv[1] != "console")))
-                consoleOut("FarageBot Command Help System\n View information on registered chat or console commands.\n Usage: " + argv[0] + " <chat|console> [criteria] [page]\n criteria is a regex pattern that must match anywhere within a command's name or description.");
+                consoleOut("FarageBot Command and GlobVar Help System\n View information on registered commands and gvars.\n Usage: " + argv[0] + " <chat|console|gvar> [criteria] [page]\n criteria is a regex pattern that must match anywhere within an entry's name or description.");
             else
             {
-                bool console = false;
+                short type = 0;
                 if (argv[1] == "console")
-                    console = true;
+                    type = 1;
+                if (argv[1] == "gvar")
+                    type = 2;
                 std::string criteriastr = ".*";
                 rens::regex criteria;
                 std::vector<std::string> output;
@@ -2354,26 +2356,47 @@ OPTIONS\n\
                         criteriastr = argv[2];
                 }
                 criteria = criteriastr;
-                if (console)
+                switch (type)
                 {
-                    for (auto it = internals.consoleBegin(), ite = internals.consoleEnd();it != ite;++it)
-                       if ((rens::regex_search(it->first,criteria)) || (rens::regex_search(it->second.desc,criteria)))
-                           output.push_back(" [" + std::to_string(cmd++) + "] " + it->first + " - " + it->second.desc);
+                    case 0:
+                    {
+                        for (auto it = internals.chatBegin(), ite = internals.chatEnd();it != ite;++it)
+                            if ((rens::regex_search(it->first,criteria)) || (rens::regex_search(it->second.desc,criteria)))
+                                output.push_back(" [" + std::to_string(cmd++) + "] " + it->first + " - " + it->second.desc);
+                        break;
+                    }
+                    case 1:
+                    {
+                        for (auto it = internals.consoleBegin(), ite = internals.consoleEnd();it != ite;++it)
+                            if ((rens::regex_search(it->first,criteria)) || (rens::regex_search(it->second.desc,criteria)))
+                                output.push_back(" [" + std::to_string(cmd++) + "] " + it->first + " - " + it->second.desc);
+                   }
                 }
-                else for (auto it = internals.chatBegin(), ite = internals.chatEnd();it != ite;++it)
-                    if ((rens::regex_search(it->first,criteria)) || (rens::regex_search(it->second.desc,criteria)))
-                        output.push_back(" [" + std::to_string(cmd++) + "] " + it->first + " - " + it->second.desc);
                 for (auto it = global.plugins.begin(), ite = global.plugins.end();it != ite;++it)
                 {
-                    if (console)
+                    switch (type)
                     {
-                        for (auto c = (*it)->consoleCommands.begin(), ce = (*it)->consoleCommands.end();c != ce;++c)
-                            if ((rens::regex_search(c->cmd,criteria)) || (rens::regex_search(c->desc,criteria)))
-                                output.push_back(" [" + std::to_string(cmd++) + "] " + c->cmd + " - " + c->desc);
+                        case 0:
+                        {
+                            for (auto c = (*it)->chatCommands.begin(), ce = (*it)->chatCommands.end();c != ce;++c)
+                                if ((rens::regex_search(c->cmd,criteria)) || (rens::regex_search(c->desc,criteria)))
+                                    output.push_back(" [" + std::to_string(cmd++) + "] " + c->cmd + " - " + c->desc);
+                            break;
+                        }
+                        case 1:
+                        {
+                            for (auto c = (*it)->consoleCommands.begin(), ce = (*it)->consoleCommands.end();c != ce;++c)
+                                if ((rens::regex_search(c->cmd,criteria)) || (rens::regex_search(c->desc,criteria)))
+                                    output.push_back(" [" + std::to_string(cmd++) + "] " + c->cmd + " - " + c->desc);
+                            break;
+                        }
+                        case 2:
+                        {
+                            for (auto c = (*it)->globVars.begin(), ce = (*it)->globVars.end();c != ce;++c)
+                                if ((rens::regex_search((*c)->getName(),criteria)) || (rens::regex_search((*c)->getDesc(),criteria)))
+                                    output.push_back(" [" + std::to_string(cmd++) + "] " + (*c)->getName() + " - " + (*c)->getDesc() + " = " + (*c)->getAsString() + " Default: " + (*c)->getDefault());
+                        }
                     }
-                    else for (auto c = (*it)->chatCommands.begin(), ce = (*it)->chatCommands.end();c != ce;++c)
-                        if ((rens::regex_search(c->cmd,criteria)) || (rens::regex_search(c->desc,criteria)))
-                            output.push_back(" [" + std::to_string(cmd++) + "] " + c->cmd + " - " + c->desc);
                 }
                 size_t pages = output.size()/10;
                 if ((output.size()%10) > 0)
@@ -2382,13 +2405,29 @@ OPTIONS\n\
                     page = pages;
                 if (page > 0)
                 {
-                    consoleOut("Displaying Page " + std::to_string(page) + '/' + std::to_string(pages) + " matching: '" + criteriastr + '\'');
+                    std::string typestr;
+                    switch (type)
+                    {
+                        case 0:
+                        {
+                            typestr = "Chat Commands";
+                            break;
+                        }
+                        case 1:
+                        {
+                            typestr = "Console Commands";
+                            break;
+                        }
+                        case 2:
+                            typestr = "GlobVars";
+                    }
+                    consoleOut("Displaying " + typestr + " Page " + std::to_string(page) + '/' + std::to_string(pages) + " matching: '" + criteriastr + '\'');
                     int i = (page-1)*10, j = i+10;
                     for (auto it = output.begin()+i, ite = output.end();((i < j) && (it != ite));++it,++i)
                         consoleOut(*it);
                 }
                 else
-                    consoleOut("No commands found matching: '" + criteriastr + '\'');
+                    consoleOut("No entries found matching: '" + criteriastr + '\'');
             }
             return PLUGIN_HANDLED;
         }
