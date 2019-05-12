@@ -76,6 +76,7 @@ namespace Farage
             int ignorechannel(Farage::BotClass*,Farage::Global&,int,const std::string[],const SleepyDiscord::Message&);
             int setroleflags(Farage::BotClass*,Farage::Global&,int,const std::string[],const SleepyDiscord::Message&);
             int execute(Farage::BotClass*,Farage::Global&,int,const std::string[],const SleepyDiscord::Message&);
+            int cmdhelp(Farage::BotClass*,Farage::Global&,int,const std::string[],const SleepyDiscord::Message&);
         };
     };
     
@@ -211,7 +212,7 @@ namespace Farage
                 add("exec",{&Internal::Console::execute,"Execute a config script."});
                 add("nick",{&Internal::Console::nick,"Change my nickname for a server."});
                 add("leave",{&Internal::Console::leave,"Leave a server."});
-                add("help",{&Internal::Console::help,"View information about registered commands."});
+                add("help",{&Internal::Console::help,"View information about registered commands and gvars."});
                 add("version",{&Internal::Chat::version,NOFLAG,"FarageBot version information."});
                 add("setprefix",{&Internal::Chat::setprefix,STATUS,"Change the command prefix."});
                 add("reloadadmins",{&Internal::Chat::reloadadmins,GENERIC,"Reload the admin config file."});
@@ -222,6 +223,7 @@ namespace Farage
                 add("setroleflags",{&Internal::Chat::setroleflags,ROLE,"Set the admin flags for a role."});
                 add("execute",{&Internal::Chat::execute,CONFIG,"Execute a config script."});
                 add("exec",{&Internal::Chat::execute,CONFIG,"Execute a config script."});
+                add("cmdhelp",{&Internal::Chat::cmdhelp,NOFLAG,"View information about commands."});
             };
             void add(const std::string &cmd, const Internal::Console::Command &command)
             {
@@ -2421,7 +2423,7 @@ OPTIONS\n\
                         case 2:
                             typestr = "GlobVars";
                     }
-                    consoleOut("Displaying " + typestr + " Page " + std::to_string(page) + '/' + std::to_string(pages) + " matching: '" + criteriastr + '\'');
+                    consoleOut("Displaying Page " + std::to_string(page) + '/' + std::to_string(pages) + " of " + typestr + " matching: '" + criteriastr + '\'');
                     int i = (page-1)*10, j = i+10;
                     for (auto it = output.begin()+i, ite = output.end();((i < j) && (it != ite));++it,++i)
                         consoleOut(*it);
@@ -2641,6 +2643,78 @@ OPTIONS\n\
                     bot->sendMessage(message.channelID,"Cannot open file `" + file + '`');
                 else
                     bot->addReaction(message.channelID,message.ID,"%E2%9C%85");
+            }
+            return PLUGIN_HANDLED;
+        }
+        int cmdhelp(Farage::BotClass *bot,Farage::Global &global,int argc,const std::string argv[],const SleepyDiscord::Message &message)
+        {
+            //Usage: cmdhelp [criteria] [page]
+            AdminFlag flags = NOFLAG;
+            std::string warning, embed, channel = message.channelID;
+            if (message.type != GUILD_TEXT)
+            {
+                warning = "**By using this command outside of a guild channel, you will not see any commands that are granted via roles.**";
+                flags = global.getAdminFlags(message.serverID,message.author.ID);
+            }
+            else
+                flags = global.getAdminFlags(message.author.ID);
+            std::string criteriastr = ".*";
+            rens::regex criteria;
+            std::vector<std::string> output;
+            size_t page = 1, cmd = 0;
+            if (argc > 1)
+            {
+                if (argc > 2)
+                {
+                    criteriastr = argv[1];
+                    if (std::isdigit(argv[2].front()))
+                        page = std::stoi(argv[2]);
+                }
+                else if (std::isdigit(argv[1].front()))
+                    page = std::stoi(argv[1]);
+                else
+                    criteriastr = argv[1];
+            }
+            criteria = criteriastr;
+            for (auto it = internals.chatBegin(), ite = internals.chatEnd();it != ite;++it)
+                if (((flags & it->second.flag) == it->second.flag) && ((rens::regex_search(it->first,criteria)) || (rens::regex_search(it->second.desc,criteria))))
+                    output.push_back("[" + std::to_string(cmd++) + "] `" + it->first + "` - " + it->second.desc);
+            for (auto it = global.plugins.begin(), ite = global.plugins.end();it != ite;++it)
+                for (auto c = (*it)->chatCommands.begin(), ce = (*it)->chatCommands.end();c != ce;++c)
+                    if (((flags & c->flag) == c->flag) && ((rens::regex_search(c->cmd,criteria)) || (rens::regex_search(c->desc,criteria))))
+                        output.push_back("[" + std::to_string(cmd++) + "] `" + c->cmd + "` - " + c->desc);
+            size_t pages = output.size()/10;
+            if ((output.size()%10) > 0)
+                pages++;
+            if (page > pages)
+                page = pages;
+            embed = "{ \"color\": 14343648, \"title\": \"Displaying Page " + std::to_string(page) + '/' + std::to_string(pages) + " matching: `" + criteriastr + "`\", \"description\": \"";
+            if (warning.size() > 0)
+                embed = embed + warning + "\\n";
+            if (page > 0)
+            {
+                int i = (page-1)*10, j = i+10;
+                for (auto it = output.begin()+i, ite = output.end();((i < j) && (it != ite));++it,++i)
+                    embed = embed + *it + "\\n";
+                embed = embed.substr(0,embed.size()-2) + "\" }";
+            }
+            else
+                embed = embed + "No entries found.\" }";
+            std::string dm;
+            if (message.type != GUILD_TEXT)
+                dm = bot->createDirectMessageChannel(message.author.ID).cast().ID;
+            else
+                dm = channel;
+            try
+            {
+                bot->sendMessage(dm,"",SleepyDiscord::Embed(embed));
+                if (dm != channel)
+                    bot->addReaction(message.channelID,message.ID,"%E2%9C%85");
+            }
+            catch (SleepyDiscord::ErrorCode err)
+            {
+                if (err == SleepyDiscord::ErrorCode::FORBIDDEN)
+                    bot->sendMessage(message.channelID,"Please enable DM's with me.");
             }
             return PLUGIN_HANDLED;
         }

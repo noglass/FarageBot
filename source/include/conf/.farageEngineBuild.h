@@ -1,1 +1,1 @@
-#define FARAGE_ENGINE           "0.105"
+#define FARAGE_ENGINE           "0.106"
