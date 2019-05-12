@@ -2653,15 +2653,15 @@ OPTIONS\n\
             std::string warning, embed, channel = message.channelID;
             if (message.type != GUILD_TEXT)
             {
-                warning = "**By using this command outside of a guild channel, you will not see any commands that are granted via roles.**";
-                flags = global.getAdminFlags(message.serverID,message.author.ID);
+                if ((flags = global.getAdminFlags(message.author.ID)) != RCON)
+                    warning = "**By using this command outside of a guild channel, you will not see any commands that are granted via roles.**";
             }
             else
-                flags = global.getAdminFlags(message.author.ID);
+                flags = global.getAdminFlags(message.serverID,message.author.ID);
             std::string criteriastr = ".*";
             rens::regex criteria;
             std::vector<std::string> output;
-            size_t page = 1, cmd = 0;
+            size_t page = 1;
             if (argc > 1)
             {
                 if (argc > 2)
@@ -2678,11 +2678,11 @@ OPTIONS\n\
             criteria = criteriastr;
             for (auto it = internals.chatBegin(), ite = internals.chatEnd();it != ite;++it)
                 if (((flags & it->second.flag) == it->second.flag) && ((rens::regex_search(it->first,criteria)) || (rens::regex_search(it->second.desc,criteria))))
-                    output.push_back("[" + std::to_string(cmd++) + "] `" + it->first + "` - " + it->second.desc);
+                    output.push_back("`" + it->first + "` - " + it->second.desc);
             for (auto it = global.plugins.begin(), ite = global.plugins.end();it != ite;++it)
                 for (auto c = (*it)->chatCommands.begin(), ce = (*it)->chatCommands.end();c != ce;++c)
                     if (((flags & c->flag) == c->flag) && ((rens::regex_search(c->cmd,criteria)) || (rens::regex_search(c->desc,criteria))))
-                        output.push_back("[" + std::to_string(cmd++) + "] `" + c->cmd + "` - " + c->desc);
+                        output.push_back("`" + c->cmd + "` - " + c->desc);
             size_t pages = output.size()/10;
             if ((output.size()%10) > 0)
                 pages++;
@@ -2701,7 +2701,7 @@ OPTIONS\n\
             else
                 embed = embed + "No entries found.\" }";
             std::string dm;
-            if (message.type != GUILD_TEXT)
+            if (message.type == GUILD_TEXT)
                 dm = bot->createDirectMessageChannel(message.author.ID).cast().ID;
             else
                 dm = channel;
