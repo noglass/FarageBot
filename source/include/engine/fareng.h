@@ -1900,6 +1900,19 @@ OPTIONS\n\
         return 1;
     }
     
+    int savePrefixes(Global &global)
+    {
+        std::ofstream file ("config/prefixes.conf",std::ofstream::out|std::ofstream::trunc);
+        if (file.is_open())
+        {
+            for (auto it = global.prefixes.begin(), ite = global.prefixes.end();it != ite;++it)
+                file<<it->first<<'='<<it->second<<std::endl;
+            file.close();
+            return 0;
+        }
+        return 1;
+    }
+    
     std::string loadConfig(Global &global, std::string &token)
     {
         token.clear();
@@ -1916,6 +1929,7 @@ OPTIONS\n\
             else if (it->item == "prefix")
                 global.prefixes["default"] = nospace(it->value);
         }
+        loadPrefixes(global);
         //if (token.size() < 1)
         //    return "Error: Discord Bot Token missing from \"config/farage.conf\".";
         return "";
@@ -2365,11 +2379,15 @@ OPTIONS\n\
             {
                 global.prefixes["default"] = argv[1];
                 consoleOut("Default command prefix changed to: \"" + global.prefix() + "\"");
+                if (savePrefixes(global))
+                    errorOut("Error: Unable to save prefixes.conf!");
             }
             else
             {
                 global.prefixes[argv[1]] = argv[2];
                 consoleOut("Command prefix for guild '" + argv[1] + "' has changed to: \"" + global.prefix(argv[1]) + "\"");
+                if (savePrefixes(global))
+                    errorOut("Error: Unable to save prefixes.conf!");
             }
             return PLUGIN_HANDLED;
         }
@@ -2651,6 +2669,8 @@ OPTIONS\n\
             {
                 global.prefixes[message.serverID] = argv[1];
                 bot->sendMessage(message.channelID,"Command prefix changed to: `" + global.prefix(message.serverID) + "`");
+                if (savePrefixes(global))
+                    errorOut("Error: Unable to save prefixes.conf!");
             }
             return PLUGIN_HANDLED;
         }
