@@ -2655,7 +2655,7 @@ OPTIONS\n\
             if (std::string(message.serverID).size() < 1)
             {
                 guildMsg = false;
-                if ((flags = global.getAdminFlags(message.author.ID)) != RCON)
+                if ((flags = global.getAdminFlags(message.author.ID)) != ROOT)
                     warning = "**By using this command outside of a guild channel, you will not see any commands that are granted via roles.**";
             }
             else
