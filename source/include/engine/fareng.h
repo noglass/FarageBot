@@ -471,6 +471,10 @@ OPTIONS\n\
                 Ready fready = convertReady(std::move(readyData));
                 global->lastReady = fready;
                 global->self = fready.user;
+                for (auto it = global->globVars.begin(), ite = global->globVars.end();it != ite;++it)
+                    if (((*it)->flags & GVAR_DUPLICATE) && ((*it)->guildValues.size() == 0))
+                        for (auto g = fready.guilds.begin(), ge = fready.guilds.end();g != ge;++g)
+                            (*it)->guildValues[*g] = (*it)->value;
                 void *arg0 = (void*)(&fready);
                 for (auto it = global->plugins.begin(), ite = global->plugins.end();it != ite;++it)
                     if ((*it)->callEvent(Event::ONREADY,arg0,nullptr,nullptr,nullptr) == PLUGIN_HANDLED)

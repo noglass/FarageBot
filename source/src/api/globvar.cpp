@@ -115,6 +115,13 @@ void Farage::GlobVar::setString(const std::string &val, const std::string &guild
         {
             if (guild.size() < 1)
             {
+                if (guildValues.size() == 0)
+                {
+                    old = value;
+                    cur = value = val;
+                    if (old != cur)
+                        changed = true;
+                }
                 for (auto it = guildValues.begin(), ite = guildValues.end();it != ite;++it)
                 {
                     old = it->second;

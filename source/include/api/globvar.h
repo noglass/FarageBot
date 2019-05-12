@@ -23,6 +23,8 @@ namespace Farage
             bool hasMax;
             float min;
             float max;
+            std::string value;
+            std::unordered_map<std::string,std::string> guildValues;
             std::string getName();
             std::string getDesc();
             std::string getDefault();
@@ -37,12 +39,11 @@ namespace Farage
             void setFloat(float val, const std::string &guild = "");
             void hookChange(GlobVarHook func);
             std::vector<GlobVarHook> hooks;
+            
         private:
             std::string name;
             std::string desc;
             std::string defVal;
-            std::string value;
-            std::unordered_map<std::string,std::string> guildValues;
             Handle *handle;
     };
 };
