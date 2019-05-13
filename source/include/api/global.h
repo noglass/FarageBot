@@ -63,6 +63,8 @@ namespace Farage
             safe_ptr<std::vector<std::string>> getBuffer()
             {
                 std::unique_lock<std::mutex> lock(mut);
+                if (buffer.size() > 64)
+                    buffer.clear();
                 safe_ptr<std::vector<std::string>> ptr(std::move(lock),&buffer);
                 return ptr;
             }

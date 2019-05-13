@@ -18,3 +18,6 @@ Example modules and API documentation coming soon!
 
 Some base modules are also currently in development.
 
+# Farage API Documentation
+
+This is a work in progress, so check back frequently https://github.com/nigelSaysHesHappy/FarageBot/wiki/
