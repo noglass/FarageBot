@@ -1624,7 +1624,7 @@ OPTIONS\n\
             std::vector<SleepyDiscord::Snowflake<SleepyDiscord::Role>> sleepyRoles;
             sleepyRoles.reserve(roles.size());
             for (auto it = roles.begin(), ite = roles.end();it != ite;++it)
-                sleepyRoles.emplace_back(*it);
+                sleepyRoles.push_back(std::move(SleepyDiscord::Snowflake<SleepyDiscord::Role>(std::move(*it))));
             SleepyDiscord::BoolResponse response = ((BotClass*)(bot))->editMember(serverID,userID,nickname,std::move(sleepyRoles),mute,deaf,channelID);
             return BoolResponse(std::move(convertResponse(response)),std::move(response.cast()));
         }
@@ -2914,7 +2914,7 @@ OPTIONS\n\
                 pages++;
             if (page > pages)
                 page = pages;
-            embed = "{ \"color\": 14343648, \"title\": \"Displaying Page " + std::to_string(page) + '/' + std::to_string(pages) + " matching: `" + criteriastr + "`\", \"description\": \"";
+            embed = "{ \"color\": 10664674, \"title\": \"Displaying Page " + std::to_string(page) + '/' + std::to_string(pages) + " matching: `" + criteriastr + "`\", \"description\": \"";
             if (warning.size() > 0)
                 embed = embed + warning + "\\n";
             if (page > 0)
@@ -2977,7 +2977,7 @@ OPTIONS\n\
                 pages++;
             if (page > pages)
                 page = pages;
-            embed = "{ \"color\": 14343648, \"title\": \"Displaying Page " + std::to_string(page) + '/' + std::to_string(pages) + " matching: `" + criteriastr + "`\", \"description\": \"";
+            embed = "{ \"color\": 10664674, \"title\": \"Displaying Page " + std::to_string(page) + '/' + std::to_string(pages) + " matching: `" + criteriastr + "`\", \"description\": \"";
             if (page > 0)
             {
                 int i = (page-1)*10, j = i+10;
