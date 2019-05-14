@@ -189,7 +189,7 @@ namespace Farage
     {
         return recallGlobal()->callbacks.addMember(serverID,userID,accessToken,nick,roles,mute,deaf);
     }
-    inline BoolResponse editMember(const std::string &serverID, const std::string &userID, const std::string &nickname, const std::vector<std::string> &roles, int8_t mute, int8_t deaf, const std::string &channelID)
+    inline BoolResponse editMember(const std::string &serverID, const std::string &userID, const std::string &nickname = "", const std::vector<std::string> &roles = {}, int8_t mute = -1, int8_t deaf = -1, const std::string &channelID = "")
     {
         return recallGlobal()->callbacks.editMember(serverID,userID,nickname,roles,mute,deaf,channelID);
     }

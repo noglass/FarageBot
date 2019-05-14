@@ -538,6 +538,9 @@ OPTIONS\n\
             {
                 Farage::Global *global = Farage::recallGlobal();
                 ServerMember fmember = convertServerMember(std::move(member));
+                for (auto it = global->ignoredUsers.begin(), ite = global->ignoredUsers.end();it != ite;++it)
+                    if (*it == fmember.user.id)
+                        return;
                 std::string ID = serverID;
                 void *arg0 = (void*)(&ID);
                 void *arg1 = (void*)(&fmember);
