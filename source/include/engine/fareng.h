@@ -1624,7 +1624,7 @@ OPTIONS\n\
             std::vector<SleepyDiscord::Snowflake<SleepyDiscord::Role>> sleepyRoles;
             sleepyRoles.reserve(roles.size());
             for (auto it = roles.begin(), ite = roles.end();it != ite;++it)
-                sleepyRoles.push_back(std::move(SleepyDiscord::Snowflake<SleepyDiscord::Role>(std::move(*it))));
+                sleepyRoles.emplace_back(*it);
             SleepyDiscord::BoolResponse response = ((BotClass*)(bot))->editMember(serverID,userID,nickname,std::move(sleepyRoles),mute,deaf,channelID);
             return BoolResponse(std::move(convertResponse(response)),std::move(response.cast()));
         }
@@ -2051,7 +2051,7 @@ OPTIONS\n\
     int loadIgnoredChannels(Global &global)
     {
         global.ignoredChannels.clear();
-        std::ifstream file ("./halfMod/config/channels.ignore");
+        std::ifstream file ("./config/channels.ignore");
         if (file.is_open())
         {
             std::string line;
@@ -2066,7 +2066,7 @@ OPTIONS\n\
     int loadIgnoredUsers(Global &global)
     {
         global.ignoredUsers.clear();
-        std::ifstream file ("./halfMod/config/users.ignore");
+        std::ifstream file ("./config/users.ignore");
         if (file.is_open())
         {
             std::string line;
