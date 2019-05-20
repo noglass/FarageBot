@@ -7,7 +7,7 @@
 #include "shared/libini.h"
 using namespace Farage;
 
-#define VERSION "0.7.5"
+#define VERSION "0.7.6"
 
 extern "C" Info Module
 {
@@ -47,7 +47,7 @@ namespace RPS
     //std::string mod = "Ultimate";
     GlobVar *rounds = nullptr;
     GlobVar *mod = nullptr;
-    std::string myBotID;
+    //std::string myBotID;
     std::vector<rpsGame> rpsGames;
     INIObject rpsConf;
     struct color
@@ -238,7 +238,7 @@ int modChange(Handle &handle, GlobVar *gvar, const std::string &newvalue, const 
     return PLUGIN_HANDLED;
 }*/
 
-extern "C" int onReady(Handle &handle, Event event, void *data, void *nil, void *foo, void *bar)
+/*extern "C" int onReady(Handle &handle, Event event, void *data, void *nil, void *foo, void *bar)
 {
     //User self;
     //recallGlobal()->callbacks.getSelf(self);
@@ -251,7 +251,7 @@ extern "C" int onReady(Handle &handle, Event event, void *data, void *nil, void 
     //GET_EVENT_ARG1(event,data,readyData);
     RPS::myBotID = ((Ready*)(data))->user.id;
     return PLUGIN_CONTINUE;
-}
+}*/
 
 extern "C" int onMessage(Handle &handle, Event event, void *message, void *nil, void *foo, void *bar)
 {
@@ -264,7 +264,7 @@ extern "C" int onMessage(Handle &handle, Event event, void *message, void *nil, 
     Message *msg = (Message*)message;
     Channel channel = getChannel(msg->channel_id).object;
     //Channel channel = getChannelCache(msg->guild_id,msg->channel_id);
-    if (msg->author.id == RPS::myBotID)
+    if (msg->author.id == global->self.id)
         return PLUGIN_CONTINUE;
     std::vector<rpsGame>::iterator game;
     if (rpsGameLookup(game,"",msg->author.id))
@@ -537,11 +537,11 @@ int chatRPS(Handle &handle, int argc, const std::string argv[], const Message &m
         std::string round = "";
         if (rounds > 1)
             round = " first to " + std::to_string(rounds);
-        if (oppID == RPS::myBotID)
+        if (oppID == global->self.id)
         {
             //temp = rpsModInfo(mod,true);
             rpsPlayer p;
-            p.ID = RPS::myBotID;
+            p.ID = global->self.id;
             p.DM = "";
             p.name = "I";
             newGame.player.push_back(p);
@@ -573,11 +573,11 @@ int chatRPS(Handle &handle, int argc, const std::string argv[], const Message &m
             if ((arg1 == "multibot") || (arg1 == "@everyone") || (arg1 == "@here"))
             {
                 rpsPlayer p;
-                p.ID = RPS::myBotID;
+                p.ID = global->self.id;
                 p.DM = "";
                 //User self = getUser(RPS::myBotID).object;
                 //p.name = self.username;
-                ServerMember t = getServerMember(message.guild_id,RPS::myBotID);
+                ServerMember t = getServerMember(message.guild_id,global->self.id);
                 if (t.nick.size() > 0)
                     p.name = t.nick;
                 else
@@ -594,7 +594,7 @@ int chatRPS(Handle &handle, int argc, const std::string argv[], const Message &m
             sendEmbed(message.channel_id,out);
         }
         RPS::rpsGames.push_back(newGame);
-        if (oppID == RPS::myBotID)
+        if (oppID == global->self.id)
         {
             std::vector<rpsGame>::iterator game;
             rpsGameLookup(game,message.channel_id,message.author.id);
@@ -723,14 +723,14 @@ int chatRPSStatus(Handle &handle, int argc, const std::string argv[], const Mess
                 fieldvalue = fieldvalue + "**" + it->name + "**";
                 if (it->choice.size() > 0)
                 {
-                    if ((it->ID == RPS::myBotID) && (it->name == "I"))
+                    if ((it->ID == global->self.id) && (it->name == "I"))
                         fieldvalue += " have made my selection.";
                     else
                         fieldvalue += " has made thier selection.";
                 }
                 else
                 {
-                    if ((it->ID == RPS::myBotID) && (it->name == "I"))
+                    if ((it->ID == global->self.id) && (it->name == "I"))
                         fieldvalue += " am still deciding. *Spooky.*";
                     else
                         fieldvalue += " is still deciding.";
@@ -930,6 +930,7 @@ void rpsConclude(std::vector<rpsGame>::iterator &game)
         rpsConcludeMulti(game);
     else
     {
+        Global *global = recallGlobal();
         auto mod = RPS::rpsConf.topic_it(game->gameMode);
         std::string opts = mod->find("opts");
         std::string desc = game->player[0].name + " chose " + game->player[0].choice + " and " + game->player[1].name + " chose " + game->player[1].choice + ".";
@@ -945,7 +946,7 @@ void rpsConclude(std::vector<rpsGame>::iterator &game)
             result = mod->find(game->player[1].choice,findtok(opts,game->player[0].choice,1," ")-1);
             title = game->player[0].name + " wins!";
         }
-        else if (game->player[1].ID != RPS::myBotID)
+        else if (game->player[1].ID != global->self.id)
         {
             game->player[1].wins++;
             title = game->player[1].name + " wins!";
@@ -957,7 +958,7 @@ void rpsConclude(std::vector<rpsGame>::iterator &game)
             color = RPS::colors.Lose(game->gameMode);
         }
         decider = game->player[0].name + " has " + std::to_string(game->player[0].wins) + " win(s) and " + game->player[1].name;
-        if (game->player[1].ID == RPS::myBotID)
+        if (game->player[1].ID == global->self.id)
             decider += " have ";
         else
             decider += " has ";
@@ -971,7 +972,7 @@ void rpsConclude(std::vector<rpsGame>::iterator &game)
             {
                 if (game->wins > 1)
                 {
-                    if (game->player[i].ID == RPS::myBotID)
+                    if (game->player[i].ID == global->self.id)
                         decider = game->player[i].name + " win the first to " + std::to_string(game->wins) + " wins!";
                     else
                     {
@@ -1210,6 +1211,7 @@ std::string rpsParseMention(std::string str)
 
 void rpsStartRound(std::vector<rpsGame>::iterator game)
 {
+    Global *global = recallGlobal();
     game->expire = time(NULL)+120;
     game->accepted = true;
     std::string temp = rpsModInfo(game->gameMode,true);
@@ -1217,7 +1219,7 @@ void rpsStartRound(std::vector<rpsGame>::iterator game)
     {
         player->choice.clear();
         player->multiWins = 0;
-        if (player->ID != RPS::myBotID)
+        if (player->ID != global->self.id)
         {
             auto response = messageChannelID(player->DM,"Respond with one of the following:\n" + temp);
             if (response.response.error())
