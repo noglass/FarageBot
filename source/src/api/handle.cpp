@@ -50,8 +50,6 @@ void Farage::Handle::unload(Farage::Global *global)
                         global->globVars.erase(it1);
                         break;
                     }
-                    else
-                        ++it1;
                 }
             }
             globVars.clear();
