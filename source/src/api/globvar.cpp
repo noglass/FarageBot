@@ -1,4 +1,5 @@
 #include "api/globvar.h"
+#include <fstream>
 
 Farage::GlobVar::GlobVar(Farage::Handle *plugin, const std::string &cname, const std::string &defaultValue, const std::string &description, short flag, bool hasMinimum, float minimum, bool hasMaximum, float maximum)
 {
