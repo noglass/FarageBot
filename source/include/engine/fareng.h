@@ -505,9 +505,10 @@ OPTIONS\n\
                 global->lastReady = fready;
                 global->self = fready.user;
                 for (auto it = global->globVars.begin(), ite = global->globVars.end();it != ite;++it)
-                    if (((*it)->flags & GVAR_DUPLICATE) && ((*it)->guildValues.size() == 0))
+                    if ((*it)->flags & GVAR_DUPLICATE)
                         for (auto g = fready.guilds.begin(), ge = fready.guilds.end();g != ge;++g)
-                            (*it)->guildValues[*g] = (*it)->value;
+                            if ((*it)->guildValues[*g].size() == 0)
+                                (*it)->guildValues[*g] = (*it)->value;
                 void *arg0 = (void*)(&fready);
                 for (auto it = global->plugins.begin(), ite = global->plugins.end();it != ite;++it)
                     if ((*it)->callEvent(Event::ONREADY,arg0,nullptr,nullptr,nullptr) == PLUGIN_HANDLED)
@@ -1039,6 +1040,10 @@ OPTIONS\n\
             {
                 Farage::Global *global = Farage::recallGlobal();
                 Server fserver = convertServer(std::move(server));
+                for (auto it = global->globVars.begin(), ite = global->globVars.end();it != ite;++it)
+                    if ((*it)->flags & GVAR_DUPLICATE)
+                        if ((*it)->guildValues[fserver.id].size() == 0)
+                            (*it)->guildValues[fserver.id] = (*it)->value;
                 void *arg0 = (void*)(&fserver);
                 for (auto it = global->plugins.begin(), ite = global->plugins.end();it != ite;++it)
                     if ((*it)->callEvent(Event::ONSERVER,arg0,nullptr,nullptr,nullptr) == PLUGIN_HANDLED)
