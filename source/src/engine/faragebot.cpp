@@ -90,6 +90,7 @@ int main(int argc, char *argv[])
     }
     std::vector<std::string> autoexec(1,"./config/script/autoexec.cfg");
     int clr = Farage::processLaunchArgs(global,argc,argv,&FARAGE_TOKEN,&autoexec);
+    autoexec.push_back("./config/script/autogvar.cfg");
     if (clr != 42)
         return clr;
     if (FARAGE_TOKEN.size() < 1)

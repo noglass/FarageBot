@@ -7,7 +7,7 @@
 #include "shared/libini.h"
 using namespace Farage;
 
-#define VERSION "0.7.6"
+#define VERSION "0.7.7"
 
 extern "C" Info Module
 {
@@ -196,8 +196,8 @@ extern "C" int onModuleStart(Handle &handle, Global *global)
 {
     recallGlobal(global);
     handle.createGlobVar("rps_version",VERSION,"Rock Paper Scissors Version",GVAR_CONSTANT);
-    RPS::rounds = handle.createGlobVar("rps_def_rounds","2","Rock Paper Scissors default rounds",GVAR_DUPLICATE,true,1.0);//->hookChange(&roundsChange);
-    (RPS::mod = handle.createGlobVar("rps_def_mod","Ulimate","Rock Paper Scissors default mod",GVAR_DUPLICATE))->hookChange(&modChange);
+    RPS::rounds = handle.createGlobVar("rps_def_rounds","2","Rock Paper Scissors default rounds",GVAR_DUPLICATE|GVAR_STORE,true,1.0);//->hookChange(&roundsChange);
+    (RPS::mod = handle.createGlobVar("rps_def_mod","Ulimate","Rock Paper Scissors default mod",GVAR_DUPLICATE|GVAR_STORE))->hookChange(&modChange);
     handle.regChatCmd("rps",&chatRPS,NOFLAG,"Challenge someone to a game of Rock Paper Scissors!");
     handle.regChatCmd("rpsresult",chatRPSResult,NOFLAG,"View the result of two options on a RPS game.");
     handle.regChatCmd("rpsstatus",chatRPSStatus,NOFLAG,"Check the game status of the current channel.");

@@ -1,8 +1,9 @@
 #ifndef _FARAGE_GLOBVAR_
 #define _FARAGE_GLOBVAR_
 
-#define GVAR_CONSTANT                       1
-#define GVAR_DUPLICATE                      2
+#define GVAR_CONSTANT       1
+#define GVAR_DUPLICATE      2
+#define GVAR_STORE          4
 
 #include "api/link.h"
 
@@ -38,6 +39,7 @@ namespace Farage
             void setInt(int val, const std::string &guild = "");
             void setFloat(float val, const std::string &guild = "");
             void hookChange(GlobVarHook func);
+            int storeValue(bool single = false, const std::string& guild = "");
             std::vector<GlobVarHook> hooks;
             
         private:

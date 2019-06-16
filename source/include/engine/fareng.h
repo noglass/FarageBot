@@ -144,7 +144,7 @@ namespace Farage
     std::string *splitString(const std::string &src, const std::string &delim, int &count)
     {
         if (src.size() == 0)
-            return 0;
+            return nullptr;
         std::vector<std::string> list;
         bool open = false;
         for (size_t x = 0, slen = src.size(), dlen = delim.size(), last = 0; x < slen;)
@@ -158,6 +158,39 @@ namespace Farage
             if ((!open) && ((src.compare(x,dlen,delim) == 0) || (x+1 >= slen)))
             {
                 std::string arg = nospace(src.substr(last,(x+=dlen)-last-((x+1 < slen) ? 1 : 0)));
+                if ((arg.front() == '"') && (arg.back() == '"'))
+                    arg = arg.substr(1,arg.size()-2);
+                list.push_back(arg);
+                last = x;
+            }
+            else
+                x++;
+        }
+        std::string *split = new std::string[list.size()];
+        count = 0;
+        for (auto it = list.begin(), ite = list.end();it != ite;++it)
+            split[count++] = *it;
+        return split;
+    }
+    
+    std::string *splitStringAny(const std::string &src, const std::string &delim, int &count)
+    {
+        if (src.size() == 0)
+            return nullptr;
+        std::vector<std::string> list;
+        bool open = false;
+        char c;
+        for (size_t x = 0, slen = src.size(), last = 0;x < slen;)
+        {
+            if ((c = src.at(x)) == '"')
+            {
+                open = !open;
+                if ((open) && (src.find('"',x+1) == std::string::npos))
+                    open = false;
+            }
+            if ((!open) && ((delim.find(c) != std::string::npos) || (x+1 >= slen)))
+            {
+                std::string arg = nospace(src.substr(last,(++x)-last-((x+1 < slen) ? 1 : 0)));
                 if ((arg.front() == '"') && (arg.back() == '"'))
                     arg = arg.substr(1,arg.size()-2);
                 list.push_back(arg);
@@ -416,7 +449,7 @@ OPTIONS\n\
     void processCinput(BotClass *bot, Global &global, const std::string &input)
     {
         int argc;
-        std::string *argv = splitString(nospace(input)," ",argc);
+        std::string *argv = splitStringAny(nospace(input)," \t\n",argc);
         processCinput(bot,global,argc,argv);
         delete[] argv;
     }
@@ -455,7 +488,7 @@ OPTIONS\n\
     std::string runServerCommand(BotClass *discord, Global &global, const std::string &command)
     {
         int argc;
-        std::string *argv = splitString(nospace(command)," ",argc);
+        std::string *argv = splitStringAny(nospace(command)," \t\n",argc);
         return runServerCommand(discord,global,argc,argv,true);
     }
     
@@ -981,7 +1014,7 @@ OPTIONS\n\
                     command.erase(0,prefix.size());
                     AdminFlag flags = global->getAdminFlags(fmessage.guild_id,ID);
                     int argc;
-                    std::string *argv = splitString(nospace(command)," ",argc);
+                    std::string *argv = splitStringAny(nospace(command)," \t\n",argc);
                     auto plug = global->plugins.begin(), pluge = global->plugins.end();
                     bool done = false;
                     for (;plug != pluge;++plug)

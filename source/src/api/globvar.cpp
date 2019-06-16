@@ -118,7 +118,11 @@ void Farage::GlobVar::setString(const std::string &val, const std::string &guild
                 old = value;
                 cur = value = val;
                 if (old != cur)
+                {
                     changed = true;
+                    if (flags & GVAR_STORE)
+                        storeValue();
+                }
                 for (auto it = guildValues.begin(), ite = guildValues.end();it != ite;++it)
                 {
                     old = it->second;
@@ -132,7 +136,11 @@ void Farage::GlobVar::setString(const std::string &val, const std::string &guild
                 old = guildValues[guild];
                 cur = guildValues[guild] = val;
                 if (old != cur)
+                {
                     changed = true;
+                    if (flags & GVAR_STORE)
+                        storeValue(true,guild);
+                }
             }
         }
         else
@@ -140,7 +148,11 @@ void Farage::GlobVar::setString(const std::string &val, const std::string &guild
             old = value;
             cur = value = val;
             if (old != cur)
+            {
                 changed = true;
+                if (flags & GVAR_STORE)
+                    storeValue();
+            }
         }
         if (changed)
             for (auto it = hooks.begin(), end = hooks.end();it != end;++it)
@@ -172,4 +184,79 @@ void Farage::GlobVar::hookChange(Farage::GlobVarHook func)
     if (func != nullptr)
         hooks.push_back(func);
 }
+
+int countSplit(const std::string &src, const std::string &delim)
+{
+    if (src.size() == 0)
+        return 0;
+    bool open = false;
+    char c;
+    int count = 0;
+    for (size_t x = 0, slen = src.size(), last = 0;x < slen;)
+    {
+        if ((c = src.at(x)) == '"')
+        {
+            open = !open;
+            if ((open) && (src.find('"',x+1) == std::string::npos))
+                open = false;
+        }
+        if ((!open) && ((delim.find(c) != std::string::npos) || (x+1 >= slen)))
+        {
+            count++;
+            last = ++x;
+        }
+        else
+            x++;
+    }
+    return count;
+}
+
+int Farage::GlobVar::storeValue(bool single, const std::string& guild)
+{
+    std::fstream file ("./config/script/autogvar.cfg",std::fstream::in);
+    if (file.is_open())
+    {
+        std::vector<std::string> output;
+        std::string line, first, cmp = "gvar \"" + name + "\" \"";
+        int args;
+        while (std::getline(file,line))
+        {
+            if (line.find(cmp) == 0)
+            {
+                args = countSplit(line," \t\n");
+                if (single)
+                {
+                    if (args == 3)
+                        first = line;
+                    else if (line.find(guild,cmp.size()+1) == std::string::npos)
+                        output.push_back(line);
+                }
+                else if (args > 3)
+                    output.push_back(line);
+            }
+            else
+                output.push_back(line);
+        }
+        file.close();
+        file.open("./config/script/autogvar.cfg",std::fstream::out|std::fstream::trunc);
+        if (file.is_open())
+        {
+            if (first.size() > 0)
+                file<<first<<std::endl;
+            file<<"gvar \""<<name<<"\" \""<<value<<'"';
+            if (single)
+                file<<' '<<guild;
+            file<<std::endl;
+            for (auto it = output.begin(), ite = output.end();it != ite;++it)
+                file<<*it<<std::endl;
+            file.close();
+            return 0;
+        }
+    }
+    return 1;
+}
+
+
+
+
 
