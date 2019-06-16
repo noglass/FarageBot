@@ -215,10 +215,11 @@ int countSplit(const std::string &src, const std::string &delim)
 int Farage::GlobVar::storeValue(bool single, const std::string& guild)
 {
     std::fstream file ("./config/script/autogvar.cfg",std::fstream::in);
+    std::string first;
+    std::vector<std::string> output;
     if (file.is_open())
     {
-        std::vector<std::string> output;
-        std::string line, first, cmp = "gvar \"" + name + "\" \"";
+        std::string line, cmp = "gvar \"" + name + "\" \"";
         int args;
         while (std::getline(file,line))
         {
@@ -239,20 +240,20 @@ int Farage::GlobVar::storeValue(bool single, const std::string& guild)
                 output.push_back(line);
         }
         file.close();
-        file.open("./config/script/autogvar.cfg",std::fstream::out|std::fstream::trunc);
-        if (file.is_open())
-        {
-            if (first.size() > 0)
-                file<<first<<std::endl;
-            file<<"gvar \""<<name<<"\" \""<<value<<'"';
-            if (single)
-                file<<' '<<guild;
-            file<<std::endl;
-            for (auto it = output.begin(), ite = output.end();it != ite;++it)
-                file<<*it<<std::endl;
-            file.close();
-            return 0;
-        }
+    }
+    file.open("./config/script/autogvar.cfg",std::fstream::out|std::fstream::trunc);
+    if (file.is_open())
+    {
+        if (first.size() > 0)
+            file<<first<<std::endl;
+        file<<"gvar \""<<name<<"\" \""<<value<<'"';
+        if (single)
+            file<<' '<<guild;
+        file<<std::endl;
+        for (auto it = output.begin(), ite = output.end();it != ite;++it)
+            file<<*it<<std::endl;
+        file.close();
+        return 0;
     }
     return 1;
 }
