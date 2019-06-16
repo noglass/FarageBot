@@ -246,10 +246,11 @@ int Farage::GlobVar::storeValue(bool single, const std::string& guild)
     {
         if (first.size() > 0)
             file<<first<<std::endl;
-        file<<"gvar \""<<name<<"\" \""<<value<<'"';
+        file<<"gvar \""<<name<<"\" \"";
+        if (!single)
+            file<<value<<'"'<<std::endl;
         if (single)
-            file<<' '<<guild;
-        file<<std::endl;
+            file<<guildValues[guild]<<"\" "<<guild<<std::endl;
         for (auto it = output.begin(), ite = output.end();it != ite;++it)
             file<<*it<<std::endl;
         file.close();
