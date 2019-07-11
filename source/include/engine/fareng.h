@@ -1174,7 +1174,7 @@ OPTIONS\n\
                     errorOut("sendMessage: FORBIDDEN Cannot send message to " + chan);
                 return ObjectResponse<Message>(Response(err),Message());
             }
-            return ObjectResponse<Message>();
+            return ObjectResponse<Message>(Response(4000),Message());
         }
         
         //ObjectResponse<Message> messageChannelID(const std::string &chan, const std::string &message)
@@ -1236,7 +1236,7 @@ OPTIONS\n\
                     errorOut("addReaction: FORBIDDEN Cannot react to message " + messageID + " in channel " + channel);
                 return BoolResponse(Response(err),false);
             }
-            return BoolResponse();
+            return BoolResponse(Response(4000),false);
         }
         
         ObjectResponse<Channel> getChannel(const std::string &ID)
@@ -1254,7 +1254,7 @@ OPTIONS\n\
                 errorOut("getChannel: Error code " + std::to_string(int(err)));
                 return ObjectResponse<Channel>(Response(err),Channel());
             }
-            return ObjectResponse<Channel>();
+            return ObjectResponse<Channel>(Response(4000),Channel());
         }
         
         ObjectResponse<Channel> getDirectMessageChannel(const std::string &userID)
@@ -1272,7 +1272,7 @@ OPTIONS\n\
                 errorOut("getDirectMessageChannel: Error code " + std::to_string(int(err)));
                 return ObjectResponse<Channel>(Response(err),Channel());
             }
-            return ObjectResponse<Channel>();
+            return ObjectResponse<Channel>(Response(4000),Channel());
         }
         
         ObjectResponse<User> getUser(const std::string &ID)
@@ -1290,7 +1290,7 @@ OPTIONS\n\
                 errorOut("getUser: Error code " + std::to_string(int(err)));
                 return ObjectResponse<User>(Response(err),User());
             }
-            return ObjectResponse<User>();
+            return ObjectResponse<User>(Response(4000),User());
         }
         
         ObjectResponse<User> getSelf()
@@ -1310,7 +1310,7 @@ OPTIONS\n\
                 errorOut("getSelf: Error code " + std::to_string(int(err)));
                 return ObjectResponse<User>(Response(err),User());
             }
-            return ObjectResponse<User>();
+            return ObjectResponse<User>(Response(4000),User());
         }
         
         BoolResponse sendTyping(const std::string &channel)
@@ -1328,7 +1328,7 @@ OPTIONS\n\
                 errorOut("sendTyping: Error code " + std::to_string(int(err)));
                 return BoolResponse(Response(err),false);
             }
-            return BoolResponse();
+            return BoolResponse(Response(4000),false);
         }
         
         /*ObjectResponse<Message> sendEmbed(const std::string &chan, const std::string &message, const std::string &json)
@@ -1354,7 +1354,7 @@ OPTIONS\n\
                 return ObjectResponse<Message>(Response(err),Message());
             }
             //verboseOut("[sendFile>>" + chan + "] " + message + " || " + filepath);
-            return ObjectResponse<Message>();
+            return ObjectResponse<Message>(Response(4000),Message());
         }
         
         Server getGuildCache(const std::string &guildID)
@@ -1433,7 +1433,7 @@ OPTIONS\n\
                 errorOut("editChannel: Error code " + std::to_string(int(err)));
                 return ObjectResponse<Channel>(Response(err),Channel());
             }
-            return ObjectResponse<Channel>();
+            return ObjectResponse<Channel>(Response(4000),Channel());
         }
         
         ObjectResponse<Channel> editChannelName(const std::string &channelID, const std::string &name)
@@ -1451,7 +1451,7 @@ OPTIONS\n\
                 errorOut("editChannelName: Error code " + std::to_string(int(err)));
                 return ObjectResponse<Channel>(Response(err),Channel());
             }
-            return ObjectResponse<Channel>();
+            return ObjectResponse<Channel>(Response(4000),Channel());
         }
         
         ObjectResponse<Channel> editChannelTopic(const std::string &channelID, const std::string &topic)
@@ -1469,7 +1469,7 @@ OPTIONS\n\
                 errorOut("editChannelTopic: Error code " + std::to_string(int(err)));
                 return ObjectResponse<Channel>(Response(err),Channel());
             }
-            return ObjectResponse<Channel>();
+            return ObjectResponse<Channel>(Response(4000),Channel());
         }
         
         ObjectResponse<Channel> deleteChannel(const std::string &channelID)
@@ -1487,7 +1487,7 @@ OPTIONS\n\
                 errorOut("deleteChannel: Error code " + std::to_string(int(err)));
                 return ObjectResponse<Channel>(Response(err),Channel());
             }
-            return ObjectResponse<Channel>();
+            return ObjectResponse<Channel>(Response(4000),Channel());
         }
         
         ArrayResponse<Message> getMessages(const std::string &channelID, GetMessagesKey when, const std::string &messageID, uint8_t limit)
@@ -1505,7 +1505,7 @@ OPTIONS\n\
                 errorOut("getMessages: Error code " + std::to_string(int(err)));
                 return ArrayResponse<Message>(Response(err));
             }
-            return ArrayResponse<Message>();
+            return ArrayResponse<Message>(Response(4000));
         }
         
         ObjectResponse<Message> getMessage(const std::string &channelID, const std::string &messageID)
@@ -1523,7 +1523,7 @@ OPTIONS\n\
                 errorOut("getMessage: Error code " + std::to_string(int(err)));
                 return ObjectResponse<Message>(Response(err),Message());
             }
-            return ObjectResponse<Message>();
+            return ObjectResponse<Message>(Response(4000),Message());
         }
         
         BoolResponse removeReaction(const std::string &channelID, const std::string &messageID, const std::string &emoji, const std::string &userID)
@@ -1541,7 +1541,7 @@ OPTIONS\n\
                 errorOut("removeReaction: Error code " + std::to_string(int(err)));
                 return BoolResponse(Response(err),false);
             }
-            return BoolResponse();
+            return BoolResponse(Response(4000),false);
         }
         
         ArrayResponse<Reaction> getReactions(const std::string &channelID, const std::string &messageID, const std::string &emoji)
@@ -1559,7 +1559,7 @@ OPTIONS\n\
                 errorOut("getReactions: Error code " + std::to_string(int(err)));
                 return ArrayResponse<Reaction>(Response(err));
             }
-            return ArrayResponse<Reaction>();
+            return ArrayResponse<Reaction>(Response(4000));
         }
         
         Response removeAllReactions(const std::string &channelID, const std::string &messageID)
@@ -1577,7 +1577,7 @@ OPTIONS\n\
                 errorOut("removeAllReactions: Error code " + std::to_string(int(err)));
                 return Response(err);
             }
-            return Response();
+            return Response(4000);
         }
         
         ObjectResponse<Message> editMessage(const std::string &channelID, const std::string &messageID, const std::string &newMessage)
@@ -1595,7 +1595,7 @@ OPTIONS\n\
                 errorOut("editMessage: Error code " + std::to_string(int(err)));
                 return ObjectResponse<Message>(Response(err),Message());
             }
-            return ObjectResponse<Message>();
+            return ObjectResponse<Message>(Response(4000),Message());
         }
         
         BoolResponse deleteMessage(const std::string &channelID, const std::string &messageID)
@@ -1613,7 +1613,7 @@ OPTIONS\n\
                 errorOut("deleteMessage: Error code " + std::to_string(int(err)));
                 return BoolResponse(Response(err),false);
             }
-            return BoolResponse();
+            return BoolResponse(Response(4000),false);
         }
         
         BoolResponse bulkDeleteMessages(const std::string &channelID, const std::vector<std::string> &messageIDs)
@@ -1632,7 +1632,7 @@ OPTIONS\n\
                 errorOut("bulkDeleteMessages: Error code " + std::to_string(int(err)));
                 return BoolResponse(Response(err),false);
             }
-            return BoolResponse();
+            return BoolResponse(Response(4000),false);
         }
         
         BoolResponse editChannelPermissions(const std::string &channelID, const std::string &overwriteID, int allow, int deny, const std::string &type)
@@ -1650,7 +1650,7 @@ OPTIONS\n\
                 errorOut("editChannelPermissions: Error code " + std::to_string(int(err)));
                 return BoolResponse(Response(err),false);
             }
-            return BoolResponse();
+            return BoolResponse(Response(4000),false);
         }
         
         ArrayResponse<Invite> getChannelInvites(const std::string &channelID)
@@ -1668,7 +1668,7 @@ OPTIONS\n\
                 errorOut("getChannelInvites: Error code " + std::to_string(int(err)));
                 return ArrayResponse<Invite>(Response(err));
             }
-            return ArrayResponse<Invite>();
+            return ArrayResponse<Invite>(Response(4000));
         }
         
         ObjectResponse<Invite> createChannelInvite(const std::string &channelID, const uint64_t maxAge, const uint64_t maxUses, const bool temporary, const bool unique)
@@ -1686,7 +1686,7 @@ OPTIONS\n\
                 errorOut("createChannelInvite: Error code " + std::to_string(int(err)));
                 return ObjectResponse<Invite>(Response(err),Invite());
             }
-            return ObjectResponse<Invite>();
+            return ObjectResponse<Invite>(Response(4000),Invite());
         }
         
         BoolResponse removeChannelPermission(const std::string &channelID,const std::string &ID)
@@ -1704,7 +1704,7 @@ OPTIONS\n\
                 errorOut("removeChannelPermission: Error code " + std::to_string(int(err)));
                 return BoolResponse(Response(err),false);
             }
-            return BoolResponse();
+            return BoolResponse(Response(4000),false);
         }
         
         ArrayResponse<Message> getPinnedMessages(const std::string &channelID)
@@ -1722,7 +1722,7 @@ OPTIONS\n\
                 errorOut("getPinnedMessages: Error code " + std::to_string(int(err)));
                 return ArrayResponse<Message>(Response(err));
             }
-            return ArrayResponse<Message>();
+            return ArrayResponse<Message>(Response(4000));
         }
         
         BoolResponse pinMessage(const std::string &channelID, const std::string &messageID)
@@ -1740,7 +1740,7 @@ OPTIONS\n\
                 errorOut("pinMessage: Error code " + std::to_string(int(err)));
                 return BoolResponse(Response(err),false);
             }
-            return BoolResponse();
+            return BoolResponse(Response(4000),false);
         }
         
         BoolResponse unpinMessage(const std::string &channelID, const std::string &messageID)
@@ -1758,7 +1758,7 @@ OPTIONS\n\
                 errorOut("unpinMessage: Error code " + std::to_string(int(err)));
                 return BoolResponse(Response(err),false);
             }
-            return BoolResponse();
+            return BoolResponse(Response(4000),false);
         }
         
         Response addRecipient(const std::string &channelID, const std::string &userID)
@@ -1776,7 +1776,7 @@ OPTIONS\n\
                 errorOut("addRecipient: Error code " + std::to_string(int(err)));
                 return Response(err);
             }
-            return Response();
+            return Response(4000);
         }
         
         Response removeRecipient(const std::string &channelID, const std::string &userID)
@@ -1794,7 +1794,7 @@ OPTIONS\n\
                 errorOut("removeRecipient: Error code " + std::to_string(int(err)));
                 return Response(err);
             }
-            return Response();
+            return Response(4000);
         }
         
         /*std::string serverCommand(const std::string &command)
@@ -1836,7 +1836,7 @@ OPTIONS\n\
                 errorOut("getServer: Error code " + std::to_string(int(err)));
                 return ObjectResponse<Server>(Response(err),Server());
             }
-            return ObjectResponse<Server>();
+            return ObjectResponse<Server>(Response(4000),Server());
         }
         
         ObjectResponse<Server> deleteServer(const std::string &serverID)
@@ -1854,7 +1854,7 @@ OPTIONS\n\
                 errorOut("deleteServer: Error code " + std::to_string(int(err)));
                 return ObjectResponse<Server>(Response(err),Server());
             }
-            return ObjectResponse<Server>();
+            return ObjectResponse<Server>(Response(4000),Server());
         }
         
         ArrayResponse<Channel> getServerChannels(const std::string &serverID)
@@ -1872,7 +1872,7 @@ OPTIONS\n\
                 errorOut("getServerChannels: Error code " + std::to_string(int(err)));
                 return ArrayResponse<Channel>(Response(err));
             }
-            return ArrayResponse<Channel>();
+            return ArrayResponse<Channel>(Response(4000));
         }
         
         ObjectResponse<Channel> createTextChannel(const std::string &serverID, const std::string &name)
@@ -1890,7 +1890,7 @@ OPTIONS\n\
                 errorOut("createTextChannel: Error code " + std::to_string(int(err)));
                 return ObjectResponse<Channel>(Response(err),Channel());
             }
-            return ObjectResponse<Channel>();
+            return ObjectResponse<Channel>(Response(4000),Channel());
         }
         
         ArrayResponse<Channel> editChannelPositions(const std::string &serverID, std::vector<std::pair<std::string,uint64_t>> positions)
@@ -1908,7 +1908,7 @@ OPTIONS\n\
                 errorOut("editChannelPositions: Error code " + std::to_string(int(err)));
                 return ArrayResponse<Channel>(Response(err));
             }
-            return ArrayResponse<Channel>();
+            return ArrayResponse<Channel>(Response(4000));
         }
         
         ObjectResponse<ServerMember> getMember(const std::string &serverID, const std::string &userID)
@@ -1926,7 +1926,7 @@ OPTIONS\n\
                 errorOut("getMember: Error code " + std::to_string(int(err)));
                 return ObjectResponse<ServerMember>(Response(err),ServerMember());
             }
-            return ObjectResponse<ServerMember>();
+            return ObjectResponse<ServerMember>(Response(4000),ServerMember());
         }
         
         ArrayResponse<ServerMember> listMembers(const std::string &serverID, uint16_t limit, const std::string &after)
@@ -1944,7 +1944,7 @@ OPTIONS\n\
                 errorOut("listMembers: Error code " + std::to_string(int(err)));
                 return ArrayResponse<ServerMember>(Response(err));
             }
-            return ArrayResponse<ServerMember>();
+            return ArrayResponse<ServerMember>(Response(4000));
         }
         
         ObjectResponse<ServerMember> addMember(const std::string &serverID, const std::string &userID, const std::string &accessToken, const std::string &nick, std::vector<Role> roles, bool mute, bool deaf)
@@ -1977,7 +1977,7 @@ OPTIONS\n\
                 errorOut("addMember: Error code " + std::to_string(int(err)));
                 return ObjectResponse<ServerMember>(Response(err),ServerMember());
             }
-            return ObjectResponse<ServerMember>();
+            return ObjectResponse<ServerMember>(Response(4000),ServerMember());
         }
         
         BoolResponse editMember(const std::string &serverID, const std::string &userID, const std::string &nickname, std::vector<std::string> roles, int8_t mute, int8_t deaf, const std::string &channelID)
@@ -1999,7 +1999,7 @@ OPTIONS\n\
                 errorOut("editMember: Error code " + std::to_string(int(err)));
                 return BoolResponse(Response(err),false);
             }
-            return BoolResponse();
+            return BoolResponse(Response(4000),false);
         }
         
         BoolResponse muteServerMember(const std::string &serverID, const std::string &userID, bool mute)
@@ -2017,7 +2017,7 @@ OPTIONS\n\
                 errorOut("muteServerMember: Error code " + std::to_string(int(err)));
                 return BoolResponse(Response(err),false);
             }
-            return BoolResponse();
+            return BoolResponse(Response(4000),false);
         }
         
         BoolResponse editNickname(const std::string &serverID, const std::string &newNickname)
@@ -2035,7 +2035,7 @@ OPTIONS\n\
                 errorOut("editNickname: Error code " + std::to_string(int(err)));
                 return BoolResponse(Response(err),false);
             }
-            return BoolResponse();
+            return BoolResponse(Response(4000),false);
         }
         
         BoolResponse addRole(const std::string &serverID, const std::string &userID, const std::string &roleID)
@@ -2053,7 +2053,7 @@ OPTIONS\n\
                 errorOut("addRole: Error code " + std::to_string(int(err)));
                 return BoolResponse(Response(err),false);
             }
-            return BoolResponse();
+            return BoolResponse(Response(4000),false);
         }
         
         BoolResponse removeRole(const std::string &serverID, const std::string &userID, const std::string &roleID)
@@ -2071,7 +2071,7 @@ OPTIONS\n\
                 errorOut("removeRole: Error code " + std::to_string(int(err)));
                 return BoolResponse(Response(err),false);
             }
-            return BoolResponse();
+            return BoolResponse(Response(4000),false);
         }
         
         BoolResponse kickMember(const std::string &serverID, const std::string &userID)
@@ -2089,7 +2089,7 @@ OPTIONS\n\
                 errorOut("kickMember: Error code " + std::to_string(int(err)));
                 return BoolResponse(Response(err),false);
             }
-            return BoolResponse();
+            return BoolResponse(Response(4000),false);
         }
         
         ArrayResponse<User> getBans(const std::string &serverID)
@@ -2107,7 +2107,7 @@ OPTIONS\n\
                 errorOut("getBans: Error code " + std::to_string(int(err)));
                 return ArrayResponse<User>(Response(err));
             }
-            return ArrayResponse<User>();
+            return ArrayResponse<User>(Response(4000));
         }
         
         BoolResponse banMember(const std::string &serverID, const std::string &userID)
@@ -2125,7 +2125,7 @@ OPTIONS\n\
                 errorOut("banMember: Error code " + std::to_string(int(err)));
                 return BoolResponse(Response(err),false);
             }
-            return BoolResponse();
+            return BoolResponse(Response(4000),false);
         }
         
         BoolResponse unbanMember(const std::string &serverID, const std::string &userID)
@@ -2143,7 +2143,7 @@ OPTIONS\n\
                 errorOut("unbanMember: Error code " + std::to_string(int(err)));
                 return BoolResponse(Response(err),false);
             }
-            return BoolResponse();
+            return BoolResponse(Response(4000),false);
         }
         
         ArrayResponse<Role> getRoles(const std::string &serverID)
@@ -2161,7 +2161,7 @@ OPTIONS\n\
                 errorOut("getRoles: Error code " + std::to_string(int(err)));
                 return ArrayResponse<Role>(Response(err));
             }
-            return ArrayResponse<Role>();
+            return ArrayResponse<Role>(Response(4000));
         }
         
         ObjectResponse<Role> createRole(const std::string &serverID, const std::string &name, Permission permissions, unsigned int color, bool hoist, bool mentionable)
@@ -2179,7 +2179,7 @@ OPTIONS\n\
                 errorOut("createRole: Error code " + std::to_string(int(err)));
                 return ObjectResponse<Role>(Response(err),Role());
             }
-            return ObjectResponse<Role>();
+            return ObjectResponse<Role>(Response(4000),Role());
         }
         
         ArrayResponse<Role> editRolePosition(const std::string &serverID, const std::vector<std::pair<std::string,uint64_t>> &positions)
@@ -2197,7 +2197,7 @@ OPTIONS\n\
                 errorOut("editRolePosition: Error code " + std::to_string(int(err)));
                 return ArrayResponse<Role>(Response(err));
             }
-            return ArrayResponse<Role>();
+            return ArrayResponse<Role>(Response(4000));
         }
         
         //StringResponse editRole(const std::string &serverID, const std::string &roleID, const std::string &name, Permission permissions, uint32_t color, int8_t hoist, int8_t mentionable);
@@ -2217,7 +2217,7 @@ OPTIONS\n\
                 errorOut("deleteRole: Error code " + std::to_string(int(err)));
                 return BoolResponse(Response(err),false);
             }
-            return BoolResponse();
+            return BoolResponse(Response(4000),false);
         }
         
         Response pruneMembers(const std::string &serverID, const unsigned int numOfDays)
@@ -2235,7 +2235,7 @@ OPTIONS\n\
                 errorOut("pruneMembers: Error code " + std::to_string(int(err)));
                 return Response(err);
             }
-            return Response();
+            return Response(4000);
         }
         
         ArrayResponse<VoiceRegion> getVoiceRegions()
@@ -2253,7 +2253,7 @@ OPTIONS\n\
                 errorOut("getVoiceRegions: Error code " + std::to_string(int(err)));
                 return ArrayResponse<VoiceRegion>(Response(err));
             }
-            return ArrayResponse<VoiceRegion>();
+            return ArrayResponse<VoiceRegion>(Response(4000));
         }
         
         ArrayResponse<Invite> getServerInvites(const std::string &serverID)
@@ -2271,7 +2271,7 @@ OPTIONS\n\
                 errorOut("getServerInvites: Error code " + std::to_string(int(err)));
                 return ArrayResponse<Invite>(Response(err));
             }
-            return ArrayResponse<Invite>();
+            return ArrayResponse<Invite>(Response(4000));
         }
         
         //StringResponse getIntegrations(const std::string &serverID);
@@ -2291,7 +2291,7 @@ OPTIONS\n\
                 errorOut("createIntegration: Error code " + std::to_string(int(err)));
                 return BoolResponse(Response(err),false);
             }
-            return BoolResponse();
+            return BoolResponse(Response(4000),false);
         }
         
         BoolResponse editIntegration(const std::string &serverID, const std::string &integrationID, int expireBehavior, int expireGracePeriod, bool enableEmoticons)
@@ -2309,7 +2309,7 @@ OPTIONS\n\
                 errorOut("editIntegration: Error code " + std::to_string(int(err)));
                 return BoolResponse(Response(err),false);
             }
-            return BoolResponse();
+            return BoolResponse(Response(4000),false);
         }
         
         BoolResponse deleteIntegration(const std::string &serverID, const std::string &integrationID)
@@ -2327,7 +2327,7 @@ OPTIONS\n\
                 errorOut("deleteIntegration: Error code " + std::to_string(int(err)));
                 return BoolResponse(Response(err),false);
             }
-            return BoolResponse();//std::move(convertResponse(response)),std::move(response.cast()));
+            return BoolResponse(Response(4000),false);//std::move(convertResponse(response)),std::move(response.cast()));
         }
         
         BoolResponse syncIntegration(const std::string &serverID, const std::string &integrationID)
@@ -2345,7 +2345,7 @@ OPTIONS\n\
                 errorOut("syncIntegration: Error code " + std::to_string(int(err)));
                 return BoolResponse(Response(err),false);
             }
-            return BoolResponse();
+            return BoolResponse(Response(4000),false);
         }
         
         ObjectResponse<ServerEmbed> getServerEmbed(const std::string &serverID)
@@ -2363,7 +2363,7 @@ OPTIONS\n\
                 errorOut("getServerEmbed: Error code " + std::to_string(int(err)));
                 return ObjectResponse<ServerEmbed>(Response(err),ServerEmbed());
             }
-            return ObjectResponse<ServerEmbed>();
+            return ObjectResponse<ServerEmbed>(Response(4000),ServerEmbed());
         }
         
         bool isReady()
