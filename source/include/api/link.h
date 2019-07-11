@@ -21,11 +21,11 @@ namespace Farage
     {
         return recallGlobal()->callbacks.sendMessage(msg.channel_id,message,json,tts);
     }
-    inline ObjectResponse<Reaction> reaction(const Message &msg, const std::string &emoji)
+    inline BoolResponse reaction(const Message &msg, const std::string &emoji)
     {
         return recallGlobal()->callbacks.reactToID(msg.channel_id,msg.id,emoji);
     }
-    inline ObjectResponse<Reaction> reactToID(const std::string &channelID, const std::string &messageID, const std::string &emoji)
+    inline BoolResponse reactToID(const std::string &channelID, const std::string &messageID, const std::string &emoji)
     {
         return recallGlobal()->callbacks.reactToID(channelID,messageID,emoji);
     }

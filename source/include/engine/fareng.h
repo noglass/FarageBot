@@ -1215,28 +1215,28 @@ OPTIONS\n\
             return ret;
         }*/
         
-        ObjectResponse<Reaction> reactToID(const std::string &channel, const std::string &messageID, const std::string &emoji)
+        BoolResponse reactToID(const std::string &channel, const std::string &messageID, const std::string &emoji)
         {
             void *bot = recallGlobal()->discord;
             if (bot == nullptr)
-                return ObjectResponse<Reaction>();
+                return BoolResponse();
             std::string remoji = emoji;
             if (remoji == "randomNegativeEmoji")
                 remoji = randomNegativeEmoji();
             try
             {
-                SleepyDiscord::ObjectResponse<SleepyDiscord::Reaction> response = ((BotClass*)(bot))->addReaction(channel,messageID,remoji);
+                SleepyDiscord::BoolResponse response = ((BotClass*)(bot))->addReaction(channel,messageID,remoji);
                 //Farage::verboseOut("[reactToID>>" + channel + "," + messageID + "] " + emoji);
-                return ObjectResponse<Reaction>(std::move(convertResponse(response)),std::move(convertReaction(std::move(response.cast()))));
+                return BoolResponse(std::move(convertResponse(std::move(response))),response.cast());
             }
             catch (SleepyDiscord::ErrorCode err)
             {
                 errorOut("addReaction: Error code " + std::to_string(int(err)));
                 if (err == SleepyDiscord::ErrorCode::FORBIDDEN)
                     errorOut("addReaction: FORBIDDEN Cannot react to message " + messageID + " in channel " + channel);
-                return ObjectResponse<Reaction>(Response(err),Reaction());
+                return BoolResponse(Response(err),false);
             }
-            return ObjectResponse<Reaction>();
+            return BoolResponse();
         }
         
         ObjectResponse<Channel> getChannel(const std::string &ID)

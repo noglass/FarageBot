@@ -1,1 +1,1 @@
-#define FARAGE_API_VERSION      "Revision: 76 build-0.101"
+#define FARAGE_API_VERSION      "Revision: 77 build-0.102"

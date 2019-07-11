@@ -8,7 +8,7 @@ namespace Farage
     struct Internals
     {
         ObjectResponse<Message> (*sendMessage)(const std::string&, const std::string&, const std::string&, bool);
-        ObjectResponse<Reaction> (*reactToID)(const std::string&, const std::string&, const std::string&);
+        BoolResponse (*reactToID)(const std::string&, const std::string&, const std::string&);
         ObjectResponse<Channel> (*getChannel)(const std::string&);
         ObjectResponse<Channel> (*getDirectMessageChannel)(const std::string&);
         ObjectResponse<User> (*getUser)(const std::string&);
