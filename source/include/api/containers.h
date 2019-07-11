@@ -63,45 +63,6 @@ namespace Farage
         std::string email;
     };
     
-    struct Message
-    {
-        //void *raw;
-        std::string id;
-        std::string channel_id;
-        std::string guild_id;
-        User author;
-        std::string content;
-        std::string timestamp;
-        std::string edited_timestamp;
-        bool tts;
-        bool mention_everyone;
-        std::vector<User> mentions;
-        std::vector<std::string> mention_roles;
-        bool pinned;
-        int type;
-    };
-    
-    struct Channel
-    {
-        //void *raw;
-        std::string id;
-        int type;
-        std::string guild_id;
-        int position;
-        std::string name;
-        std::string topic;
-        bool nsfw;
-        std::string last_message_id;
-        int bitrate;
-        int user_limit;
-        std::vector<User> recipients;
-        std::string icon;
-        std::string owner_id;
-        //std::string application_id;
-        std::string parent_id;
-        std::string last_pin_timestamp;
-    };
-    
     struct Role
     {
         std::string id;
@@ -138,6 +99,13 @@ namespace Farage
         }
     };
     
+    struct Reaction
+    {
+        int count;
+        bool me;
+        Emoji emoji;
+    };
+    
     struct ServerMember
     {
         User user;
@@ -146,6 +114,121 @@ namespace Farage
         std::string joined_at;
         bool deaf;
         bool mute;
+    };
+    
+    struct Attachment
+    {
+        std::string id;
+        std::string filename;
+        uint64_t size;
+        std::string url;
+        std::string proxy_url;
+        uint64_t height;
+        uint64_t width;
+    };
+    
+    struct EmbedFooter
+    {
+        std::string text;
+        std::string icon_url;
+        std::string proxy_icon_url;
+    };
+    
+    struct EmbedImage
+    {
+        std::string url;
+        std::string proxy_url;
+        int64_t height = 0;
+        int64_t width = 0;
+    };
+    
+    struct EmbedVideo
+    {
+        std::string url;
+        int64_t height = 0;
+        int64_t width = 0;
+    };
+    
+    struct EmbedProvider
+    {
+        std::string name;
+        std::string url;
+    };
+    
+    struct EmbedAuthor
+    {
+        std::string name;
+        std::string url;
+        std::string icon_url;
+        std::string proxy_icon_url;
+    };
+    
+    struct EmbedField
+    {
+        std::string name;
+        std::string value;
+        bool _inline;
+    };
+    
+    struct Embed
+    {
+        std::string title;
+        std::string type;
+        std::string description;
+        std::string url;
+        std::string timestamp;
+        int32_t color;
+        EmbedFooter footer;
+        EmbedImage image;
+        EmbedImage thumbnail;
+        EmbedVideo video;
+        EmbedProvider provider;
+        EmbedAuthor author;
+        std::vector<EmbedField> fields;
+    };
+    
+    struct Message
+    {
+        //void *raw;
+        std::string id;
+        std::string channel_id;
+        std::string guild_id;
+        User author;
+        ServerMember member;
+        std::string content;
+        std::string timestamp;
+        std::string edited_timestamp;
+        bool tts;
+        bool mention_everyone;
+        std::vector<User> mentions;
+        std::vector<std::string> mention_roles;
+        std::vector<Attachment> attachments;
+        std::vector<Embed> embeds;
+        std::vector<Reaction> reactions;
+        bool pinned;
+        std::string webhook_id;
+        int type;
+    };
+    
+    struct Channel
+    {
+        //void *raw;
+        std::string id;
+        int type;
+        std::string guild_id;
+        int position;
+        std::string name;
+        std::string topic;
+        bool nsfw;
+        std::string last_message_id;
+        int bitrate;
+        int user_limit;
+        std::vector<User> recipients;
+        std::string icon;
+        std::string owner_id;
+        //std::string application_id;
+        std::string parent_id;
+        std::string last_pin_timestamp;
     };
     
     struct Server
@@ -272,13 +355,6 @@ namespace Farage
         std::string token;
         std::string guild_id;
         std::string endpoint;
-    };
-    
-    struct Reaction
-    {
-        int count;
-        bool me;
-        Emoji emoji;
     };
     
     struct Invite

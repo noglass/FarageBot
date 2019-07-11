@@ -112,28 +112,27 @@ namespace Farage
         return std::move(fserver);
     }
     
-    Message convertMessage(SleepyDiscord::Message message)
+    Emoji convertEmoji(SleepyDiscord::Emoji emoji)
     {
-        Message fmessage = {
-            std::move(message.ID),
-            std::move(message.channelID),
-            std::move(message.serverID),
-            std::move(convertUser(std::move(message.author))),
-            std::move(message.content),
-            std::move(message.timestamp),
-            std::move(message.editedTimestamp),
-            std::move(message.tts),
-            std::move(message.mentionEveryone),
-            std::vector<User>(message.mentions.size()),
-            std::vector<std::string>(message.mentionRoles.size()),
-            std::move(message.pinned),
-            std::move(message.type)
-        };
-        auto itt = fmessage.mentions.begin();
-        for (auto it = message.mentions.begin(), ite = message.mentions.end();it != ite;++it,++itt)
-            *itt = std::move(convertUser(std::move(*it)));
-        fmessage.mention_roles.assign(message.mentionRoles.begin(),message.mentionRoles.end());
-        return std::move(fmessage);
+        std::vector<Role> roles;
+        roles.reserve(emoji.roles.size());
+        for (auto it = emoji.roles.begin(), ite = emoji.roles.end();it != ite;++it)
+            roles.push_back(std::move(convertRole(std::move(*it))));
+        Emoji femoji(
+            std::move(emoji.ID),
+            std::move(emoji.name),
+            std::move(roles),
+            std::move(convertUser(std::move(emoji.user))),
+            emoji.requireColons,
+            emoji.managed,
+            false
+        );
+        return std::move(femoji);
+    }
+    
+    Reaction convertReaction(SleepyDiscord::Reaction reaction)
+    {
+        return Reaction{ std::move(reaction.count), std::move(reaction.me), std::move(convertEmoji(std::move(reaction.emoji))) };
     }
     
     Ready convertReady(SleepyDiscord::Ready readyData)
@@ -157,24 +156,6 @@ namespace Farage
         }
         //fready.guilds.assign(readyData.servers.begin(),readyData.servers.end());
         return std::move(fready);
-    }
-    
-    Emoji convertEmoji(SleepyDiscord::Emoji emoji)
-    {
-        std::vector<Role> roles;
-        roles.reserve(emoji.roles.size());
-        for (auto it = emoji.roles.begin(), ite = emoji.roles.end();it != ite;++it)
-            roles.push_back(std::move(convertRole(std::move(*it))));
-        Emoji femoji(
-            std::move(emoji.ID),
-            std::move(emoji.name),
-            std::move(roles),
-            std::move(convertUser(std::move(emoji.user))),
-            emoji.requireColons,
-            emoji.managed,
-            false
-        );
-        return std::move(femoji);
     }
     
     ActivityAssets convertActivityAssets(SleepyDiscord::ActivityAssets assets)
@@ -248,11 +229,6 @@ namespace Farage
         return VoiceServerUpdate{ std::move(update.token), std::move(update.serverID), std::move(update.endpoint) };
     }
     
-    Reaction convertReaction(SleepyDiscord::Reaction reaction)
-    {
-        return Reaction{ std::move(reaction.count), std::move(reaction.me), std::move(convertEmoji(std::move(reaction.emoji))) };
-    }
-    
     Invite convertInvite(SleepyDiscord::Invite invite)
     {
         return Invite{ std::move(invite.code), std::move(convertServer(std::move(invite.server))), std::move(convertChannel(std::move(invite.channel))) };
@@ -261,6 +237,115 @@ namespace Farage
     ServerEmbed convertServerEmbed(SleepyDiscord::ServerEmbed embed)
     {
         return ServerEmbed{ std::move(embed.enabled), std::move(embed.channelID) };
+    }
+    
+    Attachment convertAttachment(SleepyDiscord::Attachment attach)
+    {
+        return Attachment{ std::move(attach.ID), std::move(attach.filename), std::move(attach.size), std::move(attach.url), std::move(attach.proxy_url), std::move(attach.height), std::move(attach.width) };
+    }
+    
+    EmbedFooter convertEmbedFooter(SleepyDiscord::EmbedFooter embed)
+    {
+        return EmbedFooter{ std::move(embed.text), std::move(embed.iconUrl), std::move(embed.proxyIconUrl) };
+    }
+    
+    EmbedImage convertEmbedImage(SleepyDiscord::EmbedImage embed)
+    {
+        return EmbedImage{ std::move(embed.url), std::move(embed.proxyUrl), std::move(embed.height), std::move(embed.width) };
+    }
+    
+    EmbedImage convertEmbedThumbnail(SleepyDiscord::EmbedThumbnail embed)
+    {
+        return EmbedImage{ std::move(embed.url), std::move(embed.proxyUrl), std::move(embed.height), std::move(embed.width) };
+    }
+    
+    EmbedVideo convertEmbedVideo(SleepyDiscord::EmbedVideo embed)
+    {
+        return EmbedVideo{ std::move(embed.url), std::move(embed.height), std::move(embed.width) };
+    }
+    
+    EmbedProvider convertEmbedProvider(SleepyDiscord::EmbedProvider embed)
+    {
+        return EmbedProvider{ std::move(embed.name), std::move(embed.url) };
+    }
+    
+    EmbedAuthor convertEmbedAuthor(SleepyDiscord::EmbedAuthor embed)
+    {
+        return EmbedAuthor{ std::move(embed.name), std::move(embed.url), std::move(embed.iconUrl), std::move(embed.proxyIconUrl) };
+    }
+    
+    EmbedField convertEmbedField(SleepyDiscord::EmbedField embed)
+    {
+        return EmbedField{ std::move(embed.name), std::move(embed.value), std::move(embed.isInline) };
+    }
+    
+    Embed convertEmbed(SleepyDiscord::Embed embed)
+    {
+        Embed fembed = {
+            std::move(embed.title),
+            std::move(embed.type),
+            std::move(embed.description),
+            std::move(embed.url),
+            std::move(embed.timestamp),
+            std::move(embed.color),
+            std::move(convertEmbedFooter(std::move(embed.footer))),
+            std::move(convertEmbedImage(std::move(embed.image))),
+            std::move(convertEmbedThumbnail(std::move(embed.thumbnail))),
+            std::move(convertEmbedVideo(std::move(embed.video))),
+            std::move(convertEmbedProvider(std::move(embed.provider))),
+            std::move(convertEmbedAuthor(std::move(embed.author))),
+            std::vector<EmbedField>(embed.fields.size()),
+        };
+        auto itt = fembed.fields.begin();
+        for (auto it = embed.fields.begin(), ite = embed.fields.end();it != ite;++it,++itt)
+            *itt = std::move(convertEmbedField(std::move(*it)));
+        return fembed;
+    }
+    
+    Message convertMessage(SleepyDiscord::Message message)
+    {
+        Message fmessage = {
+            std::move(message.ID),
+            std::move(message.channelID),
+            std::move(message.serverID),
+            std::move(convertUser(std::move(message.author))),
+            std::move(convertServerMember(std::move(message.member))),
+            std::move(message.content),
+            std::move(message.timestamp),
+            std::move(message.editedTimestamp),
+            std::move(message.tts),
+            std::move(message.mentionEveryone),
+            std::vector<User>(message.mentions.size()),
+            std::vector<std::string>(message.mentionRoles.size()),
+            std::vector<Attachment>(message.attachments.size()),
+            std::vector<Embed>(message.embeds.size()),
+            std::vector<Reaction>(message.reactions.size()),
+            std::move(message.pinned),
+            std::move(message.webhookID),
+            std::move(message.type)
+        };
+        {
+            auto itt = fmessage.mentions.begin();
+            for (auto it = message.mentions.begin(), ite = message.mentions.end();it != ite;++it,++itt)
+                *itt = std::move(convertUser(std::move(*it)));
+        }
+        fmessage.mention_roles.assign(message.mentionRoles.begin(),message.mentionRoles.end());
+        {
+            auto itt = fmessage.attachments.begin();
+            for (auto it = message.attachments.begin(), ite = message.attachments.end();it != ite;++it,++itt)
+                *itt = std::move(convertAttachment(std::move(*it)));
+        }
+        {
+            auto itt = fmessage.embeds.begin();
+            for (auto it = message.embeds.begin(), ite = message.embeds.end();it != ite;++it,++itt)
+                *itt = std::move(convertEmbed(std::move(*it)));
+        }
+        {
+            auto itt = fmessage.reactions.begin();
+            for (auto it = message.reactions.begin(), ite = message.reactions.end();it != ite;++it,++itt)
+                *itt = std::move(convertReaction(std::move(*it)));
+        }
+        return std::move(fmessage);
     }
                                                                                 
     inline User                convertObject(SleepyDiscord::User user)                 { return convertUser(std::move(user)); }
@@ -282,6 +367,8 @@ namespace Farage
     inline Invite              convertObject(SleepyDiscord::Invite invite)             { return convertInvite(std::move(invite)); }
     inline VoiceRegion         convertObject(SleepyDiscord::VoiceRegion region)        { return convertVoiceRegion(std::move(region)); }
     inline ServerEmbed         convertObject(SleepyDiscord::ServerEmbed embed)         { return convertServerEmbed(std::move(embed)); }
+    inline Attachment          convertObject(SleepyDiscord::Attachment attach)         { return convertAttachment(std::move(attach)); }
+    inline Embed               convertObject(SleepyDiscord::Embed embed)               { return convertEmbed(std::move(embed)); }
     
     template<class FromType, class ToType>
     ArrayResponse<ToType> convertArrayResponse(SleepyDiscord::ArrayResponse<FromType> response)
