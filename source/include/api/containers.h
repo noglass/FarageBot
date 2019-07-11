@@ -317,6 +317,7 @@ namespace Farage
     struct ArrayResponse
     {
         ArrayResponse(Response resp, std::vector<T> list) : response(std::move(resp)), array(std::move(list)) {}
+        ArrayResponse(Response resp) : response(std::move(resp)) {}
         ArrayResponse() {}
         
         Response response;
