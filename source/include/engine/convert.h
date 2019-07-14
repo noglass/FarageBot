@@ -3,6 +3,70 @@
 
 namespace Farage
 {
+    struct EditMessage : public SleepyDiscord::IdentifiableDiscordObject<Farage::EditMessage>
+    {
+        public:
+            EditMessage() = default;
+            //~EditMessage();
+            //Message(const json::Values values);
+            //Message(const std::string * rawJson);
+            EditMessage(const SleepyDiscord::json::Value& json) : Farage::EditMessage(SleepyDiscord::json::fromJSON<Farage::EditMessage>(json)) {}
+            EditMessage(const nonstd::string_view& json) : Farage::EditMessage(SleepyDiscord::json::fromJSON<Farage::EditMessage>(json)) {}
+            //using DiscordObject::DiscordObject;
+            std::size_t length() { return content.length(); }
+
+            SleepyDiscord::Snowflake<SleepyDiscord::Channel> channelID;
+            SleepyDiscord::Snowflake<SleepyDiscord::Server> serverID;
+            SleepyDiscord::User author;
+            SleepyDiscord::ServerMember member;
+            std::string content;
+            std::string timestamp;
+            std::string editedTimestamp;
+            bool tts = false;
+            bool mentionEveryone = false;
+            std::vector<SleepyDiscord::User> mentions;
+            std::vector<SleepyDiscord::Snowflake<SleepyDiscord::User>> mentionRoles;
+            std::vector<SleepyDiscord::Attachment> attachments;
+            std::vector<SleepyDiscord::Embed> embeds;
+            std::vector<SleepyDiscord::Reaction> reactions;
+            bool pinned = false;
+            SleepyDiscord::Snowflake<SleepyDiscord::Webhook> webhookID;
+            enum MessageType {
+                DEFAULT                = 0,
+                RECIPIENT_ADD          = 1,
+                RECIPIENT_REMOVE       = 2,
+                CALL                   = 3,
+                CHANNEL_NAME_CHANGE    = 4,
+                CHANNEL_ICON_CHANGE    = 5,
+                CHANNEL_PINNED_MESSAGE = 6,
+                GUILD_MEMBER_JOIN      = 7
+            } type = DEFAULT;
+
+            //const static std::initializer_list<const char*const> fields;
+            JSONStructStart
+                std::make_tuple(
+                    SleepyDiscord::json::pair                           (&Farage::EditMessage::ID             , "id"              , SleepyDiscord::json::OPTIONAL_FIELD        ),
+                    SleepyDiscord::json::pair                           (&Farage::EditMessage::channelID      , "channel_id"      , SleepyDiscord::json::OPTIONAL_FIELD        ),
+                    SleepyDiscord::json::pair                           (&Farage::EditMessage::serverID       , "guild_id"        , SleepyDiscord::json::OPTIONAL_FIELD         ),
+                    SleepyDiscord::json::pair                           (&Farage::EditMessage::author         , "author"          , SleepyDiscord::json::OPTIONAL_FIELD        ),
+                    SleepyDiscord::json::pair                           (&Farage::EditMessage::content        , "content"         , SleepyDiscord::json::OPTIONAL_FIELD        ),
+                    SleepyDiscord::json::pair                           (&Farage::EditMessage::member         , "member"          , SleepyDiscord::json::OPTIONAL_FIELD         ),
+                    SleepyDiscord::json::pair                           (&Farage::EditMessage::timestamp      , "timestamp"       , SleepyDiscord::json::OPTIONAL_FIELD        ),
+                    SleepyDiscord::json::pair                           (&Farage::EditMessage::editedTimestamp, "edited_timestamp", SleepyDiscord::json::NULLABLE_FIELD         ),
+                    SleepyDiscord::json::pair                           (&Farage::EditMessage::tts            , "tts"             , SleepyDiscord::json::OPTIONAL_FIELD        ),
+                    SleepyDiscord::json::pair                           (&Farage::EditMessage::mentionEveryone, "mention_everyone", SleepyDiscord::json::OPTIONAL_FIELD        ),
+                    SleepyDiscord::json::pair<SleepyDiscord::json::ContainerTypeHelper>(&Farage::EditMessage::mentions       , "mentions"        , SleepyDiscord::json::OPTIONAL_FIELD        ),
+                    SleepyDiscord::json::pair<SleepyDiscord::json::ContainerTypeHelper>(&Farage::EditMessage::mentionRoles   , "mention_roles"   , SleepyDiscord::json::OPTIONAL_FIELD        ),
+                    SleepyDiscord::json::pair<SleepyDiscord::json::ContainerTypeHelper>(&Farage::EditMessage::attachments    , "attachments"     , SleepyDiscord::json::OPTIONAL_FIELD        ),
+                    SleepyDiscord::json::pair<SleepyDiscord::json::ContainerTypeHelper>(&Farage::EditMessage::embeds         , "embeds"          , SleepyDiscord::json::OPTIONAL_FIELD        ),
+                    SleepyDiscord::json::pair<SleepyDiscord::json::ContainerTypeHelper>(&Farage::EditMessage::reactions      , "reactions"       , SleepyDiscord::json::OPTIONAL_FIELD         ),
+                    SleepyDiscord::json::pair                           (&Farage::EditMessage::pinned         , "pinned"          , SleepyDiscord::json::OPTIONAL_FIELD        ),
+                    SleepyDiscord::json::pair                           (&Farage::EditMessage::webhookID      , "webhook_id"      , SleepyDiscord::json::OPTIONAL_FIELD         ),
+                    SleepyDiscord::json::pair<SleepyDiscord::json::EnumTypeHelper     >(&Farage::EditMessage::type           , "type"            , SleepyDiscord::json::OPTIONAL_FIELD        )
+                );
+            JSONStructEnd
+    };
+    
     User convertUser(SleepyDiscord::User user)
     {
         return User{
@@ -301,8 +365,8 @@ namespace Farage
             *itt = std::move(convertEmbedField(std::move(*it)));
         return fembed;
     }
-    
-    Message convertMessage(SleepyDiscord::Message message)
+    template<class T>
+    Message convertMessage(T message)
     {
         Message fmessage = {
             std::move(message.ID),
@@ -346,6 +410,14 @@ namespace Farage
                 *itt = std::move(convertReaction(std::move(*it)));
         }
         return std::move(fmessage);
+    }
+    inline Message convertMessage(Farage::EditMessage message)
+    {
+        return convertMessage<Farage::EditMessage>(message);
+    }
+    inline Message convertMessage(SleepyDiscord::Message message)
+    {
+        return convertMessage<SleepyDiscord::Message>(message);
     }
                                                                                 
     inline User                convertObject(SleepyDiscord::User user)                 { return convertUser(std::move(user)); }

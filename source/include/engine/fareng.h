@@ -789,7 +789,7 @@ OPTIONS\n\
             void onEditMessage(const SleepyDiscord::json::Value& jsonMessage)
             {
                 Farage::Global *global = Farage::recallGlobal();
-                Message message = convertMessage(SleepyDiscord::Message(jsonMessage));
+                Message message = convertMessage(Farage::EditMessage(jsonMessage));
                 bool blockEvent = false;
                 std::string guildName, chanName;
                 bool guildSet = false;
