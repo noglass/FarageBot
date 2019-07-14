@@ -797,7 +797,7 @@ OPTIONS\n\
                 {
                     for (auto pit = (*it)->editHooks.begin();pit != (*it)->editHooks.end();)
                     {
-                        if ((*pit)->matches(message.author.id,message.channel_id,message.id,message.guild_id)
+                        if ((*pit)->matches(message.author.id,message.channel_id,message.id,message.guild_id))
                         {
                             int flags = (*pit)->flags;
                             if ((flags & HOOK_PRINT) == HOOK_PRINT)
@@ -807,7 +807,7 @@ OPTIONS\n\
                                     auto cache = ((BotClass*)(global->discord))->getServerCache();
                                     for (auto it = cache->begin(), ite = cache->end();it != ite;++it)
                                     {
-                                        auto chanIt = it->findChannel(channelID);
+                                        auto chanIt = it->findChannel(message.channel_id);
                                         if (chanIt != it->channels.end())
                                         {
                                             guildName = it->name;
