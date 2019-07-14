@@ -789,10 +789,64 @@ OPTIONS\n\
             void onEditMessage(const SleepyDiscord::json::Value& jsonMessage)
             {
                 Farage::Global *global = Farage::recallGlobal();
-                void *arg0 = (void*)(&jsonMessage);
+                Message message = convertMessage(SleepyDiscord::Message(jsonMessage));
+                bool blockEvent = false;
+                std::string guildName, chanName;
+                bool guildSet = false;
                 for (auto it = global->plugins.begin(), ite = global->plugins.end();it != ite;++it)
-                    if ((*it)->callEvent(Event::ONEDITMESSAGE,arg0,nullptr,nullptr,nullptr) == PLUGIN_HANDLED)
-                        break;
+                {
+                    for (auto pit = (*it)->editHooks.begin();pit != (*it)->editHooks.end();)
+                    {
+                        if ((*pit)->matches(message.author.id,message.channel_id,message.id,message.guild_id)
+                        {
+                            int flags = (*pit)->flags;
+                            if ((flags & HOOK_PRINT) == HOOK_PRINT)
+                            {
+                                if (!guildSet)
+                                {
+                                    auto cache = ((BotClass*)(global->discord))->getServerCache();
+                                    for (auto it = cache->begin(), ite = cache->end();it != ite;++it)
+                                    {
+                                        auto chanIt = it->findChannel(channelID);
+                                        if (chanIt != it->channels.end())
+                                        {
+                                            guildName = it->name;
+                                            chanName = chanIt->name;
+                                            break;
+                                        }
+                                    }
+                                    guildSet = true;
+                                }
+                                consoleOut("[" + (*pit)->name + "][" + guildName + "](#" + chanName + ")(" + message.id + ")<" + message.author.username + "> Edit: " + message.content);
+                            }
+                            int ret = PLUGIN_CONTINUE;
+                            if ((*pit)->func != nullptr)
+                                ret = (*(*pit)->func)(**it,*pit,message);
+                            if (ret & PLUGIN_ERASE)
+                            {
+                                delete *pit;
+                                pit = (*it)->editHooks.erase(pit);
+                            }
+                            else
+                                pit++;
+                            if (ret & PLUGIN_HANDLED)
+                                return;
+                            if ((flags & HOOK_BLOCK_EVENT) == HOOK_BLOCK_EVENT)
+                                blockEvent = true;
+                            if ((flags & HOOK_BLOCK_HOOK) == HOOK_BLOCK_HOOK)
+                                break;
+                        }
+                        else
+                            pit++;
+                    }
+                }
+                if (!blockEvent)
+                {
+                    void *arg0 = (void*)(&message);
+                    for (auto it = global->plugins.begin(), ite = global->plugins.end();it != ite;++it)
+                        if ((*it)->callEvent(Event::ONEDITMESSAGE,arg0,nullptr,nullptr,nullptr) == PLUGIN_HANDLED)
+                            break;
+                }
             }
             
             void onEditVoiceServer(SleepyDiscord::VoiceServerUpdate& update)
@@ -2801,6 +2855,13 @@ OPTIONS\n\
                                     consoleOut("    Registered React Hooks:");
                                     size_t c = 0;
                                     for (auto com = (*it)->reactHooks.begin(), come = (*it)->reactHooks.end();com != come;++com)
+                                        consoleOut("        [" + std::to_string(c++) + "]\t" + (*com)->name + "\t(" + std::to_string((*com)->flags) + ")\t Type: " + std::to_string((*com)->type));
+                                }
+                                if ((*it)->editHooks.size() > 0)
+                                {
+                                    consoleOut("    Registered Edit Hooks:");
+                                    size_t c = 0;
+                                    for (auto com = (*it)->editHooks.begin(), come = (*it)->editHooks.end();com != come;++com)
                                         consoleOut("        [" + std::to_string(c++) + "]\t" + (*com)->name + "\t(" + std::to_string((*com)->flags) + ")\t Type: " + std::to_string((*com)->type));
                                 }
                                 if ((*it)->timers.size() > 0)

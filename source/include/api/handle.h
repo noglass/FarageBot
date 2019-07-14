@@ -35,6 +35,7 @@ namespace Farage
             std::vector<Timer*> timers;
             std::vector<GlobVar*> globVars;
             std::vector<ReactHook*> reactHooks;
+            std::vector<EditHook*> editHooks;
             
             void unload(Global *global = nullptr);
             
@@ -159,6 +160,14 @@ namespace Farage
             size_t unhookReaction(Farage::ReactHook* hook);
             //ReactHook* hookReaction(const std::string &name, ReactHookCallback func, const std::string &emoji);
             //ReactHook* hookReaction(const std::string &name, ReactHookCallback func, const Emoji &emoji);
+            
+            EditHook* hookEditMessage(const std::string &name, EditHookCallback func, int flags, const Message &message);
+            EditHook* hookEditMessage(const std::string &name, EditHookCallback func, int flags = 0, const std::string &messageID = "");
+            EditHook* hookEditMessageUser(const std::string &name, EditHookCallback func, int flags, const std::string &userID);
+            EditHook* hookEditMessageChannel(const std::string &name, EditHookCallback func, int flags, const std::string &channelID, const std::string &userID = "");
+            EditHook* hookEditMessageGuild(const std::string &name, EditHookCallback func, int flags, const std::string &guildID, const std::string &userID = "");
+            size_t unhookEditMessage(const std::string &name);
+            size_t unhookEditMessage(EditHook* hook);
             
             //size_t totalChatCmds() { return chatCommands.size(); }
             //size_t totalConsoleCmds() { return consoleCommands.size(); }

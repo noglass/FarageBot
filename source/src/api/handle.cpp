@@ -706,56 +706,56 @@ int Farage::Handle::setLoadPriority(size_t loadPriority, bool write, short shift
 
 Farage::ReactHook* Farage::Handle::hookReactionMessage(const std::string &name, Farage::ReactHookCallback func, int flags, const std::string &messageID, const std::string &emoji, const std::string &userID)
 {
-    Farage::ReactHook *hook = new Farage::ReactHook{name,userID,messageID,Farage::ReactHookType::msg,Farage::Emoji(emoji),func,flags};
+    Farage::ReactHook *hook = new Farage::ReactHook{name,userID,messageID,Farage::HookType::msg,Farage::Emoji(emoji),func,flags};
     reactHooks.push_back(hook);
     return hook;
 }
 
 Farage::ReactHook* Farage::Handle::hookReactionMessage(const std::string &name, Farage::ReactHookCallback func, int flags, const std::string &messageID, const Farage::Emoji &emoji, const std::string &userID)
 {
-    Farage::ReactHook *hook = new Farage::ReactHook{name,userID,messageID,Farage::ReactHookType::msg,emoji,func,flags};
+    Farage::ReactHook *hook = new Farage::ReactHook{name,userID,messageID,Farage::HookType::msg,emoji,func,flags};
     reactHooks.push_back(hook);
     return hook;
 }
 
 Farage::ReactHook* Farage::Handle::hookReactionGuild(const std::string &name, Farage::ReactHookCallback func, int flags, const std::string &guildID, const std::string &emoji, const std::string &userID)
 {
-    Farage::ReactHook *hook = new Farage::ReactHook{name,userID,guildID,Farage::ReactHookType::guild,Farage::Emoji(emoji),func,flags};
+    Farage::ReactHook *hook = new Farage::ReactHook{name,userID,guildID,Farage::HookType::guild,Farage::Emoji(emoji),func,flags};
     reactHooks.push_back(hook);
     return hook;
 }
 
 Farage::ReactHook* Farage::Handle::hookReactionGuild(const std::string &name, Farage::ReactHookCallback func, int flags, const std::string &guildID, const Farage::Emoji &emoji, const std::string &userID)
 {
-    Farage::ReactHook *hook = new Farage::ReactHook{name,userID,guildID,Farage::ReactHookType::guild,emoji,func,flags};
+    Farage::ReactHook *hook = new Farage::ReactHook{name,userID,guildID,Farage::HookType::guild,emoji,func,flags};
     reactHooks.push_back(hook);
     return hook;
 }
 
 Farage::ReactHook* Farage::Handle::hookReactionChannel(const std::string &name, Farage::ReactHookCallback func, int flags, const std::string &channelID, const std::string &emoji, const std::string &userID)
 {
-    Farage::ReactHook *hook = new Farage::ReactHook{name,userID,channelID,Farage::ReactHookType::chan,Farage::Emoji(emoji),func,flags};
+    Farage::ReactHook *hook = new Farage::ReactHook{name,userID,channelID,Farage::HookType::chan,Farage::Emoji(emoji),func,flags};
     reactHooks.push_back(hook);
     return hook;
 }
 
 Farage::ReactHook* Farage::Handle::hookReactionChannel(const std::string &name, Farage::ReactHookCallback func, int flags, const std::string &channelID, const Farage::Emoji &emoji, const std::string &userID)
 {
-    Farage::ReactHook *hook = new Farage::ReactHook{name,userID,channelID,Farage::ReactHookType::chan,emoji,func,flags};
+    Farage::ReactHook *hook = new Farage::ReactHook{name,userID,channelID,Farage::HookType::chan,emoji,func,flags};
     reactHooks.push_back(hook);
     return hook;
 }
 
 Farage::ReactHook* Farage::Handle::hookReaction(const std::string &name, Farage::ReactHookCallback func, int flags, const std::string &emoji, const std::string &userID)
 {
-    Farage::ReactHook *hook = new Farage::ReactHook{name,userID,"",Farage::ReactHookType::any,Farage::Emoji(emoji),func,flags};
+    Farage::ReactHook *hook = new Farage::ReactHook{name,userID,"",Farage::HookType::any,Farage::Emoji(emoji),func,flags};
     reactHooks.push_back(hook);
     return hook;
 }
 
 Farage::ReactHook* Farage::Handle::hookReaction(const std::string &name, Farage::ReactHookCallback func, int flags, const Farage::Emoji &emoji, const std::string &userID)
 {
-    Farage::ReactHook *hook = new Farage::ReactHook{name,userID,"",Farage::ReactHookType::any,emoji,func,flags};
+    Farage::ReactHook *hook = new Farage::ReactHook{name,userID,"",Farage::HookType::any,emoji,func,flags};
     reactHooks.push_back(hook);
     return hook;
 }
@@ -786,6 +786,75 @@ size_t Farage::Handle::unhookReaction(Farage::ReactHook* hook)
         {
             delete *it;
             it = reactHooks.erase(it);
+            count++;
+        }
+        else
+            ++it;
+    }
+    return count;
+}
+
+Farage::EditHook* Farage::Handle::hookEditMessage(const std::string &name, Farage::EditHookCallback func, int flags, const Farage::Message &message)
+{
+    Farage::EditHook *hook = new Farage::EditHook{name,"",message.id,Farage::HookType::msg,func,flags};
+    editHooks.push_back(hook);
+    return hook;
+}
+
+Farage::EditHook* Farage::Handle::hookEditMessage(const std::string &name, Farage::EditHookCallback func, int flags, const std::string &messageID)
+{
+    Farage::EditHook *hook = new Farage::EditHook{name,"",messageID,Farage::HookType::msg,func,flags};
+    editHooks.push_back(hook);
+    return hook;
+}
+
+Farage::EditHook* Farage::Handle::hookEditMessageUser(const std::string &name, Farage::EditHookCallback func, int flags, const std::string &userID)
+{
+    Farage::EditHook *hook = new Farage::EditHook{name,userID,"",Farage::HookType::any,func,flags};
+    editHooks.push_back(hook);
+    return hook;
+}
+
+Farage::EditHook* Farage::Handle::hookEditMessageChannel(const std::string &name, Farage::EditHookCallback func, int flags, const std::string &channelID, const std::string &userID)
+{
+    Farage::EditHook *hook = new Farage::EditHook{name,userID,channelID,Farage::HookType::chan,func,flags};
+    editHooks.push_back(hook);
+    return hook;
+}
+
+Farage::EditHook* Farage::Handle::hookEditMessageGuild(const std::string &name, Farage::EditHookCallback func, int flags, const std::string &guildID, const std::string &userID)
+{
+    Farage::EditHook *hook = new Farage::EditHook{name,userID,guildID,Farage::HookType::guild,func,flags};
+    editHooks.push_back(hook);
+    return hook;
+}
+
+size_t Farage::Handle::unhookEditMessage(const std::string &name)
+{
+    size_t count = 0;
+    for (auto it = editHooks.begin();it != editHooks.end();)
+    {
+        if ((*it)->name == name)
+        {
+            delete *it;
+            it = editHooks.erase(it);
+            count++;
+        }
+        else
+            ++it;
+    }
+    return count;
+}
+
+size_t Farage::Handle::unhookEditMessage(Farage::EditHook* hook)
+{
+    size_t count = 0;
+    for (auto it = editHooks.begin();it != editHooks.end();)
+    {
+        if (*it == hook)
+        {
+            delete *it;
+            it = editHooks.erase(it);
             count++;
         }
         else

@@ -14,8 +14,9 @@ namespace Farage
     class Handle;
     struct ChatHook;
     struct ReactHook;
+    struct EditHook;
     
-    enum ReactHookType
+    enum HookType
     {
         any,
         msg,
@@ -25,6 +26,7 @@ namespace Farage
     
     typedef int (*ChatHookCallback)(Handle&,ChatHook*,const rens::smatch&,const Message&);
     typedef int (*ReactHookCallback)(Handle&,ReactHook*,const ServerMember&,const Channel&,const std::string&,const std::string&,const Emoji&);
+    typedef int (*EditHookCallback)(Handle&,EditHook*,const Message&);
     
     struct ChatHook
     {
@@ -39,7 +41,7 @@ namespace Farage
         std::string name;
         std::string user;
         std::string anyID;
-        ReactHookType type;
+        HookType type;
         Emoji emoji;
         ReactHookCallback func;
         int flags;
@@ -73,6 +75,46 @@ namespace Farage
             }
             if (((emoji.id.size() > 0) || (emoji.name.size() > 0)) && (emoji != reaction))
                 return false;
+            return true;
+        }
+    };
+    
+    struct EditHook
+    {
+        std::string name;
+        std::string user;
+        std::string anyID;
+        HookType type;
+        EditHookCallback func;
+        int flags;
+        bool matches(const std::string &userID, const std::string &channelID, const std::string &messageID, const std::string &guildID)
+        {
+            if ((user.size() > 0) && (user != userID))
+                return false;
+            if (anyID.size() > 0)
+            {
+                switch (type)
+                {
+                    case msg:
+                    {
+                        if (anyID != messageID)
+                            return false;
+                        break;
+                    }
+                    case guild:
+                    {
+                        if (anyID != guildID)
+                            return false;
+                        break;
+                    }
+                    case chan:
+                    {
+                        if (anyID != channelID)
+                            return false;
+                        break;
+                    }
+                }
+            }
             return true;
         }
     };
