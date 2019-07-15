@@ -211,9 +211,9 @@ std::string pcre2w::regex_replace(const std::string &subject, const pcre2w::rege
     std::string out;
     if (outsize > 0)
     {
-        out = (char*)outbuf;
-        if (out.size() > (size_t)outsize)
-            out.erase((size_t)outsize);
+        out = std::string((char*)outbuf,outsize);
+        if (out.size() > outsize)
+            out.erase(outsize);
     }
     delete[] outbuf;
     return out;
