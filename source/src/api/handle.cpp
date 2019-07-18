@@ -863,6 +863,80 @@ size_t Farage::Handle::unhookEditMessage(Farage::EditHook* hook)
     return count;
 }
 
+Farage::DeleteHook* Farage::Handle::hookDeleteMessage(const std::string &name, Farage::DeleteHookCallback func, int flags, const Farage::Message &message)
+{
+    Farage::DeleteHook *hook = new Farage::DeleteHook{name,message.channel_id,message.id,Farage::HookType::msg,func,flags};
+    deleteHooks.push_back(hook);
+    return hook;
+}
+
+Farage::DeleteHook* Farage::Handle::hookDeleteMessage(const std::string &name, Farage::DeleteHookCallback func, int flags, const std::string &channelID, const std::string &messageID, const std::string &guildID)
+{
+    Farage::HookType type = any;
+    std::string id;
+    if (guildID.size() > 0)
+    {
+        type = guild;
+        id = guildID;
+    }
+    else if (messageID.size() > 0)
+    {
+        type = msg;
+        id = messageID;
+    }
+    Farage::DeleteHook *hook = new Farage::DeleteHook{name,channelID,id,type,func,flags};
+    deleteHooks.push_back(hook);
+    return hook;
+}
+
+Farage::DeleteHook* Farage::Handle::hookDeleteMessageChannel(const std::string &name, Farage::DeleteHookCallback func, int flags, const std::string &channelID, const std::string &guildID)
+{
+    Farage::DeleteHook *hook = new Farage::DeleteHook{name,channelID,guildID,Farage::HookType::chan,func,flags};
+    deleteHooks.push_back(hook);
+    return hook;
+}
+
+Farage::DeleteHook* Farage::Handle::hookDeleteMessageGuild(const std::string &name, Farage::DeleteHookCallback func, int flags, const std::string &guildID)
+{
+    Farage::DeleteHook *hook = new Farage::DeleteHook{name,"",guildID,Farage::HookType::guild,func,flags};
+    deleteHooks.push_back(hook);
+    return hook;
+}
+
+size_t Farage::Handle::unhookDeleteMessage(const std::string &name)
+{
+    size_t count = 0;
+    for (auto it = deleteHooks.begin();it != deleteHooks.end();)
+    {
+        if ((*it)->name == name)
+        {
+            delete *it;
+            it = deleteHooks.erase(it);
+            count++;
+        }
+        else
+            ++it;
+    }
+    return count;
+}
+
+size_t Farage::Handle::unhookDeleteMessage(Farage::DeleteHook* hook)
+{
+    size_t count = 0;
+    for (auto it = deleteHooks.begin();it != deleteHooks.end();)
+    {
+        if (*it == hook)
+        {
+            delete *it;
+            it = deleteHooks.erase(it);
+            count++;
+        }
+        else
+            ++it;
+    }
+    return count;
+}
+
 //Farage::ReactHook* Farage::Handle::hookReaction(const std::string &name, Farage::ReactHookCallback func, const std::string &emoji);
 //Farage::ReactHook* Farage::Handle::hookReaction(const std::string &name, Farage::ReactHookCallback func, const Farage::Emoji &emoji);
 

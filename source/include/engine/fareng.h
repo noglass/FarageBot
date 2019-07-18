@@ -775,15 +775,115 @@ OPTIONS\n\
             {
                 Farage::Global *global = Farage::recallGlobal();
                 std::string channel = channelID;
-                std::vector<std::string> smessages;
+                std::vector<std::string> smessages, emessages;
                 smessages.reserve(messages.size());
+                emessages.reserve(messages.size());
                 for (auto it = messages.begin(), ite = messages.end();it != ite;++it)
                     smessages.push_back(*it);
-                void *arg0 = (void*)(&channel);
-                void *arg1 = (void*)(&smessages);
-                for (auto it = global->plugins.begin(), ite = global->plugins.end();it != ite;++it)
-                    if ((*it)->callEvent(Event::ONDELETEMESSAGES,arg0,arg1,nullptr,nullptr) == PLUGIN_HANDLED)
+                std::string guild, guildName, chanName;
+                auto cache = ((BotClass*)(global->discord))->getServerCache();
+                for (auto it = cache->begin(), ite = cache->end();it != ite;++it)
+                {
+                    auto chanIt = it->findChannel(channelID);
+                    if (chanIt != it->channels.end())
+                    {
+                        guild = it->ID;
+                        guildName = it->name;
+                        chanName = chanIt->name;
                         break;
+                    }
+                }
+                std::vector<std::vector<DeleteHook*>::iterator> hookSkip;
+                for (auto mit = smessages.begin(), mite = smessages.end();mit != mite;++mit)
+                {
+                    bool blockEvent = false, blockHook = false;
+                    for (auto it = global->plugins.begin(), ite = global->plugins.end();it != ite;++it)
+                    {
+                        for (auto hit = (*it)->reactHooks.begin();hit != (*it)->reactHooks.end();)
+                        {
+                            if (((*hit)->type == msg) && (!((*hit)->flags & HOOK_NO_UNHOOK)) && ((*hit)->anyID == *mit))
+                            {
+                                delete *hit;
+                                hit = (*it)->reactHooks.erase(hit);
+                            }
+                            else
+                                ++hit;
+                        }
+                        for (auto hit = (*it)->editHooks.begin();hit != (*it)->editHooks.end();)
+                        {
+                            if (((*hit)->type == msg) && (!((*hit)->flags & HOOK_NO_UNHOOK)) && ((*hit)->anyID == *mit))
+                            {
+                                delete *hit;
+                                hit = (*it)->editHooks.erase(hit);
+                            }
+                            else
+                                ++hit;
+                        }
+                        for (auto pit = (*it)->deleteHooks.begin();pit != (*it)->deleteHooks.end();)
+                        {
+                            bool skipHook = false;
+                            for (auto sit = hookSkip.begin(), site = hookSkip.end();sit != site;++sit)
+                            {
+                                if (*sit == pit)
+                                {
+                                    skipHook = true;
+                                    break;
+                                }
+                            }
+                            if (skipHook)
+                                ++pit;
+                            else if ((*pit)->matches(channel,*mit,guild))
+                            {
+                                int flags = (*pit)->flags;
+                                if ((flags & HOOK_PRINT) == HOOK_PRINT)
+                                {
+                                    consoleOut("[" + (*pit)->name + "][" + guildName + "](#" + chanName + ") Message <" + *mit + "> has been deleted.");
+                                    if ((flags & HOOK_CALL_ONCE) && (smessages.size() > 1))
+                                        consoleOut("[" + (*pit)->name + "][" + guildName + "](#" + chanName + ") " + std::to_string(smessages.size()-1) + " Other message(s) have been deleted.");
+                                }
+                                if (flags & HOOK_CALL_ONCE)
+                                    hookSkip.push_back(pit);
+                                int ret = PLUGIN_CONTINUE;
+                                if ((*pit)->func != nullptr)
+                                    ret = (*(*pit)->func)(**it,*pit,channel,*mit);
+                                if ((ret & PLUGIN_ERASE) || ((*pit)->type == msg))
+                                {
+                                    delete *pit;
+                                    pit = (*it)->deleteHooks.erase(pit);
+                                    break;
+                                }
+                                else
+                                    ++pit;
+                                if (ret & PLUGIN_HANDLED)
+                                {
+                                    blockEvent = blockHook = true;
+                                    break;
+                                }
+                                if (flags & HOOK_BLOCK_EVENT)
+                                    blockEvent = true;
+                                if (flags & HOOK_BLOCK_HOOK)
+                                {
+                                    blockHook = true;
+                                    break;
+                                }
+                            }
+                            else
+                                ++pit;
+                        }
+                        if (blockHook)
+                            break;
+                    }
+                    if (!blockEvent)
+                        emessages.push_back(*mit);
+                }
+                if (emessages.size() > 0)
+                {
+                    void *arg0 = (void*)(&channel);
+                    void *arg1 = (void*)(&emessages);
+                    for (auto it = global->plugins.begin(), ite = global->plugins.end();it != ite;++it)
+                        if ((*it)->callEvent(Event::ONDELETEMESSAGES,arg0,arg1,nullptr,nullptr) == PLUGIN_HANDLED)
+                            break;
+                }
             }
             
             void onEditMessage(const SleepyDiscord::json::Value& jsonMessage)

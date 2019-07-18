@@ -207,6 +207,7 @@ std::string pcre2w::regex_replace(const std::string &subject, const pcre2w::rege
     if (outsize < subsize+fsize)
         outsize = -1;
     PCRE2_UCHAR *outbuf = new PCRE2_UCHAR[outsize];
+    std::cout<<"pcre2w::regex_replace allocated outsize: "<<outsize<<std::endl;
     int rc = pcre2_substitute(re.code,(const unsigned char*)subject.c_str(),subsize,0,options,NULL,NULL,(const unsigned char*)format.c_str(),fsize,outbuf,&outsize);
     std::string out;
     if (outsize > 0)
