@@ -61,7 +61,9 @@ namespace pcre2w
             smatch() {}
             smatch(const smatch &other);
             smatch& operator= (const smatch &other);
-            smatch_data prefix, suffix;
+            smatch_data pref, suff;
+            smatch_data prefix();
+            smatch_data suffix();
             std::vector<smatch_data> capture;
             std::vector<smatch_data>::iterator begin();
             std::vector<smatch_data>::iterator end();

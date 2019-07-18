@@ -891,7 +891,10 @@ Farage::DeleteHook* Farage::Handle::hookDeleteMessage(const std::string &name, F
 
 Farage::DeleteHook* Farage::Handle::hookDeleteMessageChannel(const std::string &name, Farage::DeleteHookCallback func, int flags, const std::string &channelID, const std::string &guildID)
 {
-    Farage::DeleteHook *hook = new Farage::DeleteHook{name,channelID,guildID,Farage::HookType::chan,func,flags};
+    Farage::HookType type = chan;
+    if (guildID.size() > 0)
+        type = guild;
+    Farage::DeleteHook *hook = new Farage::DeleteHook{name,channelID,guildID,type,func,flags};
     deleteHooks.push_back(hook);
     return hook;
 }

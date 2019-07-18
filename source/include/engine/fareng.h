@@ -2964,6 +2964,13 @@ OPTIONS\n\
                                     for (auto com = (*it)->editHooks.begin(), come = (*it)->editHooks.end();com != come;++com)
                                         consoleOut("        [" + std::to_string(c++) + "]\t" + (*com)->name + "\t(" + std::to_string((*com)->flags) + ")\t Type: " + std::to_string((*com)->type));
                                 }
+                                if ((*it)->deleteHooks.size() > 0)
+                                {
+                                    consoleOut("    Registered Delete Hooks:");
+                                    size_t c = 0;
+                                    for (auto com = (*it)->deleteHooks.begin(), come = (*it)->deleteHooks.end();com != come;++com)
+                                        consoleOut("        [" + std::to_string(c++) + "]\t" + (*com)->name + "\t(" + std::to_string((*com)->flags) + ")\t Type: " + std::to_string((*com)->type));
+                                }
                                 if ((*it)->timers.size() > 0)
                                 {
                                     consoleOut("    Running Timers:");

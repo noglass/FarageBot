@@ -35,6 +35,8 @@ int pcre2w::smatch_data::compare(const pcre2w::smatch_data &md) { return s.compa
 int pcre2w::smatch_data::compare(const char *str) { return s.compare(str); }
 int pcre2w::smatch_data::compare(const unsigned char *str) { return s.compare((const char*)str); }
 std::string pcre2w::smatch_data::operator() () { return s; }
+pcre2w::smatch_data pcre2w::smatch::prefix() { return pref; }
+pcre2w::smatch_data pcre2w::smatch::suffix() { return suff; }
 std::vector<pcre2w::smatch_data>::iterator pcre2w::smatch::begin() { return capture.begin(); }
 std::vector<pcre2w::smatch_data>::iterator pcre2w::smatch::end() { return capture.end(); }
 std::vector<pcre2w::smatch_data>::reverse_iterator pcre2w::smatch::rbegin() { return capture.rbegin(); }
@@ -47,8 +49,8 @@ pcre2w::smatch::smatch(const smatch &other)
 {
     capture.clear();
     capture.reserve(other.capture.size());
-    prefix = other.prefix;
-    suffix = other.suffix;
+    pref = other.pref;
+    suff = other.suff;
     for (auto it = other.capture.begin(), ite = other.capture.end();it != ite;++it)
         capture.push_back(*it);
 }
@@ -56,8 +58,8 @@ pcre2w::smatch& pcre2w::smatch::operator= (const smatch &other)
 {
     capture.clear();
     capture.reserve(other.capture.size());
-    prefix = other.prefix;
-    suffix = other.suffix;
+    pref = other.pref;
+    suff = other.suff;
     for (auto it = other.capture.begin(), ite = other.capture.end();it != ite;++it)
         capture.push_back(*it);
     return *this;
@@ -71,7 +73,7 @@ void pcre2w::smatch::populate(PCRE2_SPTR subject, pcre2_match_data *ml, int rc)
         size_t offset = ovector[0];
         std::string sub = (char *)subject;
         if (offset)
-            prefix = { sub.substr(0,offset), offset };
+            pref = { sub.substr(0,offset), offset };
         size_t start;
         size_t length;
         for (int i = 0;i < rc;i++)
@@ -82,12 +84,12 @@ void pcre2w::smatch::populate(PCRE2_SPTR subject, pcre2_match_data *ml, int rc)
         }
         offset = ovector[1];
         if (offset < sub.size())
-            suffix = { sub.substr(offset,std::string::npos), offset };
+            suff = { sub.substr(offset,std::string::npos), offset };
     }
 }
 pcre2w::smatch_data& pcre2w::smatch::operator[] (size_t n) { return capture.at(n); }
 size_t pcre2w::smatch::size() { return capture.size(); }
-void pcre2w::smatch::clear() { prefix.clear(); suffix.clear(); capture.clear(); }
+void pcre2w::smatch::clear() { pref.clear(); suff.clear(); capture.clear(); }
 bool pcre2w::smatch::empty() { return (bool)capture.size(); }
 size_t pcre2w::smatch::max_size() { return capture.max_size(); }
 void pcre2w::smatch::swap(pcre2w::smatch &sm)
@@ -114,9 +116,9 @@ std::string pcre2w::smatch::format(const std::string &fmt)
                     out += capture.at(0).s;
             }
             else if (c == '`')
-                out += prefix.s;
+                out += pref.s;
             else if (c == '\'')
-                out += suffix.s;
+                out += suff.s;
             else if (isdigit(c))
             {
                 int n;
@@ -207,7 +209,6 @@ std::string pcre2w::regex_replace(const std::string &subject, const pcre2w::rege
     if (outsize < subsize+fsize)
         outsize = -1;
     PCRE2_UCHAR *outbuf = new PCRE2_UCHAR[outsize];
-    std::cout<<"pcre2w::regex_replace allocated outsize: "<<outsize<<std::endl;
     int rc = pcre2_substitute(re.code,(const unsigned char*)subject.c_str(),subsize,0,options,NULL,NULL,(const unsigned char*)format.c_str(),fsize,outbuf,&outsize);
     std::string out;
     if (outsize > 0)
