@@ -2560,7 +2560,7 @@ OPTIONS\n\
                     line.erase(pos);
                 if ((line.size() < 1)           // no data
                 ||  (line.front() == '#')       // comment
-                ||  ((pos = (line = strlower(line)).find('=')) == std::string::npos)     // invalid data, also removes trailing comments and converts to lowercase
+                ||  ((pos = (line = strlower(line)).find('=')) == std::string::npos)     // invalid data, also converts to lowercase
                 ||  ((flagstr = line.substr(pos+1)).size() < 1)     // set flagstr to the right half of the '=' and ensure it isn't empty
                 ||  ((line = line.substr(0,pos)).size() < 1))       // set line to the left half of the '=' and ensure it isn't empty
                     continue;                   // if we make it past this line, all data passed tests and is ready to be used
@@ -2596,9 +2596,9 @@ OPTIONS\n\
                     guild.erase(pos);
                 if ((guild.size() < 1)           // no data
                 ||  (guild.front() == '#')       // comment
-                ||  ((pos = guild.find('=')) == std::string::npos)    // invalid data, also removes trailing comments
+                ||  ((pos = guild.find('=')) == std::string::npos)    // invalid data
                 ||  ((prefix = guild.substr(pos+1)).size() < 1)       // set guild to the right half of the '=' and ensure it isn't empty
-                ||  ((guild = guild.substr(0,pos)).size() < 1))       // set line to the left half of the '=' and ensure it isn't empty
+                ||  ((guild = guild.substr(0,pos)).size() < 1))       // set guild to the left half of the '=' and ensure it isn't empty
                     continue;                   // if we make it past this line, all data passed tests and is ready to be used
                 global.prefixes[guild] = prefix;
             }

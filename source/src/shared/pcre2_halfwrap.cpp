@@ -80,6 +80,8 @@ void pcre2w::smatch::populate(PCRE2_SPTR subject, pcre2_match_data *ml, int rc)
         {
             start = ovector[2*i];
             length = ovector[2*i+1] - ovector[2*i];
+            while (capture.size() < start)
+                capture.push_back({"",capture.size()});
             capture.push_back({sub.substr(start,length),start});
         }
         offset = ovector[1];
