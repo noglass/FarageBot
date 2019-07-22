@@ -148,7 +148,7 @@ int pcre2w::regex_search(const unsigned char *subject, pcre2w::smatch &results, 
     if (with)
     {
         uint32_t cc;
-        pcre2_pattern_inf(re.code,PCRE2_INFO_CAPTURECOUNT,&cc);
+        pcre2_pattern_info(re.code,PCRE2_INFO_CAPTURECOUNT,&cc);
         results.populate(subject,ml,rc,cc);
     }
     if (rc < 0)

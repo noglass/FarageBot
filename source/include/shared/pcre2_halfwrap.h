@@ -73,7 +73,7 @@ namespace pcre2w
             std::vector<smatch_data>::const_iterator cend();
             std::vector<smatch_data>::const_reverse_iterator crbegin();
             std::vector<smatch_data>::const_reverse_iterator crend();
-            void populate(PCRE2_SPTR subject, pcre2_match_data *ml, int rc);
+            void populate(PCRE2_SPTR subject, pcre2_match_data *ml, int rc, int cc);
             smatch_data& operator[] (size_t n);
             size_t size();
             void clear();
