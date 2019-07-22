@@ -81,6 +81,16 @@ namespace Farage
         };
     }
     
+    Overwrite convertOverwrite(SleepyDiscord::Overwrite overwrite)
+    {
+        return Overwrite{
+            std::move(overwrite.ID),
+            std::move(overwrite.type),
+            std::move(Farage::Permission(overwrite.allow)),
+            std::move(Farage::Permission(overwrite.deny))
+        };
+    }
+    
     Channel convertChannel(SleepyDiscord::Channel channel)
     {
         Channel fchannel = {
@@ -88,6 +98,7 @@ namespace Farage
             std::move(channel.type),
             std::move(channel.serverID),
             std::move(channel.position),
+            std::vector<Overwrite>(channel.permissionOverwrites.size()),
             std::move(channel.name),
             std::move(channel.topic),
             std::move(channel.isNSFW),
@@ -100,9 +111,16 @@ namespace Farage
             std::move(channel.parentID),
             std::move(std::move(channel.lastPinTimestamp))
         };
-        auto itt = fchannel.recipients.begin();
-        for (auto it = channel.recipients.begin(), ite = channel.recipients.end();it != ite;++it,++itt)
-            *itt = convertUser(std::move(*it));
+        {
+            auto itt = fchannel.permission_overwrites.begin();
+            for (auto it = channel.permissionOverwrites.begin(), ite = channel.permissionOverwrites.end();it != ite;++it,++itt)
+                *itt = convertOverwrite(std::move(*it));
+        }
+        {
+            auto itt = fchannel.recipients.begin();
+            for (auto it = channel.recipients.begin(), ite = channel.recipients.end();it != ite;++it,++itt)
+                *itt = convertUser(std::move(*it));
+        }
         return std::move(fchannel);
     }
     
@@ -421,6 +439,7 @@ namespace Farage
     }
                                                                                 
     inline User                convertObject(SleepyDiscord::User user)                 { return convertUser(std::move(user)); }
+    inline Overwrite           convertObject(SleepyDiscord::Overwrite overwrite)       { return convertOverwrite(std::move(overwrite)); }
     inline Channel             convertObject(SleepyDiscord::Channel channel)           { return convertChannel(std::move(channel)); }
     inline Role                convertObject(SleepyDiscord::Role role)                 { return convertRole(std::move(role)); }
     inline ServerMember        convertObject(SleepyDiscord::ServerMember member)       { return convertServerMember(std::move(member)); }

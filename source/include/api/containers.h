@@ -210,6 +210,14 @@ namespace Farage
         int type;
     };
     
+    struct Overwrite
+    {
+        std::string id;
+        std::string type;
+        Permission allow;
+        Permission deny;
+    };
+    
     struct Channel
     {
         //void *raw;
@@ -217,6 +225,7 @@ namespace Farage
         int type;
         std::string guild_id;
         int position;
+        std::vector<Overwrite> permission_overwrites;
         std::string name;
         std::string topic;
         bool nsfw;
