@@ -64,7 +64,7 @@ pcre2w::smatch& pcre2w::smatch::operator= (const smatch &other)
         capture.push_back(*it);
     return *this;
 }
-void pcre2w::smatch::populate(PCRE2_SPTR subject, pcre2_match_data *ml, int rc) 
+void pcre2w::smatch::populate(PCRE2_SPTR subject, pcre2_match_data *ml, int rc, int cc) 
 {
     clear();
     if (rc > 0)
@@ -80,14 +80,17 @@ void pcre2w::smatch::populate(PCRE2_SPTR subject, pcre2_match_data *ml, int rc)
         {
             start = ovector[2*i];
             length = ovector[2*i+1] - ovector[2*i];
-            while (capture.size() < start)
-                capture.push_back({"",capture.size()});
+            //while (capture.size() < start)
+            //    capture.push_back({"",capture.size()});
             capture.push_back({sub.substr(start,length),start});
         }
         offset = ovector[1];
         if (offset < sub.size())
             suff = { sub.substr(offset,std::string::npos), offset };
     }
+    ++cc;
+    while (capture.size() < cc)
+        capture.push_back({"",0});
 }
 pcre2w::smatch_data& pcre2w::smatch::operator[] (size_t n) { return capture.at(n); }
 size_t pcre2w::smatch::size() { return capture.size(); }
@@ -143,7 +146,11 @@ int pcre2w::regex_search(const unsigned char *subject, pcre2w::smatch &results, 
     pcre2_match_data *ml = pcre2_match_data_create_from_pattern(re.code, NULL);
     int rc = pcre2_jit_match(re.code,subject,strlen((char *)subject),0,0,ml,NULL);
     if (with)
-        results.populate(subject,ml,rc);
+    {
+        uint32_t cc;
+        pcre2_pattern_inf(re.code,PCRE2_INFO_CAPTURECOUNT,&cc);
+        results.populate(subject,ml,rc,cc);
+    }
     if (rc < 0)
         rc = 0;
     pcre2_match_data_free(ml);
