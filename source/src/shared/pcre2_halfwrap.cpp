@@ -1,5 +1,4 @@
 #include "pcre2_halfwrap.h"
-#include <iostream>
 
 pcre2w::regex::regex(const char *re) { compile((PCRE2_SPTR)re); }
 pcre2w::regex::regex(const unsigned char *re) { compile(re); }
@@ -13,6 +12,7 @@ pcre2w::regex& pcre2w::regex::operator= (const char *re) { compile((PCRE2_SPTR)r
 pcre2w::regex& pcre2w::regex::operator= (const unsigned char *re) { compile(re); return *this; }
 pcre2w::regex& pcre2w::regex::operator= (std::string re) { compile((PCRE2_SPTR)re.c_str()); return *this; }
 pcre2w::regex& pcre2w::regex::operator= (const regex &other) { code = pcre2_code_copy(other.code); pcre2_jit_compile(code,PCRE2_JIT_COMPLETE); return *this; }
+uint32_t pcre2w::regex::getMatchCount() const { return match_count; }
 int pcre2w::regex::compile(PCRE2_SPTR re)
 {
     if (code != nullptr)
@@ -21,6 +21,7 @@ int pcre2w::regex::compile(PCRE2_SPTR re)
     PCRE2_SIZE erroroffset;
     code = pcre2_compile(re,PCRE2_ZERO_TERMINATED,0,&errorcode,&erroroffset,NULL);
     pcre2_jit_compile(code,PCRE2_JIT_COMPLETE);
+    pcre2_pattern_info(code,PCRE2_INFO_CAPTURECOUNT,&match_count);
     return errorcode;
 }
 pcre2w::smatch_data::smatch_data(const std::string &st, size_t p) { s = st; pos = p; }
@@ -64,7 +65,7 @@ pcre2w::smatch& pcre2w::smatch::operator= (const smatch &other)
         capture.push_back(*it);
     return *this;
 }
-void pcre2w::smatch::populate(PCRE2_SPTR subject, pcre2_match_data *ml, int rc, int cc) 
+void pcre2w::smatch::populate(PCRE2_SPTR subject, pcre2_match_data *ml, int rc, const uint32_t cc) 
 {
     clear();
     if (rc > 0)
@@ -76,21 +77,21 @@ void pcre2w::smatch::populate(PCRE2_SPTR subject, pcre2_match_data *ml, int rc, 
             pref = { sub.substr(0,offset), offset };
         size_t start;
         size_t length;
-        for (int i = 0;i < rc;i++)
+        for (int i = 0;i < rc;++i)
         {
             start = ovector[2*i];
             length = ovector[2*i+1] - ovector[2*i];
-            //while (capture.size() < start)
-            //    capture.push_back({"",capture.size()});
-            capture.push_back({sub.substr(start,length),start});
+            if ((start == PCRE2_UNSET) || (length == PCRE2_UNSET))
+                capture.push_back({"",start});
+            else
+                capture.push_back({sub.substr(start,length),start});
         }
         offset = ovector[1];
         if (offset < sub.size())
             suff = { sub.substr(offset,std::string::npos), offset };
     }
-    ++cc;
-    while (capture.size() < cc)
-        capture.push_back({"",0});
+    while (capture.size() <= cc)
+        capture.push_back({"",PCRE2_UNSET});
 }
 pcre2w::smatch_data& pcre2w::smatch::operator[] (size_t n) { return capture.at(n); }
 size_t pcre2w::smatch::size() { return capture.size(); }
@@ -146,11 +147,7 @@ int pcre2w::regex_search(const unsigned char *subject, pcre2w::smatch &results, 
     pcre2_match_data *ml = pcre2_match_data_create_from_pattern(re.code, NULL);
     int rc = pcre2_jit_match(re.code,subject,strlen((char *)subject),0,0,ml,NULL);
     if (with)
-    {
-        uint32_t cc;
-        pcre2_pattern_info(re.code,PCRE2_INFO_CAPTURECOUNT,&cc);
-        results.populate(subject,ml,rc,cc);
-    }
+        results.populate(subject,ml,rc,re.getMatchCount());
     if (rc < 0)
         rc = 0;
     pcre2_match_data_free(ml);
