@@ -207,6 +207,18 @@ namespace gtci
             cinput.pop_front();
             return true;
         }
+        bool getline_nonblock(std::string& out)
+        {
+            std::unique_lock<std::mutex> lock (rmut);
+            //cv.wait(lock,[this]{ return !cinput.empty(); });
+            if (!cinput.empty())
+            {
+                out = cinput.front();
+                cinput.pop_front();
+                return true;
+            }
+            return false;
+        }
         private:
             std::thread stdinput;
             std::mutex omut;

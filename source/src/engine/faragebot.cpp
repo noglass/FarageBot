@@ -153,7 +153,7 @@ int main(int argc, char *argv[])
         {
             if (FD_ISSET(0,&cinset))
             {
-                io.getline(cinput);
+                io.getline_nonblock(cinput);
 #endif
                 
                 if (cinput.size() > 0)

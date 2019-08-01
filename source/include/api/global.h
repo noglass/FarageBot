@@ -89,7 +89,7 @@ namespace Farage
             inline void processTimersEarly() { DWORD annoyingWindows; WriteFile(triggerFD,"\0",1,&annoyingWindows,NULL); }
 #else
             inline void processTimersEarly() { write(triggerFD,"\0",1); }
-            gtci::interface* getInterface() const
+            gtci::interface* getInterface()
             {
                 return io;
             }
