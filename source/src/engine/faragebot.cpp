@@ -22,7 +22,7 @@ int main(int argc, char *argv[])
     saAttr.lpSecurityDescriptor = NULL;
     if (!CreatePipe(&timerTrigger[0],&timerTrigger[1],&saAttr,1))
 #else
-    gtci::interface io;
+    //gtci::interface io;
     int timerTrigger[2];
     if (pipe(timerTrigger) < 0)
 #endif
@@ -80,9 +80,9 @@ int main(int argc, char *argv[])
             &Farage::Engine::editNickname,
             &Farage::Engine::isReady
         }
-        #ifndef _WIN32
-        ,&io
-        #endif
+        //#ifndef _WIN32
+        //,&io
+        //#endif
     );
     Farage::recallGlobal(&global);
     std::string FARAGE_TOKEN;
@@ -153,7 +153,8 @@ int main(int argc, char *argv[])
         {
             if (FD_ISSET(0,&cinset))
             {
-                io.getline_nonblock(cinput);
+                //io.getline(cinput);
+                std::getline(std::cin,cinput);
 #endif
                 
                 if (cinput.size() > 0)

@@ -209,10 +209,9 @@ namespace gtci
         }
         bool getline_nonblock(std::string& out)
         {
-            std::unique_lock<std::mutex> lock (rmut);
-            //cv.wait(lock,[this]{ return !cinput.empty(); });
             if (!cinput.empty())
             {
+                std::unique_lock<std::mutex> lock (rmut);
                 out = cinput.front();
                 cinput.pop_front();
                 return true;
