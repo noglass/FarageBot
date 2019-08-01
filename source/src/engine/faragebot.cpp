@@ -22,6 +22,7 @@ int main(int argc, char *argv[])
     saAttr.lpSecurityDescriptor = NULL;
     if (!CreatePipe(&timerTrigger[0],&timerTrigger[1],&saAttr,1))
 #else
+    gtci::interface io;
     int timerTrigger[2];
     if (pipe(timerTrigger) < 0)
 #endif
@@ -79,6 +80,9 @@ int main(int argc, char *argv[])
             &Farage::Engine::editNickname,
             &Farage::Engine::isReady
         }
+        #ifndef _WIN32
+        ,&io
+        #endif
     );
     Farage::recallGlobal(&global);
     std::string FARAGE_TOKEN;
@@ -143,13 +147,15 @@ int main(int argc, char *argv[])
         {
             if ((ReadConsoleInput(events[0],&inrecord,1,&recRead)) && (inrecord.EventType == KEY_EVENT) && (inrecord.Event.KeyEvent.bKeyDown))
             {
+                std::getline(std::cin,cinput);
 #else
         if (select(timerTrigger[0]+1,&cinset,NULL,NULL,&timeout) > 0)
         {
             if (FD_ISSET(0,&cinset))
             {
+                io.getline(cinput);
 #endif
-                std::getline(std::cin,cinput);
+                
                 if (cinput.size() > 0)
                 {
                     global.tryGetBuffer().clear();
