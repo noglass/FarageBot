@@ -126,6 +126,7 @@ int main(int argc, char *argv[])
     char bufClear;
     std::thread gtcinput([&farage,&global,&running]
     {
+        global.getInterface()->startWatching();
         std::string input;
         while (running)
         {

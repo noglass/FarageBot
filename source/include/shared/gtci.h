@@ -46,19 +46,24 @@ namespace gtci
             if (tcsetattr(0,TCSANOW,&termnew) < 0)
                 std::cerr<<"GTCInterface Error: Unable to set new input attributes."<<std::endl;
             hpos = history.rbegin();
-            running = true;
-            stdinput = std::thread([this]
-            {
-                std::cout<<"\e["<<termsize.ws_row<<"B\e[7;1m\e7"<<std::string(termsize.ws_col,' ')<<"\e[0m\e8"<<std::flush;
-                watchi();
-            });
         }
         ~interface()
         {
             running = false;
             if (tcsetattr(0, TCSADRAIN, &termstart) < 0)
                 std::cerr<<"GTCInterface Error: Unable to reset input attributes."<<std::endl;
-            stdinput.join();
+            if (stdinput.joinable())
+                stdinput.join();
+        }
+        void startWatching()
+        {
+            running = true;
+            stdinput = std::thread([this]
+            {
+                std::cout<<"\e["<<termsize.ws_row<<"B\e[7;1m\e7"<<std::string(termsize.ws_col,' ')<<"\e[0m\e8"<<std::flush;
+                while (running)
+                    watchi();
+            });
         }
         void setCallback(TabCallback cb)
         {
@@ -70,10 +75,12 @@ namespace gtci
         }
         void printLn(const std::string& str)
         {
+            //std::cout<<"Locking omut from thread: "<<std::this_thread::get_id()<<std::endl;//'\n'<<std::flush;
             std::unique_lock<std::recursive_mutex> lock (omut);
             unprintCurrent(lock,false);
             std::cout<<"\e[0m"<<str<<'\n';
             printCurrent(lock,false);
+            //std::cout<<"Unlocking omut from thread: "<<std::this_thread::get_id()<<std::endl;//'\n'<<std::flush;
         }
         virtual int getModifier(char c)
         {
@@ -281,13 +288,16 @@ namespace gtci
             void watchi()
             {
                 char c;
-                while (running)
-                {
+                //while (running)
+                //{
                     c = getchar();
-                    std::unique_lock<std::recursive_mutex> lock (omut);
-                    unprintCurrent(lock,false);
-                    if (!running)
-                        break;
+                    //if (!running)
+                    //    break;
+                    //std::cout<<"Locking omut from thread: "<<std::this_thread::get_id()<<std::endl;
+                    {
+                        std::unique_lock<std::recursive_mutex> lock (omut);
+                        unprintCurrent(lock,false);
+                    }
                     int mod = 0;
                     switch (c)
                     {
@@ -410,8 +420,10 @@ namespace gtci
                         default:
                             kbKeyInput(c);
                     }
+                    std::unique_lock<std::recursive_mutex> lock (omut);
                     printCurrent(lock,false);
-                }
+                    //std::cout<<"Unlocking omut from thread: "<<std::this_thread::get_id()<<std::endl;
+                //}
             }
     };
 };
