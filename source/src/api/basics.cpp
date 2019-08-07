@@ -40,10 +40,7 @@ Farage::Global* Farage::recallGlobal(Farage::Global *global)
 {
     static Farage::Global *globe = global;
     if (global != nullptr)
-    {
-        //std::cout<<"Assiging callbacks."<<std::endl;
         globe = global;
-    }
     return globe;
 }
 
@@ -65,22 +62,22 @@ Farage::GlobVar* Farage::findGlobVar(const std::string &name)
 void Farage::consoleOut(const std::string &msg)
 {
     Farage::Global *global = Farage::recallGlobal();
-    //#ifdef _WIN32
+    #ifdef _WIN32
         std::cout<<msg<<std::endl;
-    /*#else
+    #else
         global->getInterface()->printLn(msg);
-    #endif*/
+    #endif
     global->getBuffer()->push_back(msg);
 }
 
 void Farage::errorOut(const std::string &msg)
 {
     Farage::Global *global = Farage::recallGlobal();
-    //#ifdef _WIN32
+    #ifdef _WIN32
         std::cerr<<msg<<std::endl;
-    /*#else
+    #else
         global->getInterface()->printLn(msg);
-    #endif*/
+    #endif
     global->getBuffer()->push_back(msg);
 }
 
@@ -89,11 +86,11 @@ void Farage::debugOut(const std::string &msg)
     Farage::Global *global = Farage::recallGlobal();
     if (global->debug)
     {
-        //#ifdef _WIN32
+        #ifdef _WIN32
             std::cerr<<msg<<std::endl;
-        /*#else
+        #else
             global->getInterface()->printLn(msg);
-        #endif*/
+        #endif
         global->getBuffer()->push_back(msg);
     }
 }
@@ -103,11 +100,11 @@ void Farage::verboseOut(const std::string &msg)
     Farage::Global *global = Farage::recallGlobal();
     if (global->verbose)
     {
-        //#ifdef _WIN32
+        #ifdef _WIN32
             std::cout<<msg<<std::endl;
-        /*#else
+        #else
             global->getInterface()->printLn(msg);
-        #endif*/
+        #endif
         global->getBuffer()->push_back(msg);
     }
 }

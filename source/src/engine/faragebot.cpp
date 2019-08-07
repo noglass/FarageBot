@@ -109,7 +109,8 @@ int main(int argc, char *argv[])
     global.discord = (void*)farage;
     for (auto it = autoexec.begin(), ite = autoexec.end();it != ite;++it)
         Farage::processCscript(farage,global,*it);
-    bool running = true;
+    std::atomic<bool> running;
+    running = true;
 #ifdef _WIN32
     HANDLE events[] =
     {
@@ -123,6 +124,20 @@ int main(int argc, char *argv[])
     fd_set cinset;
     timeval timeout;
     char bufClear;
+    std::thread gtcinput([&farage,&global,&running]
+    {
+        std::string input;
+        while (running)
+        {
+            global.getInterface()->getline(input);
+            if (input.size() > 0)
+            {
+                global.tryGetBuffer().clear();
+                Farage::processCinput(farage,global,input);
+            }
+            input.clear();
+        }
+    });
 #endif
     std::string cinput;
     while (running)
@@ -138,7 +153,7 @@ int main(int argc, char *argv[])
         }
 #ifndef _WIN32
         FD_ZERO(&cinset);
-        FD_SET(0,&cinset);
+        //FD_SET(0,&cinset);
         FD_SET(timerTrigger[0],&cinset);
 #endif
         timeout = Farage::processTimers(farage,global);
@@ -148,14 +163,6 @@ int main(int argc, char *argv[])
             if ((ReadConsoleInput(events[0],&inrecord,1,&recRead)) && (inrecord.EventType == KEY_EVENT) && (inrecord.Event.KeyEvent.bKeyDown))
             {
                 std::getline(std::cin,cinput);
-#else
-        if (select(timerTrigger[0]+1,&cinset,NULL,NULL,&timeout) > 0)
-        {
-            if (FD_ISSET(0,&cinset))
-            {
-                //io.getline(cinput);
-                std::getline(std::cin,cinput);
-#endif
                 
                 if (cinput.size() > 0)
                 {
@@ -164,18 +171,40 @@ int main(int argc, char *argv[])
                 }
                 cinput.clear();
             }
-#ifdef _WIN32
         }
         else if (wresult == WSA_WAIT_EVENT_0+1)
         {
             DWORD dwRead;
             ReadFile(timerTrigger[0],&bufClear,1,&dwRead,NULL);
-#else
-            else
-                read(timerTrigger[0],&bufClear,1);
-#endif
         }
+#else
+        if (select(timerTrigger[0]+1,&cinset,NULL,NULL,&timeout) > 0)
+        {
+            if (FD_ISSET(timerTrigger[0],&cinset))
+                read(timerTrigger[0],&bufClear,1);
+        }
+            /*if (FD_ISSET(0,&cinset))
+            {
+                //io.getline(cinput);
+                std::getline(std::cin,cinput);*/
+#endif
+                /*
+                if (cinput.size() > 0)
+                {
+                    global.tryGetBuffer().clear();
+                    Farage::processCinput(farage,global,cinput);
+                }
+                cinput.clear();
+            }*/
+/*#ifdef _WIN32
+
+#else
+//            else
+                
+#endif*/
     }
+    running = false;
+    gtcinput.join();
     return 0;
 }
 

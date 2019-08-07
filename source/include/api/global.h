@@ -11,7 +11,7 @@
 #include <windows.h>
 #else
 #include <unistd.h>
-//#include "shared/gtci.h"
+#include "shared/gtci.h"
 #endif
 
 namespace Farage
@@ -41,12 +41,10 @@ namespace Farage
 #ifdef _WIN32
             Global(std::string version, HANDLE timerTrigger, Internals cbs) : engineVer(version), triggerFD(timerTrigger), callbacks(cbs) {}
 #else
-            Global(std::string version, int timerTrigger, Internals cbs/*, gtci::interface* interface = nullptr*/) : engineVer(version), triggerFD(timerTrigger), callbacks(cbs)
+            Global(std::string version, int timerTrigger, Internals cbs, gtci::TabCallback tab = nullptr) : engineVer(version), triggerFD(timerTrigger), callbacks(cbs)
             {
-                /*if (interface == nullptr)
-                    io = new gtci::interface();
-                else
-                    io = interface;*/
+                if (tab != nullptr)
+                    io.setCallback(tab);
             }
 #endif
             std::unordered_map<std::string,AdminFlag> admins;
@@ -89,10 +87,10 @@ namespace Farage
             inline void processTimersEarly() { DWORD annoyingWindows; WriteFile(triggerFD,"\0",1,&annoyingWindows,NULL); }
 #else
             inline void processTimersEarly() { write(triggerFD,"\0",1); }
-            /*gtci::interface* getInterface()
+            gtci::interface* getInterface()
             {
-                return io;
-            }*/
+                return &io;
+            }
 #endif
             
         private:
@@ -103,7 +101,7 @@ namespace Farage
             HANDLE triggerFD;
 #else
             int triggerFD;
-            //gtci::interface* io;
+            gtci::interface io;
 #endif
     };
 };
