@@ -62,7 +62,7 @@ Farage::GlobVar* Farage::findGlobVar(const std::string &name)
 void Farage::consoleOut(const std::string &msg)
 {
     Farage::Global *global = Farage::recallGlobal();
-    #ifdef _WIN32
+    #ifndef _GTCINTERFACE_
         std::cout<<msg<<std::endl;
     #else
         global->getInterface()->printLn(msg);
@@ -73,7 +73,7 @@ void Farage::consoleOut(const std::string &msg)
 void Farage::errorOut(const std::string &msg)
 {
     Farage::Global *global = Farage::recallGlobal();
-    #ifdef _WIN32
+    #ifndef _GTCINTERFACE_
         std::cerr<<msg<<std::endl;
     #else
         global->getInterface()->printLn(msg);
@@ -86,7 +86,7 @@ void Farage::debugOut(const std::string &msg)
     Farage::Global *global = Farage::recallGlobal();
     if (global->debug)
     {
-        #ifdef _WIN32
+        #ifndef _GTCINTERFACE_
             std::cerr<<msg<<std::endl;
         #else
             global->getInterface()->printLn(msg);
@@ -100,7 +100,7 @@ void Farage::verboseOut(const std::string &msg)
     Farage::Global *global = Farage::recallGlobal();
     if (global->verbose)
     {
-        #ifdef _WIN32
+        #ifndef _GTCINTERFACE_
             std::cout<<msg<<std::endl;
         #else
             global->getInterface()->printLn(msg);

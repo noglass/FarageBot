@@ -124,6 +124,8 @@ int main(int argc, char *argv[])
     fd_set cinset;
     timeval timeout;
     char bufClear;
+#endif
+#ifdef _GTCINTERFACE_
     std::thread gtcinput([&farage,&global,&running]
     {
         global.getInterface()->startWatching();
@@ -151,7 +153,9 @@ int main(int argc, char *argv[])
             {
                 running = false;
 #ifndef _WIN32
+    #ifdef _GTCINTERFACE_
                 gtcinput.join();
+    #endif
 #endif
                 return Farage::cleanUp(farage,global);
             }
@@ -160,7 +164,9 @@ int main(int argc, char *argv[])
         }
 #ifndef _WIN32
         FD_ZERO(&cinset);
-        //FD_SET(0,&cinset);
+    #ifndef _GTCINTERFACE_
+        FD_SET(0,&cinset);
+    #endif
         FD_SET(timerTrigger[0],&cinset);
 #endif
         timeout = Farage::processTimers(farage,global);
@@ -189,30 +195,26 @@ int main(int argc, char *argv[])
         {
             if (FD_ISSET(timerTrigger[0],&cinset))
                 read(timerTrigger[0],&bufClear,1);
-        }
-            /*if (FD_ISSET(0,&cinset))
+    #ifndef _GTCINTERFACE_
+            if (FD_ISSET(0,&cinset))
             {
-                //io.getline(cinput);
-                std::getline(std::cin,cinput);*/
-#endif
-                /*
+                std::getline(std::cin,cinput);
                 if (cinput.size() > 0)
                 {
                     global.tryGetBuffer().clear();
                     Farage::processCinput(farage,global,cinput);
                 }
                 cinput.clear();
-            }*/
-/*#ifdef _WIN32
-
-#else
-//            else
-                
-#endif*/
+            }
+    #endif
+        }
+#endif
     }
     running = false;
 #ifndef _WIN32
+    #ifdef _GTCINTERFACE_
     gtcinput.join();
+    #endif
 #endif
     return 0;
 }
