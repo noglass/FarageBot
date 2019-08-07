@@ -1,7 +1,8 @@
 # FarageBot
 Can't Barage Bot the Modular Discord Farage Bot!
 
-Currently FarageBot only has linux support. A Windows port is *hopefully* coming soon.
+~~Currently FarageBot only has linux support. A Windows port is *hopefully* coming soon.~~  
+FarageBot has untested, experimental Windows support, you will have to figure out how to build it yourself though.. (I couldn't get SleepyDiscord to build with mingw so I have been unable to test.)  
 
 Real readme coming soon, but for now...
 
