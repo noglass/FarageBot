@@ -148,7 +148,13 @@ int main(int argc, char *argv[])
             if (i)
                 std::this_thread::sleep_for(std::chrono::seconds(FARAGE_CONNECT_DELAY));
             if (i > ((FARAGE_CONNECT_MAX_RETRIES < 0) ? i : FARAGE_CONNECT_MAX_RETRIES))
+            {
+                running = false;
+#ifndef _WIN32
+                gtcinput.join();
+#endif
                 return Farage::cleanUp(farage,global);
+            }
             delete farage;
             farage = Farage::botConnect(online,FARAGE_TOKEN);
         }
@@ -205,7 +211,9 @@ int main(int argc, char *argv[])
 #endif*/
     }
     running = false;
+#ifndef _WIN32
     gtcinput.join();
+#endif
     return 0;
 }
 
