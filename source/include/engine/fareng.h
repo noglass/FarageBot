@@ -1167,20 +1167,25 @@ OPTIONS\n\
                     }
                 }
                 std::string command = fmessage.content;
+                bool permoverride = false;
                 if (prefixed)
                 {
                     size_t space = 0;
                     if ((command.size() > prefix.size()) && (command.at(prefix.size()) == ' '))
                         space = 1;
                     command.erase(0,prefix.size()+space);
-                    if (global->prefixedAliases.get(command))
+                    if (global->prefixedAliases.get(command,permoverride))
                         fmessage.content = prefix + std::string(space,' ') + command;
                 }
-                else if (global->aliases.get(command))
+                else if (global->aliases.get(command,permoverride))
                     prefixed = true;
                 if ((!blockCmd) && (prefixed) && (ID != global->self.id))
                 {
-                    AdminFlag flags = global->getAdminFlags(fmessage.guild_id,ID);
+                    AdminFlag flags;
+                    if (permoverride)
+                        flags = ROOT;
+                    else
+                        flags = global->getAdminFlags(fmessage.guild_id,ID);
                     int argc;
                     std::string *argv = splitStringAny(nospace(command)," \t\n",argc);
                     auto plug = global->plugins.begin(), pluge = global->plugins.end();
@@ -2804,24 +2809,34 @@ OPTIONS\n\
         std::ifstream file ("./config/aliases.conf");
         if (file.is_open())
         {
-            std::string alias, cmd;
+            std::string alias, cmd, permiss;
+            bool perms;
             while (std::getline(file,alias))
             {
-                if (!std::getline(file,cmd))
+                if ((!std::getline(file,cmd)) || (!std::getline(file,permiss)))
                     break;
-                global.aliases.aliases.emplace(alias,cmd);
+                if (permiss == "true")
+                    perms = true;
+                else
+                    perms = false;
+                global.aliases.aliases.emplace(alias,Alias{cmd,perms});
             }
             file.close();
         }
         file.open("./config/prefixed_aliases.conf");
         if (file.is_open())
         {
-            std::string alias, cmd;
+            std::string alias, cmd, permiss;
+            bool perms;
             while (std::getline(file,alias))
             {
-                if (!std::getline(file,cmd))
+                if ((!std::getline(file,cmd)) || (!std::getline(file,permiss)))
                     break;
-                global.prefixedAliases.aliases.emplace(alias,cmd);
+                if (permiss == "true")
+                    perms = true;
+                else
+                    perms = false;
+                global.prefixedAliases.aliases.emplace(alias,Alias{cmd,perms});
             }
             file.close();
         }
@@ -2834,14 +2849,28 @@ OPTIONS\n\
         if (file.is_open())
         {
             for (auto it = global.aliases.aliases.begin(), ite = global.aliases.aliases.end();it != ite;++it)
-                file<<it->first<<std::endl<<it->second<<std::endl;
+            {
+                file<<it->first<<std::endl<<it->second.cmd<<std::endl;
+                if (it->second.perm)
+                    file<<"true";
+                else
+                    file<<"false";
+                file<<std::endl;
+            }
             file.close();
         }
         file.open("./config/prefixed_aliases.conf",std::ofstream::trunc);
         if (file.is_open())
         {
             for (auto it = global.prefixedAliases.aliases.begin(), ite = global.prefixedAliases.aliases.end();it != ite;++it)
-                file<<it->first<<std::endl<<it->second<<std::endl;
+            {
+                file<<it->first<<std::endl<<it->second.cmd<<std::endl;
+                if (it->second.perm)
+                    file<<"true";
+                else
+                    file<<"false";
+                file<<std::endl;
+            }
             file.close();
         }
         return 0;
@@ -3442,14 +3471,15 @@ OPTIONS\n\
         }
         int alias(Farage::BotClass *bot,Farage::Global &global,int argc,const std::string argv[])
         {
+            bool perms = false;
             if (argc < 2)
-                consoleOut("Usage: " + argv[0] + " <alias> [command] [prefix_required=false]");
+                consoleOut("Usage: " + argv[0] + " <alias> [command] [prefix_required=false] [permission_override=false]");
             else if (argc == 2)
             {
                 std::string command = argv[1];
-                if (global.prefixedAliases.get(command))
+                if (global.prefixedAliases.get(command,perms))
                     consoleOut("  \"" + argv[1] + "\" = \"" + command + "\" (prefixed)");
-                else if (global.aliases.get(command))
+                else if (global.aliases.get(command,perms))
                     consoleOut("  \"" + argv[1] + "\" = \"" + command + "\" (unprefixed)");
                 else
                     consoleOut("No aliases found matching \"" + command + "\".");
@@ -3467,9 +3497,19 @@ OPTIONS\n\
                         return PLUGIN_HANDLED;
                     }
                 }
+                if (argc > 4)
+                {
+                    if (argv[4] == "true")
+                        perms = true;
+                    else if (argv[4] != "false")
+                    {
+                        consoleOut("Error: permission_override may only be true or false.");
+                        return PLUGIN_HANDLED;
+                    }
+                }
                 bool save = true;
                 std::string pref;
-                std::unordered_map<std::string,std::string>::iterator it;
+                std::unordered_map<std::string,Alias>::iterator it;
                 bool found = true;
                 if (prefixed)
                 {
@@ -3497,8 +3537,9 @@ OPTIONS\n\
                     }
                     else
                     {
-                        it->second = argv[2];
-                        consoleOut("Updated " + pref + "alias \"" + it->first + "\" to \"" + it->second + "\".");
+                        it->second.cmd = argv[2];
+                        it->second.perm = perms;
+                        consoleOut("Updated " + pref + "alias \"" + it->first + "\" to \"" + it->second.cmd + "\".");
                     }
                 }
                 else if (argv[2].size() == 0)
@@ -3508,13 +3549,13 @@ OPTIONS\n\
                 }
                 else
                 {
-                    std::pair<std::unordered_map<std::string,std::string>::iterator,bool> pit;
+                    std::pair<std::unordered_map<std::string,Alias>::iterator,bool> pit;
                     if (prefixed)
-                        pit = global.prefixedAliases.aliases.emplace(argv[1],argv[2]);
+                        pit = global.prefixedAliases.aliases.emplace(argv[1],Alias{argv[2],perms});
                     else
-                        pit = global.aliases.aliases.emplace(argv[1],argv[2]);
+                        pit = global.aliases.aliases.emplace(argv[1],Alias{argv[2],perms});
                     if (pit.second == true)
-                        consoleOut("Added " + pref + "alias \"" + pit.first->first + "\" = \"" + pit.first->second + "\".");
+                        consoleOut("Added " + pref + "alias \"" + pit.first->first + "\" = \"" + pit.first->second.cmd + "\".");
                     else
                     {
                         consoleOut("Error adding " + pref + "alias.");
@@ -3878,14 +3919,15 @@ OPTIONS\n\
         }
         int alias(Farage::BotClass *bot,Farage::Global &global,int argc,const std::string argv[],const SleepyDiscord::Message &message)
         {
+            bool perms = false;
             if (argc < 2)
                 bot->sendMessage(message.channelID,"Usage: `" + global.prefix(message.serverID) + argv[0] + " <alias> [command] [prefix_required=false]`");
             else if (argc == 2)
             {
                 std::string command = argv[1];
-                if (global.prefixedAliases.get(command))
+                if (global.prefixedAliases.get(command,perms))
                     bot->sendMessage(message.channelID,"> \"" + argv[1] + "\" = \"" + command + "\" (prefixed)");
-                else if (global.aliases.get(command))
+                else if (global.aliases.get(command,perms))
                     bot->sendMessage(message.channelID,"> \"" + argv[1] + "\" = \"" + command + "\" (unprefixed)");
                 else
                     bot->sendMessage(message.channelID,"No aliases found matching \"" + command + "\".");
@@ -3905,7 +3947,7 @@ OPTIONS\n\
                 }
                 bool save = true;
                 std::string pref;
-                std::unordered_map<std::string,std::string>::iterator it;
+                std::unordered_map<std::string,Alias>::iterator it;
                 bool found = true;
                 if (prefixed)
                 {
@@ -3933,8 +3975,9 @@ OPTIONS\n\
                     }
                     else
                     {
-                        it->second = argv[2];
-                        bot->sendMessage(message.channelID,"Updated " + pref + "alias \"" + it->first + "\" to \"" + it->second + "\".");
+                        it->second.cmd = argv[2];
+                        it->second.perm = false;
+                        bot->sendMessage(message.channelID,"Updated " + pref + "alias \"" + it->first + "\" to \"" + it->second.cmd + "\".");
                     }
                 }
                 else if (argv[2].size() == 0)
@@ -3944,13 +3987,13 @@ OPTIONS\n\
                 }
                 else
                 {
-                    std::pair<std::unordered_map<std::string,std::string>::iterator,bool> pit;
+                    std::pair<std::unordered_map<std::string,Alias>::iterator,bool> pit;
                     if (prefixed)
-                        pit = global.prefixedAliases.aliases.emplace(argv[1],argv[2]);
+                        pit = global.prefixedAliases.aliases.emplace(argv[1],Alias{argv[2],false});
                     else
-                        pit = global.aliases.aliases.emplace(argv[1],argv[2]);
+                        pit = global.aliases.aliases.emplace(argv[1],Alias{argv[2],false});
                     if (pit.second == true)
-                        bot->sendMessage(message.channelID,"Added " + pref + "alias \"" + pit.first->first + "\" = \"" + pit.first->second + "\".");
+                        bot->sendMessage(message.channelID,"Added " + pref + "alias \"" + pit.first->first + "\" = \"" + pit.first->second.cmd + "\".");
                     else
                     {
                         bot->sendMessage(message.channelID,"Error adding " + pref + "alias.");

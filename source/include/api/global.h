@@ -37,10 +37,16 @@ namespace Farage
         }
     };
     
+    struct Alias
+    {
+        std::string cmd;
+        bool perm;
+    };
+    
     struct AliasSet
     {
-        std::unordered_map<std::string,std::string> aliases;
-        std::unordered_map<std::string,std::string>::iterator find(const std::string &input)
+        std::unordered_map<std::string,Alias> aliases;
+        std::unordered_map<std::string,Alias>::iterator find(const std::string &input)
         {
             auto it = aliases.begin(), ite = aliases.end();
             for (;it != ite;++it)
@@ -48,12 +54,13 @@ namespace Farage
                     return it;
             return ite;
         }
-        bool get(std::string &input)
+        bool get(std::string &input, bool &permission)
         {
             auto it = find(input);
             if (it == aliases.end())
                 return false;
-            input = it->second + input.substr(it->first.size());
+            input = it->second.cmd + input.substr(it->first.size());
+            permission = it->second.perm;
             return true;
         }
     };
