@@ -1173,7 +1173,8 @@ OPTIONS\n\
                     if ((command.size() > prefix.size()) && (command.at(prefix.size()) == ' '))
                         space = 1;
                     command.erase(0,prefix.size()+space);
-                    global->prefixedAliases.get(command);
+                    if (global->prefixedAliases.get(command))
+                        fmessage.content = prefix + std::string(space,' ') + command;
                 }
                 else if (global->aliases.get(command))
                     prefixed = true;
@@ -2796,6 +2797,56 @@ OPTIONS\n\
         return global.ignoredUsers.size();
     }
     
+    int loadAliases(Global &global)
+    {
+        global.prefixedAliases.aliases.clear();
+        global.aliases.aliases.clear();
+        std::ifstream file ("./config/aliases.conf");
+        if (file.is_open())
+        {
+            std::string alias, cmd;
+            while (std::getline(file,alias))
+            {
+                if (!std::getline(file,cmd))
+                    break;
+                global.aliases.aliases.emplace(alias,cmd);
+            }
+            file.close();
+        }
+        file.open("./config/prefixed_aliases.conf");
+        if (file.is_open())
+        {
+            std::string alias, cmd;
+            while (std::getline(file,alias))
+            {
+                if (!std::getline(file,cmd))
+                    break;
+                global.prefixedAliases.aliases.emplace(alias,cmd);
+            }
+            file.close();
+        }
+        return global.aliases.aliases.size() + global.prefixedAliases.aliases.size();
+    }
+    
+    int saveAliases(Global &global)
+    {
+        std::ofstream file ("./config/aliases.conf",std::ofstream::trunc);
+        if (file.is_open())
+        {
+            for (auto it = global.aliases.aliases.begin(), ite = global.aliases.aliases.end();it != ite;++it)
+                file<<it->first<<std::endl<<it->second<<std::endl;
+            file.close();
+        }
+        file.open("./config/prefixed_aliases.conf",std::ofstream::trunc);
+        if (file.is_open())
+        {
+            for (auto it = global.prefixedAliases.aliases.begin(), ite = global.prefixedAliases.aliases.end();it != ite;++it)
+                file<<it->first<<std::endl<<it->second<<std::endl;
+            file.close();
+        }
+        return 0;
+    }
+    
     void loadAssets(Global &global)
     {
         //createDirs();
@@ -2807,6 +2858,8 @@ OPTIONS\n\
         loadIgnoredChannels(global);
         debugOut("Loading ignored users...");
         loadIgnoredUsers(global);
+        debugOut("Loading command aliases...");
+        loadAliases(global);
         verboseOut("Assets loaded . . .");
     }
     
@@ -3414,6 +3467,7 @@ OPTIONS\n\
                         return PLUGIN_HANDLED;
                     }
                 }
+                bool save = true;
                 std::string pref;
                 std::unordered_map<std::string,std::string>::iterator it;
                 bool found = true;
@@ -3448,7 +3502,10 @@ OPTIONS\n\
                     }
                 }
                 else if (argv[2].size() == 0)
+                {
                     consoleOut("No " + pref + "aliases found matching \"" + argv[2] + "\".");
+                    save = false;
+                }
                 else
                 {
                     std::pair<std::unordered_map<std::string,std::string>::iterator,bool> pit;
@@ -3459,8 +3516,13 @@ OPTIONS\n\
                     if (pit.second == true)
                         consoleOut("Added " + pref + "alias \"" + pit.first->first + "\" = \"" + pit.first->second + "\".");
                     else
+                    {
                         consoleOut("Error adding " + pref + "alias.");
+                        save = false;
+                    }
                 }
+                if (save)
+                    saveAliases(global);
             }
             return PLUGIN_HANDLED;
         }
