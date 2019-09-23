@@ -3879,7 +3879,7 @@ OPTIONS\n\
         int alias(Farage::BotClass *bot,Farage::Global &global,int argc,const std::string argv[],const SleepyDiscord::Message &message)
         {
             if (argc < 2)
-                bot->sendMessage(message.channelID,"Usage: `" + global.prefix(message.serverID) + argv[0] + " <alias> [command] [prefix_required=false]");
+                bot->sendMessage(message.channelID,"Usage: `" + global.prefix(message.serverID) + argv[0] + " <alias> [command] [prefix_required=false]`");
             else if (argc == 2)
             {
                 std::string command = argv[1];
