@@ -79,7 +79,7 @@ namespace Farage
             int execute(Farage::BotClass*,Farage::Global&,int,const std::string[],const SleepyDiscord::Message&);
             int cmdhelp(Farage::BotClass*,Farage::Global&,int,const std::string[],const SleepyDiscord::Message&);
             int gvarhelp(Farage::BotClass*,Farage::Global&,int,const std::string[],const SleepyDiscord::Message&);
-            //int alias(Farage::BotClass*,Farage::Global&,int,const std::string[], const SleepyDiscord::Message&);
+            int alias(Farage::BotClass*,Farage::Global&,int,const std::string[], const SleepyDiscord::Message&);
         };
     };
     
@@ -262,7 +262,7 @@ namespace Farage
                 add("exec",{&Internal::Chat::execute,CONFIG,"Execute a config script."});
                 add("cmdhelp",{&Internal::Chat::cmdhelp,NOFLAG,"View information about commands."});
                 add("gvarhelp",{&Internal::Chat::gvarhelp,GLOBVAR,"View information about gvars."});
-                //add("alias",{&Internal::Chat::alias,CONFIG,"Create chat command aliases"});
+                add("alias",{&Internal::Chat::alias,CONFIG,"Create chat command aliases"});
             };
             void add(const std::string &cmd, const Internal::Console::Command &command)
             {
@@ -3873,6 +3873,92 @@ OPTIONS\n\
             {
                 if (err == SleepyDiscord::ErrorCode::FORBIDDEN)
                     bot->sendMessage(message.channelID,"Please enable DM's with me.");
+            }
+            return PLUGIN_HANDLED;
+        }
+        int alias(Farage::BotClass *bot,Farage::Global &global,int argc,const std::string argv[],const SleepyDiscord::Message &message)
+        {
+            if (argc < 2)
+                bot->sendMessage(message.channelID,"Usage: `" + global.prefix(message.serverID) + argv[0] + " <alias> [command] [prefix_required=false]");
+            else if (argc == 2)
+            {
+                std::string command = argv[1];
+                if (global.prefixedAliases.get(command))
+                    bot->sendMessage(message.channelID,"> \"" + argv[1] + "\" = \"" + command + "\" (prefixed)");
+                else if (global.aliases.get(command))
+                    bot->sendMessage(message.channelID,"> \"" + argv[1] + "\" = \"" + command + "\" (unprefixed)");
+                else
+                    bot->sendMessage(message.channelID,"No aliases found matching \"" + command + "\".");
+            }
+            else
+            {
+                bool prefixed = false;
+                if (argc > 3)
+                {
+                    if (argv[3] == "true")
+                        prefixed = true;
+                    else if (argv[3] != "false")
+                    {
+                        bot->sendMessage(message.channelID,"Error: prefix_required may only be true or false.");
+                        return PLUGIN_HANDLED;
+                    }
+                }
+                bool save = true;
+                std::string pref;
+                std::unordered_map<std::string,std::string>::iterator it;
+                bool found = true;
+                if (prefixed)
+                {
+                    it = global.prefixedAliases.find(argv[1]);
+                    if (it == global.prefixedAliases.aliases.end())
+                        found = false;
+                    pref = "prefixed ";
+                }
+                else
+                {
+                    it = global.aliases.find(argv[1]);
+                    if (it == global.aliases.aliases.end())
+                        found = false;
+                }
+                if (found)
+                {
+                    if (argv[2].size() == 0)
+                    {
+                        std::string a = it->first;
+                        if (prefixed)
+                            global.prefixedAliases.aliases.erase(it);
+                        else
+                            global.aliases.aliases.erase(it);
+                        bot->sendMessage(message.channelID,"Removed " + pref + "alias \"" + a + "\".");
+                    }
+                    else
+                    {
+                        it->second = argv[2];
+                        bot->sendMessage(message.channelID,"Updated " + pref + "alias \"" + it->first + "\" to \"" + it->second + "\".");
+                    }
+                }
+                else if (argv[2].size() == 0)
+                {
+                    bot->sendMessage(message.channelID,"No " + pref + "aliases found matching \"" + argv[2] + "\".");
+                    save = false;
+                }
+                else
+                {
+                    std::pair<std::unordered_map<std::string,std::string>::iterator,bool> pit;
+                    if (prefixed)
+                        pit = global.prefixedAliases.aliases.emplace(argv[1],argv[2]);
+                    else
+                        pit = global.aliases.aliases.emplace(argv[1],argv[2]);
+                    if (pit.second == true)
+                        bot->sendMessage(message.channelID,"Added " + pref + "alias \"" + pit.first->first + "\" = \"" + pit.first->second + "\".");
+                    else
+                    {
+                        bot->sendMessage(message.channelID,"Error adding " + pref + "alias.");
+                        save = false;
+                    }
+                }
+                if (save)
+                    saveAliases(global);
             }
             return PLUGIN_HANDLED;
         }
