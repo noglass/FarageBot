@@ -1166,7 +1166,8 @@ OPTIONS\n\
                             return;
                     }
                 }
-                consoleOut("What have I done?");
+                //consoleOut("What have I done?");
+                std::cout<<"What have I done?"<<std::endl;
                 std::string command = fmessage.content;
                 if (prefixed)
                 {
