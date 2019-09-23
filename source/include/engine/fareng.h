@@ -1166,12 +1166,13 @@ OPTIONS\n\
                             return;
                     }
                 }
-                //consoleOut("What have I done?");
-                std::cout<<"What have I done?"<<std::endl;
                 std::string command = fmessage.content;
                 if (prefixed)
                 {
-                    command.erase(0,prefix.size());
+                    size_t space = 0;
+                    if ((command.size() > prefix.size()) && (command.at(prefix.size()) == " "))
+                        space = 1;
+                    command.erase(0,prefix.size()+space);
                     global->prefixedAliases.get(command);
                 }
                 else if (global->aliases.get(command))
