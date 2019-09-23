@@ -37,6 +37,27 @@ namespace Farage
         }
     };
     
+    struct AliasSet
+    {
+        std::unordered_map<std::string,std::string> aliases;
+        std::unordered_map<std::string,std::string>::iterator find(const std::string &input)
+        {
+            auto it = aliases.begin(), ite = aliases.end();
+            for (;it != ite;++it)
+                if (input.find(it->first) == 0)
+                    return it;
+            return ite;
+        }
+        bool get(std::string &input)
+        {
+            auto it = find(input);
+            if (it == aliases.end())
+                return false;
+            input = it->second + input.substr(it->first.size());
+            return true;
+        }
+    };
+    
     class Global
     {
         public:
@@ -58,6 +79,8 @@ namespace Farage
             std::vector<Handle*> plugins;
             std::vector<GlobVar*> globVars;
             std::unordered_map<std::string,std::string> prefixes;
+            AliasSet aliases;
+            AliasSet prefixedAliases;
             std::string prefix(const std::string &guild_id = "default");
             bool verbose;
             bool debug;

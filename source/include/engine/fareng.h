@@ -57,6 +57,7 @@ namespace Farage
             int nick(Farage::BotClass*,Farage::Global&,int,const std::string[]);
             int leave(Farage::BotClass*,Farage::Global&,int,const std::string[]);
             int help(Farage::BotClass*,Farage::Global&,int,const std::string[]);
+            int alias(Farage::BotClass*,Farage::Global&,int,const std::string[]);
         };
         
         namespace Chat
@@ -78,6 +79,7 @@ namespace Farage
             int execute(Farage::BotClass*,Farage::Global&,int,const std::string[],const SleepyDiscord::Message&);
             int cmdhelp(Farage::BotClass*,Farage::Global&,int,const std::string[],const SleepyDiscord::Message&);
             int gvarhelp(Farage::BotClass*,Farage::Global&,int,const std::string[],const SleepyDiscord::Message&);
+            //int alias(Farage::BotClass*,Farage::Global&,int,const std::string[], const SleepyDiscord::Message&);
         };
     };
     
@@ -247,6 +249,7 @@ namespace Farage
                 add("nick",{&Internal::Console::nick,"Change my nickname for a server."});
                 add("leave",{&Internal::Console::leave,"Leave a server."});
                 add("help",{&Internal::Console::help,"View information about registered commands and gvars."});
+                add("alias",{&Internal::Console::alias,"Create chat command aliases"});
                 add("version",{&Internal::Chat::version,NOFLAG,"FarageBot version information."});
                 add("setprefix",{&Internal::Chat::setprefix,STATUS,"Change the command prefix."});
                 add("reloadadmins",{&Internal::Chat::reloadadmins,GENERIC,"Reload the admin config file."});
@@ -259,6 +262,7 @@ namespace Farage
                 add("exec",{&Internal::Chat::execute,CONFIG,"Execute a config script."});
                 add("cmdhelp",{&Internal::Chat::cmdhelp,NOFLAG,"View information about commands."});
                 add("gvarhelp",{&Internal::Chat::gvarhelp,GLOBVAR,"View information about gvars."});
+                //add("alias",{&Internal::Chat::alias,CONFIG,"Create chat command aliases"});
             };
             void add(const std::string &cmd, const Internal::Console::Command &command)
             {
@@ -1162,10 +1166,16 @@ OPTIONS\n\
                             return;
                     }
                 }
+                std::string command = fmessage.content;
+                if (prefixed)
+                {
+                    command.erase(0,prefix.size());
+                    global->prefixedAliases.get(command);
+                }
+                else if (global->aliases.get(command))
+                    prefixed = true;
                 if ((!blockCmd) && (prefixed) && (ID != global->self.id))
                 {
-                    std::string command = fmessage.content;
-                    command.erase(0,prefix.size());
                     AdminFlag flags = global->getAdminFlags(fmessage.guild_id,ID);
                     int argc;
                     std::string *argv = splitStringAny(nospace(command)," \t\n",argc);
@@ -3371,6 +3381,83 @@ OPTIONS\n\
                 }
                 else
                     consoleOut("No entries found matching: '" + criteriastr + '\'');
+            }
+            return PLUGIN_HANDLED;
+        }
+        int alias(Farage::BotClass *bot,Farage::Global &global,int argc,const std::string argv[])
+        {
+            if (argc < 2)
+                consoleOut("Usage: " + argv[0] + " <alias> [command] [prefix_required=false]");
+            else if (argc == 2)
+            {
+                std::string command = argv[1];
+                if (global.prefixedAliases.get(command))
+                    consoleOut("  \"" + argv[1] + "\" = \"" + command + "\" (prefixed)");
+                else if (global.aliases.get(command))
+                    consoleOut("  \"" + argv[1] + "\" = \"" + command + "\" (unprefixed)");
+                else
+                    consoleOut("No aliases found matching \"" + command + "\".");
+            }
+            else
+            {
+                bool prefixed = false;
+                if (argc > 3)
+                {
+                    if (argv[3] == "true")
+                        prefixed = true;
+                    else if (argv[3] != "false")
+                    {
+                        consoleOut("Error: prefix_required may only be true or false.");
+                        return PLUGIN_HANDLED;
+                    }
+                }
+                std::string pref;
+                std::unordered_map<std::string,std::string>::iterator it;
+                bool found = true;
+                if (prefixed)
+                {
+                    it = global.prefixedAliases.find(argv[1]);
+                    if (it == global.prefixedAliases.aliases.end())
+                        found = false;
+                    pref = "prefixed ";
+                }
+                else
+                {
+                    it = global.aliases.find(argv[1]);
+                    if (it == global.aliases.aliases.end())
+                        found = false;
+                }
+                if (found)
+                {
+                    if (argv[2].size() == 0)
+                    {
+                        std::string a = it->first;
+                        if (prefixed)
+                            global.prefixedAliases.aliases.erase(it);
+                        else
+                            global.aliases.aliases.erase(it);
+                        consoleOut("Removed " + pref + "alias \"" + a + "\".");
+                    }
+                    else
+                    {
+                        it->second = argv[2];
+                        consoleOut("Updated " + pref + "alias \"" + it->first + "\" to \"" + it->second + "\".");
+                    }
+                }
+                else if (argv[2].size() == 0)
+                    consoleOut("No " + pref + "aliases found matching \"" + argv[2] + "\".");
+                else
+                {
+                    std::pair<std::unordered_map<std::string,std::string>::iterator,bool> pit;
+                    if (prefixed)
+                        pit = global.prefixedAliases.aliases.emplace(argv[1],argv[2]);
+                    else
+                        pit = global.aliases.aliases.emplace(argv[1],argv[2]);
+                    if (pit.second == true)
+                        consoleOut("Added " + pref + "alias \"" + pit.first->first + "\" = \"" + pit.first->second + "\".");
+                    else
+                        consoleOut("Error adding " + pref + "alias.");
+                }
             }
             return PLUGIN_HANDLED;
         }
