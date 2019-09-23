@@ -1170,7 +1170,7 @@ OPTIONS\n\
                 if (prefixed)
                 {
                     size_t space = 0;
-                    if ((command.size() > prefix.size()) && (command.at(prefix.size()) == " "))
+                    if ((command.size() > prefix.size()) && (command.at(prefix.size()) == ' '))
                         space = 1;
                     command.erase(0,prefix.size()+space);
                     global->prefixedAliases.get(command);
