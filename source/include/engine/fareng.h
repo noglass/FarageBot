@@ -109,7 +109,7 @@ namespace Farage
                 }
             }
         }
-        if (s)
+        if ((s) && (text.size() > 0))
         {
             switch (text.at(text.size()-1))
             {
