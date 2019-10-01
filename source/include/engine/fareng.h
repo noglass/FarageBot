@@ -3544,7 +3544,7 @@ OPTIONS\n\
                 }
                 else if (argv[2].size() == 0)
                 {
-                    consoleOut("No " + pref + "aliases found matching \"" + argv[2] + "\".");
+                    consoleOut("No " + pref + "aliases found matching \"" + argv[1] + "\".");
                     save = false;
                 }
                 else
@@ -3982,7 +3982,7 @@ OPTIONS\n\
                 }
                 else if (argv[2].size() == 0)
                 {
-                    bot->sendMessage(message.channelID,"No " + pref + "aliases found matching \"" + argv[2] + "\".");
+                    bot->sendMessage(message.channelID,"No " + pref + "aliases found matching \"" + argv[1] + "\".");
                     save = false;
                 }
                 else
