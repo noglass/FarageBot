@@ -1154,6 +1154,7 @@ OPTIONS\n\
                     for (auto it = global->plugins.begin(), ite = global->plugins.end();it != ite;++it)
                     {
                         if (((*it)->callEvent(Event::ONMESSAGE,arg0,nullptr,nullptr,nullptr) == PLUGIN_HANDLED)
+                              || ((prefixed) && ((*it)->callEvent(Event::ONMESSAGE_PRE,arg0,nullptr,nullptr,nullptr) == PLUGIN_HANDLED))
                           || ((fmessage.type == GUILD_TEXT)
                               && (((*it)->callEvent(Event::ONCMESSAGE,arg0,nullptr,nullptr,nullptr) == PLUGIN_HANDLED)
                               || ((prefixed) && ((*it)->callEvent(Event::ONCMESSAGE_PRE,arg0,nullptr,nullptr,nullptr) == PLUGIN_HANDLED))))
@@ -3484,13 +3485,17 @@ OPTIONS\n\
                 else
                     consoleOut("No aliases found matching \"" + command + "\".");
             }
-            else
+            else // argc >= 3
             {
-                bool prefixed = false;
+                AliasSet* aliases = &global.aliases;
+                std::string pref;
                 if (argc > 3)
                 {
                     if (argv[3] == "true")
-                        prefixed = true;
+                    {
+                        aliases = &global.prefixedAliases;
+                        pref = "prefixed ";
+                    }
                     else if (argv[3] != "false")
                     {
                         consoleOut("Error: prefix_required may only be true or false.");
@@ -3508,31 +3513,15 @@ OPTIONS\n\
                     }
                 }
                 bool save = true;
-                std::string pref;
-                std::unordered_map<std::string,Alias>::iterator it;
-                bool found = true;
-                if (prefixed)
-                {
-                    it = global.prefixedAliases.find(argv[1]);
-                    if (it == global.prefixedAliases.aliases.end())
-                        found = false;
-                    pref = "prefixed ";
-                }
-                else
-                {
-                    it = global.aliases.find(argv[1]);
-                    if (it == global.aliases.aliases.end())
-                        found = false;
-                }
-                if (found)
+                auto it = aliases->aliases.find(argv[1]), ite = aliases->aliases.end();
+                if (it == ite)
+                    it = aliases->find(argv[1]);
+                if (it != ite)
                 {
                     if (argv[2].size() == 0)
                     {
                         std::string a = it->first;
-                        if (prefixed)
-                            global.prefixedAliases.aliases.erase(it);
-                        else
-                            global.aliases.aliases.erase(it);
+                        aliases->aliases.erase(it);
                         consoleOut("Removed " + pref + "alias \"" + a + "\".");
                     }
                     else
@@ -3549,11 +3538,7 @@ OPTIONS\n\
                 }
                 else
                 {
-                    std::pair<std::unordered_map<std::string,Alias>::iterator,bool> pit;
-                    if (prefixed)
-                        pit = global.prefixedAliases.aliases.emplace(argv[1],Alias{argv[2],perms});
-                    else
-                        pit = global.aliases.aliases.emplace(argv[1],Alias{argv[2],perms});
+                    auto pit = aliases->aliases.emplace(argv[1],Alias{argv[2],perms});
                     if (pit.second == true)
                         consoleOut("Added " + pref + "alias \"" + pit.first->first + "\" = \"" + pit.first->second.cmd + "\".");
                     else
