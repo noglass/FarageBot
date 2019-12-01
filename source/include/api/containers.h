@@ -77,10 +77,22 @@ namespace Farage
     
     struct Emoji
     {
-        Emoji() {}
-        Emoji(const std::string &_name, const std::string &_id = "") : name(_name), id(_id) {}
+        Emoji() : custom(false) {}
+        Emoji(const std::string &_name, const std::string &_id = "") : name(_name), id(_id)
+        {
+            if (id.size() > 0)
+                custom = true;
+            else
+                custom = false;
+        }
         Emoji(std::string _id, std::string _name, std::vector<Role>&& _roles, User&& _user, bool _require_colons, bool _managed, bool _animated) :
-            id(std::move(_id)), name(std::move(_name)), roles(std::move(_roles)), user(std::move(_user)), require_colons(_require_colons), managed(_managed), animated(_animated) {}
+            id(std::move(_id)), name(std::move(_name)), roles(std::move(_roles)), user(std::move(_user)), require_colons(_require_colons), managed(_managed), animated(_animated)
+        {
+            if (id.size() > 0)
+                custom = true;
+            else
+                custom = false;
+        }
         std::string id;
         std::string name;
         std::vector<Role> roles;
@@ -88,6 +100,7 @@ namespace Farage
         bool require_colons;
         bool managed;
         bool animated;
+        bool custom;
         inline bool operator==(const Emoji &r) { return ((id.size() > 0) ? (id == r.id) : (name == r.name)); }
         inline bool operator!=(const Emoji &r) { return !operator==(r); }
         std::string display() const
@@ -95,7 +108,30 @@ namespace Farage
             std::string out = name;
             if (id.size() > 0)
                 out = "<:" + out + ':' + id + '>';
-            return out;
+            return std::move(out);
+        }
+        std::string encoded() const
+        {
+            std::string out;
+            if (id.size() > 0)
+                out = "<:" + name + ':' + id + '>';
+            else
+            {
+                std::string hex;
+                unsigned char n;
+                for (auto it = name.begin(), ite = name.end();it != ite;++it)
+                {
+                    n = *it;
+                    do
+                    {
+                        hex += "0123456789ABCDEF"[n & 15];
+                        n >>= 4;
+                    } while (n);
+                    out.append("%" + std::string(hex.rbegin(),hex.rend()));
+                    hex.clear();
+                }
+            }
+            return std::move(out);
         }
     };
     
