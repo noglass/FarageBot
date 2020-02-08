@@ -207,7 +207,7 @@ namespace Farage
             std::move(convertUser(std::move(emoji.user))),
             emoji.requireColons,
             emoji.managed,
-            false
+            emoji.animated
         );
         return std::move(femoji);
     }

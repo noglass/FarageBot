@@ -61,10 +61,12 @@ namespace pcre2w
     class smatch
     {
         smatch_data pref, suff;
+        size_t pos;
         public:
             smatch() {}
             smatch(const smatch &other);
             smatch& operator= (const smatch &other);
+            size_t position();
             smatch_data prefix();
             smatch_data suffix();
             std::vector<smatch_data> capture;

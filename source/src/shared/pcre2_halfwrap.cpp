@@ -65,6 +65,10 @@ pcre2w::smatch& pcre2w::smatch::operator= (const smatch &other)
         capture.push_back(*it);
     return *this;
 }
+size_t pcre2w::smatch::position()
+{
+    return pos;
+}
 void pcre2w::smatch::populate(PCRE2_SPTR subject, pcre2_match_data *ml, int rc, const uint32_t cc) 
 {
     clear();
@@ -77,6 +81,7 @@ void pcre2w::smatch::populate(PCRE2_SPTR subject, pcre2_match_data *ml, int rc, 
             pref = { sub.substr(0,offset), offset };
         size_t start;
         size_t length;
+        pos = ovector[0];
         for (int i = 0;i < rc;++i)
         {
             start = ovector[2*i];

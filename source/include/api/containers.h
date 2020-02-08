@@ -107,14 +107,14 @@ namespace Farage
         {
             std::string out = name;
             if (id.size() > 0)
-                out = "<:" + out + ':' + id + '>';
+                out = (animated ? "<a:" : "<:") + out + ':' + id + '>';
             return std::move(out);
         }
         std::string encoded() const
         {
             std::string out;
             if (id.size() > 0)
-                out = "<:" + name + ':' + id + '>';
+                out = (animated ? "<a:" : "<:") + name + ':' + id + '>';
             else
             {
                 std::string hex;
