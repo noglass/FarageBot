@@ -94,6 +94,8 @@ namespace Farage
                 id = _name.substr(pos+1);
                 custom = true;
             }
+            else
+                name = _name;
         }
         Emoji(const std::string &_name, const std::string &_id, bool anim = false) : name(_name), id(_id), animated(anim)
         {
