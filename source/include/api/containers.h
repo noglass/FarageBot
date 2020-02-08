@@ -78,7 +78,24 @@ namespace Farage
     struct Emoji
     {
         Emoji() : custom(false) {}
-        Emoji(const std::string &_name, const std::string &_id = "") : name(_name), id(_id)
+        Emoji(std::string _name)
+        {
+            if (_name.substr(0,2) == "a:")
+            {
+                animated = true;
+                _name.erase(0,2);
+            }
+            else if (_name.front() == ':')
+                _name.erase(0,1);
+            size_t pos = _name.find(':');
+            if (pos != std::string::npos)
+            {
+                name = _name.substr(0,pos);
+                id = _name.substr(pos+1);
+                custom = true;
+            }
+        }
+        Emoji(const std::string &_name, const std::string &_id, bool anim = false) : name(_name), id(_id), animated(anim)
         {
             if (id.size() > 0)
                 custom = true;
@@ -114,7 +131,7 @@ namespace Farage
         {
             std::string out;
             if (id.size() > 0)
-                out = (animated ? "<a:" : "<:") + name + ':' + id + '>';
+                out = (animated ? "a:" : std::string(":")) + name + ':' + id;
             else
             {
                 std::string hex;
