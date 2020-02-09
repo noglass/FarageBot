@@ -80,6 +80,7 @@ namespace Farage
         Emoji() : custom(false) {}
         Emoji(std::string _name)
         {
+            animated = false;
             if (_name.substr(0,2) == "a:")
             {
                 animated = true;
