@@ -3643,8 +3643,17 @@ OPTIONS\n\
             else
             {
                 std::string output = runServerCommand(bot,global,argc-1,argv+1);
-                if (output.size() > 0)
+                size_t s = output.size();
+                if (s > 0)
+                {
+                    if (s > 1993)
+                    {
+                        output.erase(0,s % 1993);
+                        if ((s = output.size()-1) > 1992)
+                            output.erase(0,s/1993*1993);
+                    }
                     bot->sendMessage(message.channelID,"```\n" + output + "```");
+                }
                 else
                     bot->addReaction(message.channelID,message.ID,"%E2%9C%85");
             }
