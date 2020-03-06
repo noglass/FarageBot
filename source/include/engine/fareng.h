@@ -143,24 +143,25 @@ namespace Farage
         return true;
     }
     
-    std::string *splitString(const std::string &src, const std::string &delim, int &count)
+    std::string *splitString(const std::string &src, const std::string &delim, int &count, const std::string &quote = "\"'“`")
     {
         if (src.size() == 0)
             return nullptr;
         std::vector<std::string> list;
         bool open = false;
+        char c;
         for (size_t x = 0, slen = src.size(), dlen = delim.size(), last = 0; x < slen;)
         {
-            if (src.at(x) == '"')
+            if (quote.find((c = src.at(x))) != std::string::npos)
             {
                 open = !open;
-                if ((open) && (src.find('"',x+1) == std::string::npos))
+                if ((open) && (src.find(c,x+1) == std::string::npos))
                     open = false;
             }
             if ((!open) && ((src.compare(x,dlen,delim) == 0) || (x+1 >= slen)))
             {
                 std::string arg = nospace(src.substr(last,(x+=dlen)-last-((x+1 < slen) ? 1 : 0)));
-                if ((arg.front() == '"') && (arg.back() == '"'))
+                if (((c = arg.front()) == arg.back()) && (quote.find(c) != std::string::npos))
                     arg = arg.substr(1,arg.size()-2);
                 list.push_back(arg);
                 last = x;
@@ -175,7 +176,7 @@ namespace Farage
         return split;
     }
     
-    std::string *splitStringAny(const std::string &src, const std::string &delim, int &count)
+    std::string *splitStringAny(const std::string &src, const std::string &delim, int &count, const std::string &quote = "\"'“`")
     {
         if (src.size() == 0)
             return nullptr;
@@ -184,16 +185,16 @@ namespace Farage
         char c;
         for (size_t x = 0, slen = src.size(), last = 0;x < slen;)
         {
-            if ((c = src.at(x)) == '"')
+            if (quote.find((c = src.at(x))) != std::string::npos)
             {
                 open = !open;
-                if ((open) && (src.find('"',x+1) == std::string::npos))
+                if ((open) && (src.find(c,x+1) == std::string::npos))
                     open = false;
             }
             if ((!open) && ((delim.find(c) != std::string::npos) || (x+1 >= slen)))
             {
                 std::string arg = nospace(src.substr(last,(++x)-last-((x+1 < slen) ? 1 : 0)));
-                if ((arg.front() == '"') && (arg.back() == '"'))
+                if (((c = arg.front()) == arg.back()) && (quote.find(c) != std::string::npos))
                     arg = arg.substr(1,arg.size()-2);
                 list.push_back(arg);
                 last = x;
