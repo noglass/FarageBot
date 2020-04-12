@@ -256,7 +256,8 @@ std::string& INIObject::operator() (size_t topic, size_t item)
 
 std::vector<INIObject::INISection>::iterator INIObject::topic_it(const std::string &topic, size_t skipTopic)
 {
-    for (auto t = data.begin(), te = data.end();t != te;++t)
+    auto te = data.end();
+    for (auto t = data.begin();t != te;++t)
     {
         if (t->topic() == topic)
         {
@@ -265,7 +266,7 @@ std::vector<INIObject::INISection>::iterator INIObject::topic_it(const std::stri
             skipTopic--;
         }
     }
-    throw std::out_of_range("INIObject::topic_it");
+    return te;
 }
 
 std::string INIObject::find(const std::string &topic, const std::string &item, size_t skipTopic, size_t skipItem)
