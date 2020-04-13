@@ -2039,7 +2039,7 @@ OPTIONS\n\
                 return ArrayResponse<Channel>();
             try
             {
-                SleepyDiscord::ArrayResponse<SleepyDiscord::Channel> response = ((BotClass*)(bot))->getServer(serverID);
+                SleepyDiscord::ArrayResponse<SleepyDiscord::Channel> response = ((BotClass*)(bot))->getServerChannels(serverID);
                 return convertArrayResponse<SleepyDiscord::Channel,Channel>(std::move(response));
             }
             catch (SleepyDiscord::ErrorCode err)
