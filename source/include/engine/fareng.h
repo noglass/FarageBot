@@ -145,6 +145,7 @@ namespace Farage
     
     std::string *splitString(const std::string &src, const std::string &delim, int &count, const std::string &quote = "\"'“`")
     {
+        count = 0;
         if (src.size() == 0)
             return nullptr;
         std::vector<std::string> list;
@@ -170,7 +171,6 @@ namespace Farage
                 x++;
         }
         std::string *split = new std::string[list.size()];
-        count = 0;
         for (auto it = list.begin(), ite = list.end();it != ite;++it)
             split[count++] = *it;
         return split;
@@ -178,6 +178,7 @@ namespace Farage
     
     std::string *splitStringAny(const std::string &src, const std::string &delim, int &count, const std::string &quote = "\"'“`")
     {
+        count = 0;
         if (src.size() == 0)
             return nullptr;
         std::vector<std::string> list;
@@ -203,7 +204,6 @@ namespace Farage
                 x++;
         }
         std::string *split = new std::string[list.size()];
-        count = 0;
         for (auto it = list.begin(), ite = list.end();it != ite;++it)
             split[count++] = *it;
         return split;
@@ -1191,25 +1191,28 @@ OPTIONS\n\
                         flags = ROOT;
                     else
                         flags = global->getAdminFlags(fmessage.guild_id,ID);
-                    int argc;
+                    int argc = 0;
                     std::string *argv = splitStringAny(nospace(command)," \t\n",argc);
-                    auto plug = global->plugins.begin(), pluge = global->plugins.end();
-                    bool done = false;
-                    for (;plug != pluge;++plug)
+                    if (argc > 0)
                     {
-                        if ((*plug)->getLoadPriority() != 0)
-                            break;
-                        if ((*plug)->callChatCmd(argv[0],flags,argc,argv,fmessage) == PLUGIN_HANDLED)
-                        {
-                            done = true;
-                            break;
-                        }
-                    }
-                    if ((!done) && (internals.call(this,*global,flags,argc,argv,message) != PLUGIN_HANDLED))
+                        auto plug = global->plugins.begin(), pluge = global->plugins.end();
+                        bool done = false;
                         for (;plug != pluge;++plug)
-                            if ((*plug)->callChatCmd(argv[0],flags,argc,argv,fmessage) == PLUGIN_HANDLED)
+                        {
+                            if ((*plug)->getLoadPriority() != 0)
                                 break;
-                    delete[] argv;
+                            if ((*plug)->callChatCmd(argv[0],flags,argc,argv,fmessage) == PLUGIN_HANDLED)
+                            {
+                                done = true;
+                                break;
+                            }
+                        }
+                        if ((!done) && (internals.call(this,*global,flags,argc,argv,message) != PLUGIN_HANDLED))
+                            for (;plug != pluge;++plug)
+                                if ((*plug)->callChatCmd(argv[0],flags,argc,argv,fmessage) == PLUGIN_HANDLED)
+                                    break;
+                        delete[] argv;
+                    }
                 }
             }
             
