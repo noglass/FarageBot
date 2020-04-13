@@ -6,13 +6,14 @@
 
 class INIObject
 {
-    private:
+    public:
         struct INIItem
         {
             std::string item;
             std::string value;
         };
-        
+    
+    private:
         class INISection
         {
             private:
@@ -45,8 +46,7 @@ class INIObject
                 size_t items() { return data.size(); }
                 size_t items(const std::string &item);
                 
-                template <class InputIterator>
-                std::vector<INIObject::INIItem>::iterator insert_range(std::vector<INIObject::INIItem>::iterator pos, InputIterator first, InputIterator last);
+                std::vector<INIObject::INIItem>::iterator insert_range(std::vector<INIObject::INIItem>::iterator pos, std::vector<INIObject::INIItem>::iterator first, std::vector<INIObject::INIItem>::iterator last);
                 
                 int erase(const std::string &item, size_t skipItem = 0);
                 int erase(size_t item);

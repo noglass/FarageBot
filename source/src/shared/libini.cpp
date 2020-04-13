@@ -66,10 +66,9 @@ size_t INIObject::INISection::items(const std::string &item)
     return ret;
 }
 
-template <class InputIterator>
-std::vector<INIObject::INIItem>::iterator INIObject::INISection::insert_range(std::vector<INIObject::INIItem>::iterator pos, InputIterator first, InputIterator last)
+std::vector<INIObject::INIItem>::iterator INIObject::INISection::insert_range(std::vector<INIObject::INIItem>::iterator pos, std::vector<INIObject::INIItem>::iterator first, std::vector<INIObject::INIItem>::iterator last)
 {
-    return data.insert<InputIterator>(pos,first,last);
+    return data.insert<std::vector<INIObject::INIItem>::iterator>(pos,first,last);
 }
 
 int INIObject::INISection::erase(const std::string &item, size_t skipItem)
