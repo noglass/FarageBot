@@ -60,6 +60,7 @@ namespace Farage
     {
         long interval;
         TimeScale type;
+        void *args = nullptr;
         Timer()
         {
             last = std::chrono::high_resolution_clock::now();
@@ -126,7 +127,6 @@ namespace Farage
         
         private:
             TimerCallback func = nullptr;
-            void *args = nullptr;
             std::chrono::high_resolution_clock::time_point last;
     };
 };
