@@ -276,9 +276,12 @@ namespace Farage
             int call(BotClass *bot, Global &global, int argc, const std::string argv[])
             {
                 int ret = PLUGIN_CONTINUE;
-                auto it = consoleCommands.find(argv[0]);
-                if (it != consoleCommands.end())
-                    ret = (*it->second.cb)(bot,global,argc,argv);
+                if (argc > 0)
+                {
+                    auto it = consoleCommands.find(argv[0]);
+                    if (it != consoleCommands.end())
+                        ret = (*it->second.cb)(bot,global,argc,argv);
+                }
                 return ret;
             }
             int call(BotClass *bot, Global &global, AdminFlag flags, int argc, const std::string argv[], const SleepyDiscord::Message &message);
@@ -4005,13 +4008,16 @@ OPTIONS\n\
     int InternalObject::call(BotClass *bot, Global &global, AdminFlag flags, int argc, const std::string argv[], const SleepyDiscord::Message &message)
     {
         int ret = PLUGIN_CONTINUE;
-        auto it = chatCommands.find(argv[0]);
-        if (it != chatCommands.end())
+        if (argc > 0)
         {
-            if ((it->second.flag == NOFLAG) || ((flags & it->second.flag) == it->second.flag))
-                ret = (*it->second.cb)(bot,global,argc,argv,message);
-            else
-                bot->addReaction(message.channelID,message.ID,randomNegativeEmoji());
+            auto it = chatCommands.find(argv[0]);
+            if (it != chatCommands.end())
+            {
+                if ((it->second.flag == NOFLAG) || ((flags & it->second.flag) == it->second.flag))
+                    ret = (*it->second.cb)(bot,global,argc,argv,message);
+                else
+                    bot->addReaction(message.channelID,message.ID,randomNegativeEmoji());
+            }
         }
         return ret;
     }
