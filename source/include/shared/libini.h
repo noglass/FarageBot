@@ -9,6 +9,7 @@ class INIObject
     public:
         struct INIItem
         {
+            INIItem(std::string i, std::string v) : item(std::move(i)), value(std::move(v)) {}
             std::string item;
             std::string value;
         };
