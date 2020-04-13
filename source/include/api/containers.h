@@ -243,6 +243,13 @@ namespace Farage
         std::vector<EmbedField> fields;
     };
     
+    struct MessageReference
+    {
+        std::string message_id;
+        std::string channel_id;
+        std::string guild_id;
+    };
+    
     struct Message
     {
         //void *raw;
@@ -264,6 +271,7 @@ namespace Farage
         bool pinned;
         std::string webhook_id;
         int type;
+        MessageReference message_reference;
     };
     
     struct Overwrite

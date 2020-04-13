@@ -41,6 +41,7 @@ namespace Farage
                 CHANNEL_PINNED_MESSAGE = 6,
                 GUILD_MEMBER_JOIN      = 7
             } type = DEFAULT;
+            SleepyDiscord::MessageReference reference;
 
             //const static std::initializer_list<const char*const> fields;
             JSONStructStart
@@ -62,7 +63,8 @@ namespace Farage
                     SleepyDiscord::json::pair<SleepyDiscord::json::ContainerTypeHelper>(&Farage::EditMessage::reactions      , "reactions"       , SleepyDiscord::json::OPTIONAL_FIELD         ),
                     SleepyDiscord::json::pair                           (&Farage::EditMessage::pinned         , "pinned"          , SleepyDiscord::json::OPTIONAL_FIELD        ),
                     SleepyDiscord::json::pair                           (&Farage::EditMessage::webhookID      , "webhook_id"      , SleepyDiscord::json::OPTIONAL_FIELD         ),
-                    SleepyDiscord::json::pair<SleepyDiscord::json::EnumTypeHelper     >(&Farage::EditMessage::type           , "type"            , SleepyDiscord::json::OPTIONAL_FIELD        )
+                    SleepyDiscord::json::pair<SleepyDiscord::json::EnumTypeHelper     >(&Farage::EditMessage::type           , "type"            , SleepyDiscord::json::OPTIONAL_FIELD        ),
+                    SleepyDiscord::json::pair                           (&Farage::EditMessage::reference      , "message_reference", SleepyDiscord::json::OPTIONAL_FIELD         )
                 );
             JSONStructEnd
     };
@@ -383,6 +385,17 @@ namespace Farage
             *itt = std::move(convertEmbedField(std::move(*it)));
         return fembed;
     }
+    
+    MessageReference convertMessageReference(SleepyDiscord::MessageReference ref)
+    {
+        MessageReference fref = {
+            std::move(ref.messageID),
+            std::move(ref.channelID),
+            std::move(ref.serverID)
+        };
+        return std::move(fref);
+    }
+    
     template<class T>
     Message convertMessage(T message)
     {
@@ -404,7 +417,8 @@ namespace Farage
             std::vector<Reaction>(message.reactions.size()),
             std::move(message.pinned),
             std::move(message.webhookID),
-            std::move(message.type)
+            std::move(message.type),
+            std::move(convertMessageReference(std::move(message.reference)))
         };
         {
             auto itt = fmessage.mentions.begin();
@@ -444,6 +458,7 @@ namespace Farage
     inline Role                convertObject(SleepyDiscord::Role role)                 { return convertRole(std::move(role)); }
     inline ServerMember        convertObject(SleepyDiscord::ServerMember member)       { return convertServerMember(std::move(member)); }
     inline Server              convertObject(SleepyDiscord::Server server)             { return convertServer(std::move(server)); }
+    inline MessageReference    convertObject(SleepyDiscord::MessageReference ref)      { return convertMessageReference(std::move(ref)); }
     inline Message             convertObject(SleepyDiscord::Message message)           { return convertMessage(std::move(message)); }
     inline Ready               convertObject(SleepyDiscord::Ready readyData)           { return convertReady(std::move(readyData)); }
     inline Emoji               convertObject(SleepyDiscord::Emoji emoji)               { return convertEmoji(std::move(emoji)); }
