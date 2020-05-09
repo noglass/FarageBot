@@ -1358,6 +1358,26 @@ OPTIONS\n\
             return ObjectResponse<Message>(Response(4000),Message());
         }
         
+        ObjectResponse<Message> sendEmbed(const std::string &chan, const std::string &message, Embed embed, bool tts)
+        {
+            void *bot = recallGlobal()->discord;
+            if (bot == nullptr)
+                return ObjectResponse<Message>();
+            try
+            {
+                SleepyDiscord::ObjectResponse<SleepyDiscord::Message> response = ((BotClass*)(bot))->sendMessage(chan,message,std::move(convertEmbed(std::move(embed))),tts);
+                return ObjectResponse<Message>(std::move(convertResponse(response)),std::move(convertMessage(std::move(response.cast()))));
+            }
+            catch (SleepyDiscord::ErrorCode err)
+            {
+                errorOut("sendMessage: Error code " + std::to_string(int(err)));
+                if (err == SleepyDiscord::ErrorCode::FORBIDDEN)
+                    errorOut("sendMessage: FORBIDDEN Cannot send message to " + chan);
+                return ObjectResponse<Message>(Response(err),Message());
+            }
+            return ObjectResponse<Message>(Response(4000),Message());
+        }
+        
         //ObjectResponse<Message> messageChannelID(const std::string &chan, const std::string &message)
         //{
             /*if ((global->isRateLimited) || (global->buffer.size() > 0))

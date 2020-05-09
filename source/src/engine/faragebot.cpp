@@ -35,6 +35,7 @@ int main(int argc, char *argv[])
         timerTrigger[1],
         {
             &Farage::Engine::sendMessage,
+            &Farage::Engine::sendEmbed,
             &Farage::Engine::reactToID,
             &Farage::Engine::getChannel,
             &Farage::Engine::getDirectMessageChannel,

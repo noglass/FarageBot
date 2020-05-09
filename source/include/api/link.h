@@ -53,6 +53,10 @@ namespace Farage
     {
         return recallGlobal()->callbacks.sendMessage(channelID,message,json,tts);
     }
+    inline ObjectResponse<Message> sendEmbed(const std::string &channelID, Embed embed, const std::string &message = "", bool tts = false)
+    {
+        return recallGlobal()->callbacks.sendEmbed(channelID,message,std::move(embed),tts);
+    }
     inline ObjectResponse<Message> sendFile(const std::string &channelID, const std::string &filepath, const std::string &message = "")
     {
         return recallGlobal()->callbacks.sendFile(channelID,filepath,message);

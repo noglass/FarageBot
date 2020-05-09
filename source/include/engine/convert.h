@@ -383,7 +383,94 @@ namespace Farage
         auto itt = fembed.fields.begin();
         for (auto it = embed.fields.begin(), ite = embed.fields.end();it != ite;++it,++itt)
             *itt = std::move(convertEmbedField(std::move(*it)));
-        return fembed;
+        return std::move(fembed);
+    }
+    
+    SleepyDiscord::EmbedFooter convertEmbedFooter(EmbedFooter embed)
+    {
+        SleepyDiscord::EmbedFooter ret;
+        ret.text = std::move(embed.text);
+        ret.iconUrl = std::move(embed.icon_url);
+        ret.proxyIconUrl = std::move(embed.proxy_icon_url);
+        return std::move(ret);
+    }
+    
+    SleepyDiscord::EmbedImage convertEmbedImage(EmbedImage embed)
+    {
+        SleepyDiscord::EmbedImage ret;
+        ret.url = std::move(embed.url);
+        ret.proxyUrl = std::move(embed.proxy_url);
+        ret.height = std::move(embed.height);
+        ret.width = std::move(embed.width);
+        return std::move(ret);
+    }
+    
+    SleepyDiscord::EmbedThumbnail convertEmbedThumbnail(EmbedImage embed)
+    {
+        SleepyDiscord::EmbedThumbnail ret;
+        ret.url = std::move(embed.url);
+        ret.proxyUrl = std::move(embed.proxy_url);
+        ret.height = std::move(embed.height);
+        ret.width = std::move(embed.width);
+        return std::move(ret);
+    }
+    
+    SleepyDiscord::EmbedVideo convertEmbedVideo(EmbedVideo embed)
+    {
+        SleepyDiscord::EmbedVideo ret;
+        ret.url = std::move(embed.url);
+        ret.height = std::move(embed.height);
+        ret.width = std::move(embed.width);
+        return std::move(ret);
+    }
+    
+    SleepyDiscord::EmbedProvider convertEmbedProvider(EmbedProvider embed)
+    {
+        SleepyDiscord::EmbedProvider ret;
+        ret.name = std::move(embed.name);
+        ret.url = std::move(embed.url);
+        return std::move(ret);
+    }
+    
+    SleepyDiscord::EmbedAuthor convertEmbedAuthor(EmbedAuthor embed)
+    {
+        SleepyDiscord::EmbedAuthor ret;
+        ret.name = std::move(embed.name);
+        ret.url = std::move(embed.url);
+        ret.iconUrl = std::move(embed.icon_url);
+        ret.proxyIconUrl = std::move(embed.proxy_icon_url);
+        return std::move(ret);
+    }
+    
+    SleepyDiscord::EmbedField convertEmbedField(EmbedField embed)
+    {
+        SleepyDiscord::EmbedField ret;
+        ret.name = std::move(embed.name);
+        ret.value = std::move(embed.value);
+        ret.isInline = std::move(embed._inline);
+        return std::move(ret);
+    }
+    
+    SleepyDiscord::Embed convertEmbed(Embed embed)
+    {
+        SleepyDiscord::Embed ret;
+        ret.title = std::move(embed.title);
+        ret.type = std::move(embed.type);
+        ret.description = std::move(embed.description);
+        ret.url = std::move(embed.url);
+        ret.timestamp = std::move(embed.timestamp);
+        ret.color = std::move(embed.color);
+        ret.footer = std::move(convertEmbedFooter(std::move(embed.footer)));
+        ret.image = std::move(convertEmbedImage(std::move(embed.image)));
+        ret.thumbnail = std::move(convertEmbedThumbnail(std::move(embed.thumbnail)));
+        ret.video = std::move(convertEmbedVideo(std::move(embed.video)));
+        ret.provider = std::move(convertEmbedProvider(std::move(embed.provider)));
+        ret.author = std::move(convertEmbedAuthor(std::move(embed.author)));
+        ret.fields.reserve(embed.fields.size());
+        auto itt = ret.fields.begin();
+        for (auto it = embed.fields.begin(), ite = embed.fields.end();it != ite;++it,++itt)
+            *itt = std::move(convertEmbedField(std::move(*it)));
+        return std::move(ret);
     }
     
     MessageReference convertMessageReference(SleepyDiscord::MessageReference ref)
