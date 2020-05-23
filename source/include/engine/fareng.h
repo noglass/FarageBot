@@ -159,7 +159,10 @@ namespace Farage
                 if ((open) && ((temp = src.find(c,x+1)) == std::string::npos))
                     open = false;
                 else if (open)
+                {
+                    open = false;
                     x = temp;
+                }
             }
             if ((!open) && ((src.compare(x,dlen,delim) == 0) || (x+1 >= slen)))
             {
@@ -194,7 +197,10 @@ namespace Farage
                 if ((open) && ((temp = src.find(c,x+1)) == std::string::npos))
                     open = false;
                 else if (open)
+                {
+                    open = false;
                     x = temp;
+                }
             }
             if ((!open) && ((delim.find(c) != std::string::npos) || (x+1 >= slen)))
             {
