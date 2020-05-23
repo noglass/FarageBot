@@ -2,12 +2,15 @@
 #include <ctime>
 #include <random>
 #include <fstream>
+//#include <iostream>
 #include "api/farage.h"
 #include "str_tok.h"
 #include "shared/libini.h"
 using namespace Farage;
 
-#define VERSION "0.7.7"
+#define VERSION "0.8.5"
+
+#define MAX_EMBED_WIDTH 45
 
 extern "C" Info Module
 {
@@ -290,6 +293,7 @@ extern "C" int onMessage(Handle &handle, Event event, void *message, void *nil, 
                 reaction(*msg,"%E2%9C%85");
                 if (rpsPlayersReady(game))
                     rpsConclude(game);
+                return PLUGIN_HANDLED;
             }
             else
                 reaction(*msg,"%E2%9D%97");
@@ -1214,14 +1218,54 @@ void rpsStartRound(std::vector<rpsGame>::iterator game)
     Global *global = recallGlobal();
     game->expire = time(NULL)+120;
     game->accepted = true;
+    
     std::string temp = rpsModInfo(game->gameMode,true);
+    int maxLen = 0, maxOpts = numtok(temp," ");
+    std::vector<std::string> options(maxOpts);
+    {
+        int i = 0, j = 0;
+        for (auto& it : options)
+        {
+            it = gettok(temp,++i," ");
+            if ((j = it.size()) > maxLen)
+                maxLen = j;
+        }
+    }
+    maxLen += 2;
+    int cols = (MAX_EMBED_WIDTH+2)/maxLen;
+    if (cols > maxOpts)
+        cols = maxOpts;
+    if (cols > 3)
+        cols = 3;
+    //maxLen += (MAX_EMBED_WIDTH+2) % maxLen / cols;
+    std::string* fields = new std::string[cols];
+    {
+        int i = 0;
+        for (auto it = options.begin(), ite = options.end();it != ite;++it)//temp += "\\n")
+        {
+            /*for (int i = 0;(i < cols) && (it != ite);++i,++it)
+            {
+                temp.append(*it);
+                if (i+1 < cols)
+                    //for (size_t l = maxLen-it->size();l--;temp.append(" "));
+                    temp.append(maxLen-it->size(),' ');
+            }*/
+            fields[i++%cols] += *it + "\\n";
+        }
+    }
+    temp.clear();
+    for (int i = 0;i < cols;++i)
+        temp += "{\"name\": \"** **\", \"value\": \"" + fields[i] + "\", \"inline\": true},";
+    temp.erase(temp.size()-1);
+    
     for (auto player = game->player.begin();player != game->player.end();)
     {
         player->choice.clear();
         player->multiWins = 0;
         if (player->ID != global->self.id)
         {
-            auto response = messageChannelID(player->DM,"Respond with one of the following:\n" + temp);
+            //auto response = messageChannelID(player->DM,"Respond with one of the following:\n" + temp);
+            auto response = sendEmbed(player->DM,"{\"color\": " + RPS::colors.Notify(game->gameMode) + ", \"title\": \"" + rpsModInfo(game->gameMode) + "\", \"description\": \"Respond with one of the following:\", \"fields\": [" + temp + "]}");
             if (response.response.error())
             {
                 if (game->player.size() > 2)
@@ -1241,7 +1285,8 @@ void rpsStartRound(std::vector<rpsGame>::iterator game)
         }
         else
         {
-            player->choice = randomtok(temp," ");
+            //player->choice = randomtok(temp," ");
+            player->choice = options.at(mtrand(0,options.size()-1));
             ++player;
         }
     }

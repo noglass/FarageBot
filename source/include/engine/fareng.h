@@ -151,13 +151,15 @@ namespace Farage
         std::vector<std::string> list;
         bool open = false;
         char c;
-        for (size_t x = 0, slen = src.size(), dlen = delim.size(), last = 0; x < slen;)
+        for (size_t x = 0, slen = src.size(), dlen = delim.size(), last = 0, temp = 0; x < slen;)
         {
             if (quote.find((c = src.at(x))) != std::string::npos)
             {
                 open = !open;
-                if ((open) && (src.find(c,x+1) == std::string::npos))
+                if ((open) && ((temp = src.find(c,x+1)) == std::string::npos))
                     open = false;
+                else if (open)
+                    x = temp;
             }
             if ((!open) && ((src.compare(x,dlen,delim) == 0) || (x+1 >= slen)))
             {
@@ -184,13 +186,15 @@ namespace Farage
         std::vector<std::string> list;
         bool open = false;
         char c;
-        for (size_t x = 0, slen = src.size(), last = 0;x < slen;)
+        for (size_t x = 0, slen = src.size(), last = 0, temp = 0;x < slen;)
         {
             if (quote.find((c = src.at(x))) != std::string::npos)
             {
                 open = !open;
-                if ((open) && (src.find(c,x+1) == std::string::npos))
+                if ((open) && ((temp = src.find(c,x+1)) == std::string::npos))
                     open = false;
+                else if (open)
+                    x = temp;
             }
             if ((!open) && ((delim.find(c) != std::string::npos) || (x+1 >= slen)))
             {
