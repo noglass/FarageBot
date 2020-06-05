@@ -12,9 +12,9 @@ Farage::Handle::Handle()
     Farage::recallGlobal()->plugins.push_back(this);
 }
 
-Farage::Handle::Handle(const std::string &pluginPath, Farage::Global *global, size_t loadPriority)
+Farage::Handle::Handle(const std::string &pluginPath, Farage::Global *global/*, size_t loadPriority*/)
 {
-    load(pluginPath,global,false,loadPriority);
+    load(pluginPath,global,false/*,loadPriority*/);
 }
 
 Farage::Handle::~Handle()
@@ -84,18 +84,18 @@ void Farage::Handle::unload(Farage::Global *global)
         module = nullptr;
         loaded = false;
         info = nullptr;
-        priority = DEFAULT_PRIORITY;
+        //priority = DEFAULT_PRIORITY;
         modulePath.clear();
         moduleName.clear();
         dlerror(); // clear any errors
     }
 }
 
-bool Farage::Handle::load(const std::string &pluginPath, Farage::Global *global, bool reload, size_t loadPriority)
+bool Farage::Handle::load(const std::string &pluginPath, Farage::Global *global, bool reload/*, size_t loadPriority*/)
 {
     if ((loaded) && (reload))
     {
-        loadPriority = priority;
+        //loadPriority = priority;
         unload(global);
     }
     if (!loaded)
@@ -202,12 +202,8 @@ bool Farage::Handle::load(const std::string &pluginPath, Farage::Global *global,
                         hookEvent(ONRESTART);
                         hookEvent(ONRESPONSE);
                         hookEvent(ONERROR);
-                        priority = loadPriority;
-                        setLoadPriority(loadPriority,false,SHIFT_NEW);
-                        /*if (priority == 0)
-                            global->plugins.insert(global->plugins.begin(),this);
-                        else
-                            global->plugins.push_back(this);*/
+                        //priority = loadPriority;
+                        //setLoadPriority(loadPriority,false,SHIFT_NEW);
                     }
                 }
             }
@@ -597,7 +593,7 @@ Farage::ChatHook* Farage::Handle::findChatHook(const std::string &name)
     return hook;
 }
 
-int Farage::Handle::setLoadPriority(size_t loadPriority, bool write, short shift)
+/*int Farage::Handle::setLoadPriority(size_t loadPriority, bool write, short shift)
 {
     short change = 0;
     if ((shift == SHIFT_NEW) || (shift == SHIFT_DOWN))
@@ -702,7 +698,7 @@ int Farage::Handle::setLoadPriority(size_t loadPriority, bool write, short shift
         return 1;
     }
     return 0;
-}
+}*/
 
 Farage::ReactHook* Farage::Handle::hookReactionMessage(const std::string &name, Farage::ReactHookCallback func, int flags, const std::string &messageID, const std::string &emoji, const std::string &userID)
 {

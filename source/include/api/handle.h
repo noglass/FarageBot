@@ -24,7 +24,7 @@ namespace Farage
             Handle();
             
             // create a new object and call load(pluginPath)
-            Handle(const std::string &pluginPath, Global *global, size_t loadedPriority = -1);
+            Handle(const std::string &pluginPath, Global *global/*, size_t loadedPriority = -1*/);
             
             ~Handle();
             
@@ -41,7 +41,7 @@ namespace Farage
             void unload(Global *global = nullptr);
             
             // load plugin, returns success
-            bool load(const std::string &pluginPath, Global *global, bool reload = false, size_t loadedPriority = -1);
+            bool load(const std::string &pluginPath, Global *global, bool reload = false/*, size_t loadedPriority = -1*/);
             
             // return the API version used to compile the plugin
             std::string getAPI();
@@ -61,8 +61,8 @@ namespace Farage
             // returns the internal name of the plugin
             std::string getModule() { return moduleName; }
             
-            inline size_t getLoadPriority() { return priority; }
-            int setLoadPriority(size_t loadPriority, bool write = false, short shift = 0);
+            //inline size_t getLoadPriority() { return priority; }
+            //int setLoadPriority(size_t loadPriority, bool write = false, short shift = 0);
             
             // register an event hook
             // returns total number of events hooked, 0 on error
@@ -189,7 +189,7 @@ namespace Farage
             void *module = nullptr;
             std::string modulePath;
             std::string moduleName;
-            size_t priority = DEFAULT_PRIORITY;
+            //size_t priority = DEFAULT_PRIORITY;
     };
 };
 
