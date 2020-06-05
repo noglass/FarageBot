@@ -448,13 +448,13 @@ OPTIONS\n\
     {
         int ret = PLUGIN_CONTINUE;
         auto plug = global.plugins.begin(), pluge = global.plugins.end();
-        /*for (;plug != pluge;++plug)
+        for (;plug != pluge;++plug)
         {
             if ((*plug)->getLoadPriority() != 0)
                 break;
             if ((ret = (*plug)->callConsoleCmd(argv[0],argc,argv)) == PLUGIN_HANDLED)
                 return ret;
-        }*/
+        }
         if ((ret = internals.call(bot,global,argc,argv)) != PLUGIN_HANDLED)
             for (;plug != pluge;++plug)
                 if ((ret = (*plug)->callConsoleCmd(argv[0],argc,argv)) == PLUGIN_HANDLED)
@@ -1207,7 +1207,7 @@ OPTIONS\n\
                     {
                         auto plug = global->plugins.begin(), pluge = global->plugins.end();
                         bool done = false;
-                        /*for (;plug != pluge;++plug)
+                        for (;plug != pluge;++plug)
                         {
                             if ((*plug)->getLoadPriority() != 0)
                                 break;
@@ -1216,7 +1216,7 @@ OPTIONS\n\
                                 done = true;
                                 break;
                             }
-                        }*/
+                        }
                         if ((!done) && (internals.call(this,*global,flags,argc,argv,message) != PLUGIN_HANDLED))
                             for (;plug != pluge;++plug)
                                 if ((*plug)->callChatCmd(argv[0],flags,argc,argv,fmessage) == PLUGIN_HANDLED)
@@ -2700,7 +2700,7 @@ OPTIONS\n\
         return "";
     }
     
-    int loadModule(Global &global, const std::string &path/*, size_t priority*/)
+    int loadModule(Global &global, const std::string &path, size_t priority)
     {
         verboseOut("Loading module \"" + path + "\" . . .");
         for (auto it = global.plugins.begin(), ite = global.plugins.end();it != ite;++it)
@@ -2711,7 +2711,7 @@ OPTIONS\n\
                 return 2;
             }
         }
-        Handle *mod = new Handle(path,&global/*,priority*/);
+        Handle *mod = new Handle(path,&global,priority);
         if (!mod->isLoaded())
             //global.plugins.push_back(mod);
         //else
@@ -2738,8 +2738,7 @@ OPTIONS\n\
     void loadModules(Global &global)
     {
         global.plugins.clear();
-        //std::vector<std::pair<size_t,std::string>> priority, sorted;
-        std::vector<std::string> mods;
+        std::vector<std::pair<size_t,std::string>> priority, sorted;
         std::string dir = "./modules/";
         DIR *wd;
         struct dirent *entry;
@@ -2750,12 +2749,11 @@ OPTIONS\n\
             {
                 file = entry->d_name;
                 if ((file.size() > 4) && (file.substr(file.size()-4) == ".fso"))
-                    //priority.push_back({DEFAULT_PRIORITY,file});
-                    mods.push_back(file);
+                    priority.push_back({DEFAULT_PRIORITY,file});
             }
             closedir(wd);
         }
-        /*std::string line;
+        std::string line;
         std::ifstream file;
         for (auto it = priority.begin(), ite = priority.end();it != ite;++it)
         {
@@ -2786,10 +2784,10 @@ OPTIONS\n\
             }
             if (!emplaced)
                 sorted.push_back(*pit);
-        }*/
-        verboseOut("Loading " + std::to_string(mods.size()) + " module(s) . . .");
-        for (auto it = mods.begin(), ite = mods.end();it != ite;++it)
-            loadModule(global,"./modules/" + *it);
+        }
+        verboseOut("Loading " + std::to_string(sorted.size()) + " module(s) . . .");
+        for (auto it = sorted.begin(), ite = sorted.end();it != ite;++it)
+            loadModule(global,"./modules/" + it->second,it->first);
         verboseOut("Loaded " + std::to_string(global.plugins.size()) + " module(s) . . .");
         /*int i = 0;
         for (auto it = global.plugins.begin(), ite = global.plugins.end();it != ite;++it)
@@ -3020,11 +3018,11 @@ OPTIONS\n\
         int modules(Farage::BotClass *bot,Farage::Global &global,int argc,const std::string argv[])
         {
             if (argc < 2)
-                consoleOut("Usage: " + argv[0] + " list\n       " + argv[0] + " info <module>\n       " + argv[0] + " load <module>\n       " + argv[0] + " reload <module>\n       " + argv[0] + " unload <module>");//\n       " + argv[0] + " priority <module> [value|up|down|top|bottom]");
+                consoleOut("Usage: " + argv[0] + " list\n       " + argv[0] + " info <module>\n       " + argv[0] + " load <module>\n       " + argv[0] + " reload <module>\n       " + argv[0] + " unload <module>\n       " + argv[0] + " priority <module> [value|up|down|top|bottom]");
             else
             {
                 bool reload = (argv[1] == "reload");
-                //bool priority = (argv[1] == "priority");
+                bool priority = (argv[1] == "priority");
                 if (argv[1] == "list")
                 {
                     size_t i = 0;
@@ -3055,8 +3053,8 @@ OPTIONS\n\
                                            "\n    " + info->name + " (" + info->description + ") by " + info->author +
                                            "\n    Version:\t" + info->version +
                                            "\n    URL:\t" + info->url +
-                                           "\n    API:\t" + info->API_VER);
-                                           //"\n    Priority:\t" + std::to_string((*it)->getLoadPriority()));
+                                           "\n    API:\t" + info->API_VER +
+                                           "\n    Priority:\t" + std::to_string((*it)->getLoadPriority()));
                                 if ((*it)->consoleCommands.size() > 0)
                                 {
                                     consoleOut("    Console Commands:");
@@ -3141,21 +3139,21 @@ OPTIONS\n\
                         consoleOut("Usage: " + argv[0] + " load <module> - Load a module. The module must be located in './modules/', do not include the file extension.");
                     else
                     {
-                        /*size_t prio = -1;
+                        size_t prio = -1;
                         if ((argc > 3) && ((isdigit(argv[3].front())) || ((argv[3].front() == '-') && (isdigit(argv[3].at(1))))))
-                            prio = std::stoull(argv[3]);*/
-                        if (!loadModule(global,"./modules/" + argv[2] + ".fso"/*,prio*/))
+                            prio = std::stoull(argv[3]);
+                        if (!loadModule(global,"./modules/" + argv[2] + ".fso",prio))
                             consoleOut("Successfully loaded '" + argv[2] + "'.");
                     }
                 }
-                else if ((reload) /*|| (priority)*/ || (argv[1] == "unload"))
+                else if ((reload) || (priority) || (argv[1] == "unload"))
                 {
                     if (argc < 3)
                     {
                         if (reload)
                             consoleOut("Usage: " + argv[0] + " reload <module> - Reload a loaded module.");
-                        /*else if (priority)
-                            consoleOut("Usage: " + argv[0] + " priority <module> [value|up|down|top|bottom] - Set or view the priority for a loaded module.");*/
+                        else if (priority)
+                            consoleOut("Usage: " + argv[0] + " priority <module> [value|up|down|top|bottom] - Set or view the priority for a loaded module.");
                         else
                             consoleOut("Usage: " + argv[0] + " unload <module> - Unload a loaded module.");
                     }
@@ -3174,7 +3172,7 @@ OPTIONS\n\
                                 Farage::Handle *mod = *it;
                                 if (reload)
                                     mod->load(mod->getPath(),&global,true);
-                                /*else if (priority)
+                                else if (priority)
                                 {
                                     size_t prio = mod->getLoadPriority();
                                     short shift = 0;
@@ -3207,7 +3205,7 @@ OPTIONS\n\
                                         else
                                             consoleOut("Load priority for module '" + mod->getModule() + "' has been updated to: " + std::to_string(mod->getLoadPriority()));
                                     }
-                                }*/
+                                }
                                 else
                                 {
                                     std::string name = mod->getModule();
@@ -3224,7 +3222,7 @@ OPTIONS\n\
                     }
                 }
                 else
-                    consoleOut("Usage: " + argv[0] + " list\n       " + argv[0] + " info <module>\n       " + argv[0] + " load <module>\n       " + argv[0] + " reload <module>\n       " + argv[0] + " unload <module>");//\n       " + argv[0] + " priority <module> [value|up|down|top|bottom]");
+                    consoleOut("Usage: " + argv[0] + " list\n       " + argv[0] + " info <module>\n       " + argv[0] + " load <module>\n       " + argv[0] + " reload <module>\n       " + argv[0] + " unload <module>\n       " + argv[0] + " priority <module> [value|up|down|top|bottom]");
             }
             return PLUGIN_HANDLED;
         }
