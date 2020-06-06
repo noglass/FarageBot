@@ -478,10 +478,13 @@ OPTIONS\n\
         std::ifstream file(filepath);
         if (file.is_open())
         {
+            std::vector<std::string> lines;
             std::string line;
             while (std::getline(file,line))
-                processCinput(bot,global,line);
+                lines.push_back(line);
             file.close();
+            for (auto& l : lines)
+                processCinput(bot,global,l);
             return 0;
         }
         return 1;
@@ -2949,6 +2952,7 @@ OPTIONS\n\
             errorOut("Discord disconnected.");
         }).detach();
         //std::this_thread::sleep_for(std::chrono::seconds(2));
+        bot->waitTilReady();
         return bot;
     }
     
@@ -3012,7 +3016,7 @@ OPTIONS\n\
     {
         int version(Farage::BotClass *bot,Farage::Global &global,int argc,const std::string argv[])
         {
-            consoleOut("FarageBot " + std::string(FARAGE_ENGINE) + " written by nigel.\n\thttps://github.com/nigelSaysHesHappy/FarageBot/\n  Farage API " + std::string(FARAGE_API_VERSION) + "\n  Powered by " + std::string(SLEEPY_VERSION) + ".\n\thttps://github.com/yourWaifu/sleepy-discord/");
+            consoleOut("FarageBot " + std::string(FARAGE_ENGINE) + " written by nigel.\n\thttp://faragebot.tk/\n  Farage API " + std::string(FARAGE_API_VERSION) + "\n  Powered by " + std::string(SLEEPY_VERSION) + ".\n\thttps://github.com/yourWaifu/sleepy-discord/");
             return PLUGIN_HANDLED;
         }
         int modules(Farage::BotClass *bot,Farage::Global &global,int argc,const std::string argv[])
