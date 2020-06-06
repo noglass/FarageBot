@@ -2945,14 +2945,14 @@ OPTIONS\n\
         BotClass *bot = new Farage::BotClass(token,1);
         std::thread([bot, &online]
         {
-            //std::this_thread::sleep_for(std::chrono::seconds(1));
+            std::this_thread::sleep_for(std::chrono::seconds(2));
             bot->run();
             //std::cerr<<"Discord disconnect."<<std::endl;
             online = false;
             errorOut("Discord disconnected.");
         }).detach();
         //std::this_thread::sleep_for(std::chrono::seconds(2));
-        bot->waitTilReady();
+        //bot->waitTilReady();
         return bot;
     }
     
