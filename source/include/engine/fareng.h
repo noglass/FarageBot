@@ -120,7 +120,7 @@ namespace Farage
                 }
             }
         }
-        return text;
+        return std::move(text);
     }
     
     std::string remove(std::string str, const std::string &substr)
@@ -181,7 +181,7 @@ namespace Farage
         return split;
     }
     
-    std::string *splitStringAny(const std::string &src, const std::string &delim, int &count, const std::string &quote = "\"'“`")
+    std::string *splitStringAny(const std::string &src, const std::string &delim, int &count, const std::string &quote = "\"'`")
     {
         count = 0;
         if (src.size() == 0)

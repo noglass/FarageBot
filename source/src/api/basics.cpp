@@ -11,7 +11,7 @@ std::string strlower(std::string text)
     if (text.size() > 0)
         for (std::string::iterator it = text.begin(), ite = text.end();it != ite;++it)
             *it = tolower(*it);
-    return text;
+    return std::move(text);
 }
 
 uint32_t mtrand(uint32_t lo, uint32_t hi)
