@@ -143,7 +143,7 @@ namespace Farage
         return true;
     }
     
-    std::string *splitString(const std::string &src, const std::string &delim, int &count, const std::string &quote = "\"'“`")
+    std::string *splitString(const std::string &src, const std::string &delim, int &count, const std::string &quote = "\"'`")
     {
         count = 0;
         if (src.size() == 0)
