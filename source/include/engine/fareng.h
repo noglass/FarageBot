@@ -268,12 +268,12 @@ namespace Farage
                 add("rcon",{&Internal::Chat::rcon,RCON,"Execute commands directly through the console."});
                 add("ignoreuser",{&Internal::Chat::ignoreuser,GAG,"Ignore or unignore a user."});
                 add("ignorechannel",{&Internal::Chat::ignorechannel,GAG,"Ignore or unignore a channel."});
-                add("setroleflags",{&Internal::Chat::setroleflags,ROLE,"Set the admin flags for a role."});
+                add("setroleflags",{&Internal::Chat::setroleflags,ROOT,"Set the admin flags for a role."});
                 add("execute",{&Internal::Chat::execute,CONFIG,"Execute a config script."});
                 add("exec",{&Internal::Chat::execute,CONFIG,"Execute a config script."});
                 add("cmdhelp",{&Internal::Chat::cmdhelp,NOFLAG,"View information about commands."});
                 add("gvarhelp",{&Internal::Chat::gvarhelp,GLOBVAR,"View information about gvars."});
-                add("alias",{&Internal::Chat::alias,CONFIG,"Create chat command aliases"});
+                add("alias",{&Internal::Chat::alias,RCON,"Create chat command aliases"});
             };
             void add(const std::string &cmd, const Internal::Console::Command &command)
             {
