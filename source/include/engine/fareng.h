@@ -3984,7 +3984,7 @@ OPTIONS\n\
                         return PLUGIN_HANDLED;
                     }
                 }
-                else if (argv[2].size() == 0)
+                if ((argc > 3) && (argv[2].size() == 0))
                 {
                     if ((it = global.prefixedAliases.find(argv[1])) == global.prefixedAliases.aliases.end())
                     {
