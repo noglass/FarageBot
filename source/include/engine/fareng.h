@@ -3970,6 +3970,10 @@ OPTIONS\n\
             else
             {
                 bool prefixed = false;
+                bool save = true;
+                std::string pref;
+                std::unordered_map<std::string,Alias>::iterator it;
+                bool found = true;
                 if (argc > 3)
                 {
                     if (argv[3] == "true")
@@ -3980,11 +3984,20 @@ OPTIONS\n\
                         return PLUGIN_HANDLED;
                     }
                 }
-                bool save = true;
-                std::string pref;
-                std::unordered_map<std::string,Alias>::iterator it;
-                bool found = true;
-                if (prefixed)
+                else if (argv[2].size() == 0)
+                {
+                    if ((it = global.prefixedAliases.find(argv[1])) == global.prefixedAliases.aliases.end())
+                    {
+                        if ((it = global.aliases.find(argv[1])) == global.aliases.aliases.end())
+                            found = false;
+                    }
+                    else
+                    {
+                        prefixed = true;
+                        pref = "prefixed ";
+                    }
+                }
+                else if (prefixed)
                 {
                     it = global.prefixedAliases.find(argv[1]);
                     if (it == global.prefixedAliases.aliases.end())
