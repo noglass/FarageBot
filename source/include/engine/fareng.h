@@ -58,6 +58,7 @@ namespace Farage
             int leave(Farage::BotClass*,Farage::Global&,int,const std::string[]);
             int help(Farage::BotClass*,Farage::Global&,int,const std::string[]);
             int alias(Farage::BotClass*,Farage::Global&,int,const std::string[]);
+            int aliaslist(Farage::BotClass*,Farage::Global&,int,const std::string[]);
         };
         
         namespace Chat
@@ -80,6 +81,7 @@ namespace Farage
             int cmdhelp(Farage::BotClass*,Farage::Global&,int,const std::string[],const SleepyDiscord::Message&);
             int gvarhelp(Farage::BotClass*,Farage::Global&,int,const std::string[],const SleepyDiscord::Message&);
             int alias(Farage::BotClass*,Farage::Global&,int,const std::string[], const SleepyDiscord::Message&);
+            int aliaslist(Farage::BotClass*,Farage::Global&,int,const std::string[], const SleepyDiscord::Message&);
         };
     };
     
@@ -261,6 +263,7 @@ namespace Farage
                 add("leave",{&Internal::Console::leave,"Leave a server."});
                 add("help",{&Internal::Console::help,"View information about registered commands and gvars."});
                 add("alias",{&Internal::Console::alias,"Create chat command aliases"});
+                add("aliaslist",{&Internal::Console::aliaslist,"List chat command aliases"});
                 add("version",{&Internal::Chat::version,NOFLAG,"FarageBot version information."});
                 add("setprefix",{&Internal::Chat::setprefix,STATUS,"Change the command prefix."});
                 add("reloadadmins",{&Internal::Chat::reloadadmins,GENERIC,"Reload the admin config file."});
@@ -274,6 +277,7 @@ namespace Farage
                 add("cmdhelp",{&Internal::Chat::cmdhelp,NOFLAG,"View information about commands."});
                 add("gvarhelp",{&Internal::Chat::gvarhelp,GLOBVAR,"View information about gvars."});
                 add("alias",{&Internal::Chat::alias,RCON,"Create chat command aliases"});
+                add("aliaslist",{&Internal::Chat::aliaslist,RCON,"List chat command aliases"});
             };
             void add(const std::string &cmd, const Internal::Console::Command &command)
             {
@@ -3593,13 +3597,37 @@ OPTIONS\n\
             }
             return PLUGIN_HANDLED;
         }
+        int aliaslist(Farage::BotClass *bot,Farage::Global &global,int argc,const std::string argv[])
+        {
+            std::string out;
+            for (auto& a : global.aliases.aliases)
+            {
+                out += "\"\t" + a.first + "\" = \"" + a.second.cmd + "\" (unprefixed)";
+                if (a.second.perm)
+                    out += " (bypass perms)";
+                out += '\n';
+            }
+            for (auto& a : global.prefixedAliases.aliases)
+            {
+                out += "\"\t" + a.first + "\" = \"" + a.second.cmd + "\" (prefixed)";
+                if (a.second.perm)
+                    out += " (bypass perms)";
+                out += '\n';
+            }
+            if (out.size() > 0)
+                out = "Currently loaded aliases: \n" + out;
+            else
+                out = "No aliases currently loaded.";
+            consoleOut(out);
+            return PLUGIN_HANDLED;
+        }
     };
     
     namespace Internal::Chat
     {
         int version(Farage::BotClass *bot,Farage::Global &global,int argc,const std::string argv[],const SleepyDiscord::Message &message)
         {
-            bot->sendMessage(message.channelID,"`FarageBot " + std::string(FARAGE_ENGINE) + "` written by nigel <https://github.com/nigelSaysHesHappy/FarageBot/>\n - Farage API `" + std::string(FARAGE_API_VERSION) + "`\n Powered by `" + std::string(SLEEPY_VERSION) + "` <https://github.com/yourWaifu/sleepy-discord/>");
+            bot->sendMessage(message.channelID,"`FarageBot " + std::string(FARAGE_ENGINE) + "` written by nigel <http://faragebot.tk/>\n - Farage API `" + std::string(FARAGE_API_VERSION) + "`\n Powered by `" + std::string(SLEEPY_VERSION) + "` <https://github.com/yourWaifu/sleepy-discord/>");
             return PLUGIN_HANDLED;
         }
         int setprefix(Farage::BotClass *bot,Farage::Global &global,int argc,const std::string argv[],const SleepyDiscord::Message &message)
@@ -4051,6 +4079,30 @@ OPTIONS\n\
                 if (save)
                     saveAliases(global);
             }
+            return PLUGIN_HANDLED;
+        }
+        int aliaslist(Farage::BotClass *bot,Farage::Global &global,int argc,const std::string argv[],const SleepyDiscord::Message &message)
+        {
+            std::string out;
+            for (auto& a : global.aliases.aliases)
+            {
+                out += "> \"" + a.first + "\" = \"" + a.second.cmd + "\" (unprefixed)";
+                if (a.second.perm)
+                    out += " (bypass perms)";
+                out += '\n';
+            }
+            for (auto& a : global.prefixedAliases.aliases)
+            {
+                out += "> \"" + a.first + "\" = \"" + a.second.cmd + "\" (prefixed)";
+                if (a.second.perm)
+                    out += " (bypass perms)";
+                out += '\n';
+            }
+            if (out.size() > 0)
+                out = "Currently loaded aliases: \n```" + out + "```";
+            else
+                out = "No aliases currently loaded.";
+            bot->sendMessage(message.channelID,out);
             return PLUGIN_HANDLED;
         }
     };
