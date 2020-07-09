@@ -4086,14 +4086,14 @@ OPTIONS\n\
             std::string out;
             for (auto& a : global.aliases.aliases)
             {
-                out += "> \"" + a.first + "\" = \"" + a.second.cmd + "\" (unprefixed)";
+                out += " \"" + a.first + "\" = \"" + a.second.cmd + "\" (unprefixed)";
                 if (a.second.perm)
                     out += " (bypass perms)";
                 out += '\n';
             }
             for (auto& a : global.prefixedAliases.aliases)
             {
-                out += "> \"" + a.first + "\" = \"" + a.second.cmd + "\" (prefixed)";
+                out += " \"" + a.first + "\" = \"" + a.second.cmd + "\" (prefixed)";
                 if (a.second.perm)
                     out += " (bypass perms)";
                 out += '\n';
