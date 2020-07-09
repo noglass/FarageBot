@@ -81,7 +81,7 @@ namespace Farage
             int cmdhelp(Farage::BotClass*,Farage::Global&,int,const std::string[],const SleepyDiscord::Message&);
             int gvarhelp(Farage::BotClass*,Farage::Global&,int,const std::string[],const SleepyDiscord::Message&);
             int alias(Farage::BotClass*,Farage::Global&,int,const std::string[], const SleepyDiscord::Message&);
-            int aliaslist(Farage::BotClass*,Farage::Global&,int,const std::string[], const SleepyDiscord::Message&);
+            //int aliaslist(Farage::BotClass*,Farage::Global&,int,const std::string[], const SleepyDiscord::Message&);
         };
     };
     
@@ -277,7 +277,7 @@ namespace Farage
                 add("cmdhelp",{&Internal::Chat::cmdhelp,NOFLAG,"View information about commands."});
                 add("gvarhelp",{&Internal::Chat::gvarhelp,GLOBVAR,"View information about gvars."});
                 add("alias",{&Internal::Chat::alias,RCON,"Create chat command aliases"});
-                add("aliaslist",{&Internal::Chat::aliaslist,RCON,"List chat command aliases"});
+                //add("aliaslist",{&Internal::Chat::aliaslist,RCON,"List chat command aliases"});
             };
             void add(const std::string &cmd, const Internal::Console::Command &command)
             {
@@ -3602,14 +3602,14 @@ OPTIONS\n\
             std::string out;
             for (auto& a : global.aliases.aliases)
             {
-                out += "\"\t" + a.first + "\" = \"" + a.second.cmd + "\" (unprefixed)";
+                out += "\t\"" + a.first + "\" = \"" + a.second.cmd + "\" (unprefixed)";
                 if (a.second.perm)
                     out += " (bypass perms)";
                 out += '\n';
             }
             for (auto& a : global.prefixedAliases.aliases)
             {
-                out += "\"\t" + a.first + "\" = \"" + a.second.cmd + "\" (prefixed)";
+                out += "\t\"" + a.first + "\" = \"" + a.second.cmd + "\" (prefixed)";
                 if (a.second.perm)
                     out += " (bypass perms)";
                 out += '\n';
@@ -4081,7 +4081,7 @@ OPTIONS\n\
             }
             return PLUGIN_HANDLED;
         }
-        int aliaslist(Farage::BotClass *bot,Farage::Global &global,int argc,const std::string argv[],const SleepyDiscord::Message &message)
+        /*int aliaslist(Farage::BotClass *bot,Farage::Global &global,int argc,const std::string argv[],const SleepyDiscord::Message &message)
         {
             std::string out;
             for (auto& a : global.aliases.aliases)
@@ -4104,7 +4104,7 @@ OPTIONS\n\
                 out = "No aliases currently loaded.";
             bot->sendMessage(message.channelID,out);
             return PLUGIN_HANDLED;
-        }
+        }*/
     };
     
     int InternalObject::call(BotClass *bot, Global &global, AdminFlag flags, int argc, const std::string argv[], const SleepyDiscord::Message &message)
