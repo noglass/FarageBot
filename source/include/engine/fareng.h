@@ -522,6 +522,22 @@ OPTIONS\n\
         public:
             using SleepyDiscord::DiscordClient::DiscordClient;
             
+            void connect(std::atomic<bool> &online)
+            {
+                online = true;
+                std::thread([this, &online]
+                {
+                    //std::this_thread::sleep_for(std::chrono::seconds(2));
+                    this->run();
+                    //std::cerr<<"Discord disconnect."<<std::endl;
+                    online = false;
+                    errorOut("Discord disconnected.");
+                }).detach();
+                //std::this_thread::sleep_for(std::chrono::seconds(2));
+                //bot->waitTilReady();
+                //return bot;
+            }
+            
             void onReady(SleepyDiscord::Ready readyData)
             {
                 Farage::Global *global = Farage::recallGlobal();
@@ -2943,21 +2959,9 @@ OPTIONS\n\
         return 404;
     }
     
-    BotClass *botConnect(std::atomic<bool> &online, const std::string &token)
+    BotClass *botCreate(const std::string& token)
     {
-        online = true;
-        BotClass *bot = new Farage::BotClass(token,1);
-        std::thread([bot, &online]
-        {
-            std::this_thread::sleep_for(std::chrono::seconds(2));
-            bot->run();
-            //std::cerr<<"Discord disconnect."<<std::endl;
-            online = false;
-            errorOut("Discord disconnected.");
-        }).detach();
-        //std::this_thread::sleep_for(std::chrono::seconds(2));
-        //bot->waitTilReady();
-        return bot;
+        return new Farage::BotClass(token,1);
     }
     
     // handles discord request queue and timers

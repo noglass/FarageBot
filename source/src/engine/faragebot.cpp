@@ -103,15 +103,15 @@ int main(int argc, char *argv[])
         std::cerr<<"Error: Discord Bot Token not defined in \"config/farage.conf\".\nYou can also use the '--token' switch to set this at run time. \n'"<<argv[0]<<" --help' for help."<<std::endl;
         return 1;
     }
-    Farage::loadAssets(global);
-    std::atomic<bool> online;
-    Farage::BotClass *farage;
-    farage = Farage::botConnect(online,FARAGE_TOKEN);
+    Farage::BotClass *farage = Farage::botCreate(FARAGE_TOKEN);
+    //farage = Farage::botConnect(online,FARAGE_TOKEN);
     global.discord = (void*)farage;
+    Farage::loadAssets(global);
     for (auto it = autoexec.begin(), ite = autoexec.end();it != ite;++it)
         Farage::processCscript(farage,global,*it);
-    std::atomic<bool> running;
+    std::atomic<bool> online, running;
     running = true;
+    farage->connect(online);
 #ifdef _WIN32
     HANDLE events[] =
     {
@@ -161,7 +161,7 @@ int main(int argc, char *argv[])
                 return Farage::cleanUp(farage,global);
             }
             delete farage;
-            farage = Farage::botConnect(online,FARAGE_TOKEN);
+            (farage = Farage::botCreate(FARAGE_TOKEN))->connect(online);
         }
 #ifndef _WIN32
         FD_ZERO(&cinset);
