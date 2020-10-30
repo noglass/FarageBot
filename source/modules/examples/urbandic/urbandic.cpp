@@ -16,7 +16,7 @@ using namespace Farage;
 extern "C" Info Module
 {
     "Urban Dictionary",
-    "nigel",
+    "Madison",
     "Lookup Definitions on Urban Dictionary",
     VERSION,
     "http://farage.justca.me/",

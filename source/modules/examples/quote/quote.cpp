@@ -12,7 +12,7 @@ using namespace Farage;
 extern "C" Info Module
 {
     "Quote",
-    "nigel",
+    "Madison",
     "Quote System",
     VERSION,
     "http://farage.justca.me/",

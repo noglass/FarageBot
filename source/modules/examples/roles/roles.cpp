@@ -9,7 +9,7 @@ using namespace Farage;
 extern "C" Info Module
 {
     "User Roles",
-    "nigel",
+    "Madison",
     "User Role Granting System",
     VERSION,
     "http://farage.justca.me/",

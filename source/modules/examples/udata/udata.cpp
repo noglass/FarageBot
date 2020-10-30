@@ -19,7 +19,7 @@ using namespace Farage;
 extern "C" Info Module
 {
     "User Data",
-    "nigel",
+    "Madison",
     "Get data on a user",
     VERSION,
     "http://farage.justca.me/",

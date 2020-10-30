@@ -10,7 +10,7 @@ using namespace Farage;
 extern "C" Info Module
 {
     "You Just Came!",
-    "nigel",
+    "Madison",
     "Upload images to justca.me",
     VERSION,
     "http://farage.justca.me/",

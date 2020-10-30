@@ -15,7 +15,7 @@ using namespace Farage;
 extern "C" Info Module
 {
     "I-R-C",
-    "nigel",
+    "Madison",
     "I-R-C Bot Helper - Game Created By Bahlph",
     VERSION,
     "http://farage.justca.me/",

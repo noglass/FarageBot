@@ -20,7 +20,7 @@ using namespace Farage;
 extern "C" Info Module
 {
     "Mettaton Base Module",
-    "nigel",
+    "Madison",
     "Base commands for Mettaton",
     VERSION,
     "http://farage.justca.me/",

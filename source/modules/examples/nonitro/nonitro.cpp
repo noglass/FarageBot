@@ -10,7 +10,7 @@ using namespace Farage;
 extern "C" Info Module
 {
     "No Nitro Bypass",
-    "nigel",
+    "Madison",
     "React with nitro emoji's without nitro",
     VERSION,
     "http://you.justca.me/",

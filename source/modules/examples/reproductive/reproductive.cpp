@@ -20,7 +20,7 @@ using namespace Farage;
 extern "C" Info Module
 {
     "Reproductive Bot Organs",
-    "nigel",
+    "Madison",
     "Interactive Chat",
     VERSION,
     "http://farage.justca.me/",

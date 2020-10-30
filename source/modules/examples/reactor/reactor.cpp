@@ -4,7 +4,7 @@ using namespace Farage;
 extern "C" Info Module
 {
     "Reaction Tester",
-    "nigel",
+    "Madison",
     "Reaction Tester",
     "0.0.7",
     "http://you.justca.me/",

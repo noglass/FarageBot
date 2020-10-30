@@ -15,7 +15,7 @@ using namespace Farage;
 extern "C" Info Module
 {
     "Discord Rock Paper Scissors",
-    "nigel",
+    "Madison",
     "Rock Paper Scissors Game",
     VERSION,
     "http://paper.justca.me/all/over/rock/while/scissors/watched",
@@ -1325,7 +1325,7 @@ std::string randomComeback(const std::string &name)
         "*Look Ma both hands!*",
         ":unamused:",
         "Now ignoring all messages from [name].",
-        "_note to self:_ Ban [name] as soon as nigel gives me privileges."
+        "_note to self:_ Ban [name] as soon as Princess gives me privileges."
     };
     return strreplace(SOLO[mtrand(0,MAXSOLO-1)],"[name]",name);
 }

@@ -9,7 +9,7 @@ using namespace Farage;
 extern "C" Info Module
 {
     "Calc",
-    "nigel",
+    "Madison",
     "Calculator",
     VERSION,
     "http://calculations.justca.me/",
