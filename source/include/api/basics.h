@@ -20,10 +20,10 @@ namespace Farage
 {
     Global* recallGlobal(Global *global = nullptr);
     GlobVar* findGlobVar(const std::string &name);
-    void consoleOut(const std::string &msg);
-    void errorOut(const std::string &msg);
-    void debugOut(const std::string &msg);
-    void verboseOut(const std::string &msg);
+    void consoleOut(const std::string &msg, bool notry = true);
+    void errorOut(const std::string &msg, bool notry = true);
+    void debugOut(const std::string &msg, bool notry = true);
+    void verboseOut(const std::string &msg, bool notry = true);
     int saveAdminRoles();
     int ignoreChannel(const std::string &ID, bool toggle = false);
     int ignoreUser(const std::string &ID, bool toggle = false);

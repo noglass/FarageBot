@@ -362,12 +362,12 @@ OPTIONS\n\
 \t--prefix <PREFIX>\tSet the default command prefix.\n\
 \t--prefix=<PREFIX>\tAlias format to set the command prefix.\n\
 \t--execute <PATH>\tAdd a script to be auto executed at startup.\n\t\t\t\tUnlike the 'execute' command, this requires the\n\t\t\t\tfull path to the script.\n\
-\t--exec <PATH>\t\tAlias for '--execute'.\n");
+\t--exec <PATH>\t\tAlias for '--execute'.\n",false);
                         return 0;
                     }
                     else if (arg == "--version")
                     {
-                        consoleOut("FarageBot " + std::string(FARAGE_ENGINE) + " written by nigel.\n\thttps://github.com/nigelSaysHesHappy/FarageBot/\n  Farage API " + std::string(FARAGE_API_VERSION) + "\n  Powered by " + std::string(SLEEPY_VERSION) + ".\n\thttps://github.com/yourWaifu/sleepy-discord/\n");
+                        consoleOut("FarageBot " + std::string(FARAGE_ENGINE) + " written by nigel.\n\thttps://github.com/nigelSaysHesHappy/FarageBot/\n  Farage API " + std::string(FARAGE_API_VERSION) + "\n  Powered by " + std::string(SLEEPY_VERSION) + ".\n\thttps://github.com/yourWaifu/sleepy-discord/\n",false);
                         return 0;
                     }
                     else if (arg == "--verbose")
@@ -386,7 +386,7 @@ OPTIONS\n\
                             token->assign(arg.substr(8));
                         else
                         {
-                            errorOut("Error: Missing bot token in '--token' switch. Usage: '--token=<TOKEN_ID> | --token <TOKEN_ID>'");
+                            errorOut("Error: Missing bot token in '--token' switch. Usage: '--token=<TOKEN_ID> | --token <TOKEN_ID>'",false);
                             return 1;
                         }
                     }
@@ -396,7 +396,7 @@ OPTIONS\n\
                             exec->push_back(argv[pos]);
                         else
                         {
-                            errorOut("Error: Missing script path in '--exec <PATH>' switch.");
+                            errorOut("Error: Missing script path in '--exec <PATH>' switch.",false);
                             return 1;
                         }
                     }
@@ -408,12 +408,12 @@ OPTIONS\n\
                             global.prefixes["default"] = nospace(arg.substr(9));
                         else
                         {
-                            errorOut("Error: Missing prefix string in '--prefix' switch. Usage: '--prefix=<PREFIX> | --prefix <PREFIX>'");
+                            errorOut("Error: Missing prefix string in '--prefix' switch. Usage: '--prefix=<PREFIX> | --prefix <PREFIX>'",false);
                             return 1;
                         }
                     }
                     else
-                        consoleOut("Ignoring unknown command switch: " + arg);
+                        consoleOut("Ignoring unknown command switch: " + arg,false);
                 }
                 else
                     break;
@@ -531,7 +531,7 @@ OPTIONS\n\
                     this->run();
                     //std::cerr<<"Discord disconnect."<<std::endl;
                     online = false;
-                    errorOut("Discord disconnected.");
+                    errorOut("Discord disconnected.",false);
                 }).detach();
                 //std::this_thread::sleep_for(std::chrono::seconds(2));
                 //bot->waitTilReady();
@@ -878,9 +878,9 @@ OPTIONS\n\
                                 int flags = (*pit)->flags;
                                 if ((flags & HOOK_PRINT) == HOOK_PRINT)
                                 {
-                                    consoleOut("[" + (*pit)->name + "][" + guildName + "](#" + chanName + ") Message <" + *mit + "> has been deleted.");
+                                    consoleOut("[" + (*pit)->name + "][" + guildName + "](#" + chanName + ") Message <" + *mit + "> has been deleted.",false);
                                     if ((flags & HOOK_CALL_ONCE) && (smessages.size() > 1))
-                                        consoleOut("[" + (*pit)->name + "][" + guildName + "](#" + chanName + ") " + std::to_string(smessages.size()-1) + " Other message(s) have been deleted.");
+                                        consoleOut("[" + (*pit)->name + "][" + guildName + "](#" + chanName + ") " + std::to_string(smessages.size()-1) + " Other message(s) have been deleted.,false");
                                 }
                                 if (flags & HOOK_CALL_ONCE)
                                     hookSkip.push_back(pit);
@@ -958,7 +958,7 @@ OPTIONS\n\
                                     }
                                     guildSet = true;
                                 }
-                                consoleOut("[" + (*pit)->name + "][" + guildName + "](#" + chanName + ")(" + message.id + ")<" + message.author.username + "> Edit: " + message.content);
+                                consoleOut("[" + (*pit)->name + "][" + guildName + "](#" + chanName + ")(" + message.id + ")<" + message.author.username + "> Edit: " + message.content,false);
                             }
                             int ret = PLUGIN_CONTINUE;
                             if ((*pit)->func != nullptr)
@@ -1060,7 +1060,7 @@ OPTIONS\n\
                         {
                             int flags = (*pit)->flags;
                             if ((flags & HOOK_PRINT) == HOOK_PRINT)
-                                consoleOut("[" + (*pit)->name + "][" + guildName + "](#" + channel.name + ")(" + message + ")<" + member.user.username + "> Reaction: " + femoji.display());
+                                consoleOut("[" + (*pit)->name + "][" + guildName + "](#" + channel.name + ")(" + message + ")<" + member.user.username + "> Reaction: " + femoji.display(),false);
                             int ret = PLUGIN_CONTINUE;
                             if ((*pit)->func != nullptr)
                                 ret = (*(*pit)->func)(**it,*pit,member,channel,message,guild,femoji);
@@ -1158,7 +1158,7 @@ OPTIONS\n\
                                     if (chan->name.size() > 0)
                                         channel = chan->name;
                                 }
-                                consoleOut("[" + (*pit)->name + "][" + guild + "](#" + channel + "): <" + fmessage.author.username + "> " + fmessage.content);
+                                consoleOut("[" + (*pit)->name + "][" + guild + "](#" + channel + "): <" + fmessage.author.username + "> " + fmessage.content,false);
                             }
                             int ret = PLUGIN_CONTINUE;
                             if ((*pit)->func != nullptr)
@@ -1383,9 +1383,9 @@ OPTIONS\n\
             }
             catch (SleepyDiscord::ErrorCode err)
             {
-                errorOut("sendMessage: Error code " + std::to_string(int(err)));
+                errorOut("sendMessage: Error code " + std::to_string(int(err)),false);
                 if (err == SleepyDiscord::ErrorCode::FORBIDDEN)
-                    errorOut("sendMessage: FORBIDDEN Cannot send message to " + chan);
+                    errorOut("sendMessage: FORBIDDEN Cannot send message to " + chan,false);
                 return ObjectResponse<Message>(Response(err),Message());
             }
             return ObjectResponse<Message>(Response(4000),Message());
@@ -1403,9 +1403,9 @@ OPTIONS\n\
             }
             catch (SleepyDiscord::ErrorCode err)
             {
-                errorOut("sendMessage: Error code " + std::to_string(int(err)));
+                errorOut("sendMessage: Error code " + std::to_string(int(err)),false);
                 if (err == SleepyDiscord::ErrorCode::FORBIDDEN)
-                    errorOut("sendMessage: FORBIDDEN Cannot send message to " + chan);
+                    errorOut("sendMessage: FORBIDDEN Cannot send message to " + chan,false);
                 return ObjectResponse<Message>(Response(err),Message());
             }
             return ObjectResponse<Message>(Response(4000),Message());
@@ -1465,9 +1465,9 @@ OPTIONS\n\
             }
             catch (SleepyDiscord::ErrorCode err)
             {
-                errorOut("addReaction: Error code " + std::to_string(int(err)));
+                errorOut("addReaction: Error code " + std::to_string(int(err)),false);
                 if (err == SleepyDiscord::ErrorCode::FORBIDDEN)
-                    errorOut("addReaction: FORBIDDEN Cannot react to message " + messageID + " in channel " + channel);
+                    errorOut("addReaction: FORBIDDEN Cannot react to message " + messageID + " in channel " + channel,false);
                 return BoolResponse(Response(err),false);
             }
             return BoolResponse(Response(4000),false);
@@ -1485,7 +1485,7 @@ OPTIONS\n\
             }
             catch (SleepyDiscord::ErrorCode err)
             {
-                errorOut("getChannel: Error code " + std::to_string(int(err)));
+                errorOut("getChannel: Error code " + std::to_string(int(err)),false);
                 return ObjectResponse<Channel>(Response(err),Channel());
             }
             return ObjectResponse<Channel>(Response(4000),Channel());
@@ -1503,7 +1503,7 @@ OPTIONS\n\
             }
             catch (SleepyDiscord::ErrorCode err)
             {
-                errorOut("getDirectMessageChannel: Error code " + std::to_string(int(err)));
+                errorOut("getDirectMessageChannel: Error code " + std::to_string(int(err)),false);
                 return ObjectResponse<Channel>(Response(err),Channel());
             }
             return ObjectResponse<Channel>(Response(4000),Channel());
@@ -1521,7 +1521,7 @@ OPTIONS\n\
             }
             catch (SleepyDiscord::ErrorCode err)
             {
-                errorOut("getUser: Error code " + std::to_string(int(err)));
+                errorOut("getUser: Error code " + std::to_string(int(err)),false);
                 return ObjectResponse<User>(Response(err),User());
             }
             return ObjectResponse<User>(Response(4000),User());
@@ -1541,7 +1541,7 @@ OPTIONS\n\
             }
             catch (SleepyDiscord::ErrorCode err)
             {
-                errorOut("getSelf: Error code " + std::to_string(int(err)));
+                errorOut("getSelf: Error code " + std::to_string(int(err)),false);
                 return ObjectResponse<User>(Response(err),User());
             }
             return ObjectResponse<User>(Response(4000),User());
@@ -1559,7 +1559,7 @@ OPTIONS\n\
             }
             catch (SleepyDiscord::ErrorCode err)
             {
-                errorOut("sendTyping: Error code " + std::to_string(int(err)));
+                errorOut("sendTyping: Error code " + std::to_string(int(err)),false);
                 return BoolResponse(Response(err),false);
             }
             return BoolResponse(Response(4000),false);
@@ -1584,7 +1584,7 @@ OPTIONS\n\
             }
             catch (SleepyDiscord::ErrorCode err)
             {
-                errorOut("sendFile: Error code " + std::to_string(int(err)));
+                errorOut("sendFile: Error code " + std::to_string(int(err)),false);
                 return ObjectResponse<Message>(Response(err),Message());
             }
             //verboseOut("[sendFile>>" + chan + "] " + message + " || " + filepath);
@@ -1664,7 +1664,7 @@ OPTIONS\n\
             }
             catch (SleepyDiscord::ErrorCode err)
             {
-                errorOut("editChannel: Error code " + std::to_string(int(err)));
+                errorOut("editChannel: Error code " + std::to_string(int(err)),false);
                 return ObjectResponse<Channel>(Response(err),Channel());
             }
             return ObjectResponse<Channel>(Response(4000),Channel());
@@ -1682,7 +1682,7 @@ OPTIONS\n\
             }
             catch (SleepyDiscord::ErrorCode err)
             {
-                errorOut("editChannelName: Error code " + std::to_string(int(err)));
+                errorOut("editChannelName: Error code " + std::to_string(int(err)),false);
                 return ObjectResponse<Channel>(Response(err),Channel());
             }
             return ObjectResponse<Channel>(Response(4000),Channel());
@@ -1700,7 +1700,7 @@ OPTIONS\n\
             }
             catch (SleepyDiscord::ErrorCode err)
             {
-                errorOut("editChannelTopic: Error code " + std::to_string(int(err)));
+                errorOut("editChannelTopic: Error code " + std::to_string(int(err)),false);
                 return ObjectResponse<Channel>(Response(err),Channel());
             }
             return ObjectResponse<Channel>(Response(4000),Channel());
@@ -1718,7 +1718,7 @@ OPTIONS\n\
             }
             catch (SleepyDiscord::ErrorCode err)
             {
-                errorOut("deleteChannel: Error code " + std::to_string(int(err)));
+                errorOut("deleteChannel: Error code " + std::to_string(int(err)),false);
                 return ObjectResponse<Channel>(Response(err),Channel());
             }
             return ObjectResponse<Channel>(Response(4000),Channel());
@@ -1736,7 +1736,7 @@ OPTIONS\n\
             }
             catch (SleepyDiscord::ErrorCode err)
             {
-                errorOut("getMessages: Error code " + std::to_string(int(err)));
+                errorOut("getMessages: Error code " + std::to_string(int(err)),false);
                 return ArrayResponse<Message>(Response(err));
             }
             return ArrayResponse<Message>(Response(4000));
@@ -1754,7 +1754,7 @@ OPTIONS\n\
             }
             catch (SleepyDiscord::ErrorCode err)
             {
-                errorOut("getMessage: Error code " + std::to_string(int(err)));
+                errorOut("getMessage: Error code " + std::to_string(int(err)),false);
                 return ObjectResponse<Message>(Response(err),Message());
             }
             return ObjectResponse<Message>(Response(4000),Message());
@@ -1772,7 +1772,7 @@ OPTIONS\n\
             }
             catch (SleepyDiscord::ErrorCode err)
             {
-                errorOut("removeReaction: Error code " + std::to_string(int(err)));
+                errorOut("removeReaction: Error code " + std::to_string(int(err)),false);
                 return BoolResponse(Response(err),false);
             }
             return BoolResponse(Response(4000),false);
@@ -1790,7 +1790,7 @@ OPTIONS\n\
             }
             catch (SleepyDiscord::ErrorCode err)
             {
-                errorOut("getReactions: Error code " + std::to_string(int(err)));
+                errorOut("getReactions: Error code " + std::to_string(int(err)),false);
                 return ArrayResponse<Reaction>(Response(err));
             }
             return ArrayResponse<Reaction>(Response(4000));
@@ -1808,7 +1808,7 @@ OPTIONS\n\
             }
             catch (SleepyDiscord::ErrorCode err)
             {
-                errorOut("removeAllReactions: Error code " + std::to_string(int(err)));
+                errorOut("removeAllReactions: Error code " + std::to_string(int(err)),false);
                 return Response(err);
             }
             return Response(4000);
@@ -1826,7 +1826,7 @@ OPTIONS\n\
             }
             catch (SleepyDiscord::ErrorCode err)
             {
-                errorOut("editMessage: Error code " + std::to_string(int(err)));
+                errorOut("editMessage: Error code " + std::to_string(int(err)),false);
                 return ObjectResponse<Message>(Response(err),Message());
             }
             return ObjectResponse<Message>(Response(4000),Message());
@@ -1844,7 +1844,7 @@ OPTIONS\n\
             }
             catch (SleepyDiscord::ErrorCode err)
             {
-                errorOut("deleteMessage: Error code " + std::to_string(int(err)));
+                errorOut("deleteMessage: Error code " + std::to_string(int(err)),false);
                 return BoolResponse(Response(err),false);
             }
             return BoolResponse(Response(4000),false);
@@ -1863,7 +1863,7 @@ OPTIONS\n\
             }
             catch (SleepyDiscord::ErrorCode err)
             {
-                errorOut("bulkDeleteMessages: Error code " + std::to_string(int(err)));
+                errorOut("bulkDeleteMessages: Error code " + std::to_string(int(err)),false);
                 return BoolResponse(Response(err),false);
             }
             return BoolResponse(Response(4000),false);
@@ -1881,7 +1881,7 @@ OPTIONS\n\
             }
             catch (SleepyDiscord::ErrorCode err)
             {
-                errorOut("editChannelPermissions: Error code " + std::to_string(int(err)));
+                errorOut("editChannelPermissions: Error code " + std::to_string(int(err)),false);
                 return BoolResponse(Response(err),false);
             }
             return BoolResponse(Response(4000),false);
@@ -1899,7 +1899,7 @@ OPTIONS\n\
             }
             catch (SleepyDiscord::ErrorCode err)
             {
-                errorOut("getChannelInvites: Error code " + std::to_string(int(err)));
+                errorOut("getChannelInvites: Error code " + std::to_string(int(err)),false);
                 return ArrayResponse<Invite>(Response(err));
             }
             return ArrayResponse<Invite>(Response(4000));
@@ -1917,7 +1917,7 @@ OPTIONS\n\
             }
             catch (SleepyDiscord::ErrorCode err)
             {
-                errorOut("createChannelInvite: Error code " + std::to_string(int(err)));
+                errorOut("createChannelInvite: Error code " + std::to_string(int(err)),false);
                 return ObjectResponse<Invite>(Response(err),Invite());
             }
             return ObjectResponse<Invite>(Response(4000),Invite());
@@ -1935,7 +1935,7 @@ OPTIONS\n\
             }
             catch (SleepyDiscord::ErrorCode err)
             {
-                errorOut("removeChannelPermission: Error code " + std::to_string(int(err)));
+                errorOut("removeChannelPermission: Error code " + std::to_string(int(err)),false);
                 return BoolResponse(Response(err),false);
             }
             return BoolResponse(Response(4000),false);
@@ -1953,7 +1953,7 @@ OPTIONS\n\
             }
             catch (SleepyDiscord::ErrorCode err)
             {
-                errorOut("getPinnedMessages: Error code " + std::to_string(int(err)));
+                errorOut("getPinnedMessages: Error code " + std::to_string(int(err)),false);
                 return ArrayResponse<Message>(Response(err));
             }
             return ArrayResponse<Message>(Response(4000));
@@ -1971,7 +1971,7 @@ OPTIONS\n\
             }
             catch (SleepyDiscord::ErrorCode err)
             {
-                errorOut("pinMessage: Error code " + std::to_string(int(err)));
+                errorOut("pinMessage: Error code " + std::to_string(int(err)),false);
                 return BoolResponse(Response(err),false);
             }
             return BoolResponse(Response(4000),false);
@@ -1989,7 +1989,7 @@ OPTIONS\n\
             }
             catch (SleepyDiscord::ErrorCode err)
             {
-                errorOut("unpinMessage: Error code " + std::to_string(int(err)));
+                errorOut("unpinMessage: Error code " + std::to_string(int(err)),false);
                 return BoolResponse(Response(err),false);
             }
             return BoolResponse(Response(4000),false);
@@ -2007,7 +2007,7 @@ OPTIONS\n\
             }
             catch (SleepyDiscord::ErrorCode err)
             {
-                errorOut("addRecipient: Error code " + std::to_string(int(err)));
+                errorOut("addRecipient: Error code " + std::to_string(int(err)),false);
                 return Response(err);
             }
             return Response(4000);
@@ -2025,7 +2025,7 @@ OPTIONS\n\
             }
             catch (SleepyDiscord::ErrorCode err)
             {
-                errorOut("removeRecipient: Error code " + std::to_string(int(err)));
+                errorOut("removeRecipient: Error code " + std::to_string(int(err)),false);
                 return Response(err);
             }
             return Response(4000);
@@ -2067,7 +2067,7 @@ OPTIONS\n\
             }
             catch (SleepyDiscord::ErrorCode err)
             {
-                errorOut("getServer: Error code " + std::to_string(int(err)));
+                errorOut("getServer: Error code " + std::to_string(int(err)),false);
                 return ObjectResponse<Server>(Response(err),Server());
             }
             return ObjectResponse<Server>(Response(4000),Server());
@@ -2085,7 +2085,7 @@ OPTIONS\n\
             }
             catch (SleepyDiscord::ErrorCode err)
             {
-                errorOut("deleteServer: Error code " + std::to_string(int(err)));
+                errorOut("deleteServer: Error code " + std::to_string(int(err)),false);
                 return ObjectResponse<Server>(Response(err),Server());
             }
             return ObjectResponse<Server>(Response(4000),Server());
@@ -2103,7 +2103,7 @@ OPTIONS\n\
             }
             catch (SleepyDiscord::ErrorCode err)
             {
-                errorOut("getServerChannels: Error code " + std::to_string(int(err)));
+                errorOut("getServerChannels: Error code " + std::to_string(int(err)),false);
                 return ArrayResponse<Channel>(Response(err));
             }
             return ArrayResponse<Channel>(Response(4000));
@@ -2121,7 +2121,7 @@ OPTIONS\n\
             }
             catch (SleepyDiscord::ErrorCode err)
             {
-                errorOut("createTextChannel: Error code " + std::to_string(int(err)));
+                errorOut("createTextChannel: Error code " + std::to_string(int(err)),false);
                 return ObjectResponse<Channel>(Response(err),Channel());
             }
             return ObjectResponse<Channel>(Response(4000),Channel());
@@ -2139,7 +2139,7 @@ OPTIONS\n\
             }
             catch (SleepyDiscord::ErrorCode err)
             {
-                errorOut("editChannelPositions: Error code " + std::to_string(int(err)));
+                errorOut("editChannelPositions: Error code " + std::to_string(int(err)),false);
                 return ArrayResponse<Channel>(Response(err));
             }
             return ArrayResponse<Channel>(Response(4000));
@@ -2157,7 +2157,7 @@ OPTIONS\n\
             }
             catch (SleepyDiscord::ErrorCode err)
             {
-                errorOut("getMember: Error code " + std::to_string(int(err)));
+                errorOut("getMember: Error code " + std::to_string(int(err)),false);
                 return ObjectResponse<ServerMember>(Response(err),ServerMember());
             }
             return ObjectResponse<ServerMember>(Response(4000),ServerMember());
@@ -2175,7 +2175,7 @@ OPTIONS\n\
             }
             catch (SleepyDiscord::ErrorCode err)
             {
-                errorOut("listMembers: Error code " + std::to_string(int(err)));
+                errorOut("listMembers: Error code " + std::to_string(int(err)),false);
                 return ArrayResponse<ServerMember>(Response(err));
             }
             return ArrayResponse<ServerMember>(Response(4000));
@@ -2208,7 +2208,7 @@ OPTIONS\n\
             }
             catch (SleepyDiscord::ErrorCode err)
             {
-                errorOut("addMember: Error code " + std::to_string(int(err)));
+                errorOut("addMember: Error code " + std::to_string(int(err)),false);
                 return ObjectResponse<ServerMember>(Response(err),ServerMember());
             }
             return ObjectResponse<ServerMember>(Response(4000),ServerMember());
@@ -2230,7 +2230,7 @@ OPTIONS\n\
             }
             catch (SleepyDiscord::ErrorCode err)
             {
-                errorOut("editMember: Error code " + std::to_string(int(err)));
+                errorOut("editMember: Error code " + std::to_string(int(err)),false);
                 return BoolResponse(Response(err),false);
             }
             return BoolResponse(Response(4000),false);
@@ -2248,7 +2248,7 @@ OPTIONS\n\
             }
             catch (SleepyDiscord::ErrorCode err)
             {
-                errorOut("muteServerMember: Error code " + std::to_string(int(err)));
+                errorOut("muteServerMember: Error code " + std::to_string(int(err)),false);
                 return BoolResponse(Response(err),false);
             }
             return BoolResponse(Response(4000),false);
@@ -2266,7 +2266,7 @@ OPTIONS\n\
             }
             catch (SleepyDiscord::ErrorCode err)
             {
-                errorOut("editNickname: Error code " + std::to_string(int(err)));
+                errorOut("editNickname: Error code " + std::to_string(int(err)),false);
                 return BoolResponse(Response(err),false);
             }
             return BoolResponse(Response(4000),false);
@@ -2284,7 +2284,7 @@ OPTIONS\n\
             }
             catch (SleepyDiscord::ErrorCode err)
             {
-                errorOut("addRole: Error code " + std::to_string(int(err)));
+                errorOut("addRole: Error code " + std::to_string(int(err)),false);
                 return BoolResponse(Response(err),false);
             }
             return BoolResponse(Response(4000),false);
@@ -2302,7 +2302,7 @@ OPTIONS\n\
             }
             catch (SleepyDiscord::ErrorCode err)
             {
-                errorOut("removeRole: Error code " + std::to_string(int(err)));
+                errorOut("removeRole: Error code " + std::to_string(int(err)),false);
                 return BoolResponse(Response(err),false);
             }
             return BoolResponse(Response(4000),false);
@@ -2320,7 +2320,7 @@ OPTIONS\n\
             }
             catch (SleepyDiscord::ErrorCode err)
             {
-                errorOut("kickMember: Error code " + std::to_string(int(err)));
+                errorOut("kickMember: Error code " + std::to_string(int(err)),false);
                 return BoolResponse(Response(err),false);
             }
             return BoolResponse(Response(4000),false);
@@ -2338,7 +2338,7 @@ OPTIONS\n\
             }
             catch (SleepyDiscord::ErrorCode err)
             {
-                errorOut("getBans: Error code " + std::to_string(int(err)));
+                errorOut("getBans: Error code " + std::to_string(int(err)),false);
                 return ArrayResponse<User>(Response(err));
             }
             return ArrayResponse<User>(Response(4000));
@@ -2356,7 +2356,7 @@ OPTIONS\n\
             }
             catch (SleepyDiscord::ErrorCode err)
             {
-                errorOut("banMember: Error code " + std::to_string(int(err)));
+                errorOut("banMember: Error code " + std::to_string(int(err)),false);
                 return BoolResponse(Response(err),false);
             }
             return BoolResponse(Response(4000),false);
@@ -2374,7 +2374,7 @@ OPTIONS\n\
             }
             catch (SleepyDiscord::ErrorCode err)
             {
-                errorOut("unbanMember: Error code " + std::to_string(int(err)));
+                errorOut("unbanMember: Error code " + std::to_string(int(err)),false);
                 return BoolResponse(Response(err),false);
             }
             return BoolResponse(Response(4000),false);
@@ -2392,7 +2392,7 @@ OPTIONS\n\
             }
             catch (SleepyDiscord::ErrorCode err)
             {
-                errorOut("getRoles: Error code " + std::to_string(int(err)));
+                errorOut("getRoles: Error code " + std::to_string(int(err)),false);
                 return ArrayResponse<Role>(Response(err));
             }
             return ArrayResponse<Role>(Response(4000));
@@ -2410,7 +2410,7 @@ OPTIONS\n\
             }
             catch (SleepyDiscord::ErrorCode err)
             {
-                errorOut("createRole: Error code " + std::to_string(int(err)));
+                errorOut("createRole: Error code " + std::to_string(int(err)),false);
                 return ObjectResponse<Role>(Response(err),Role());
             }
             return ObjectResponse<Role>(Response(4000),Role());
@@ -2428,7 +2428,7 @@ OPTIONS\n\
             }
             catch (SleepyDiscord::ErrorCode err)
             {
-                errorOut("editRolePosition: Error code " + std::to_string(int(err)));
+                errorOut("editRolePosition: Error code " + std::to_string(int(err)),false);
                 return ArrayResponse<Role>(Response(err));
             }
             return ArrayResponse<Role>(Response(4000));
@@ -2448,7 +2448,7 @@ OPTIONS\n\
             }
             catch (SleepyDiscord::ErrorCode err)
             {
-                errorOut("deleteRole: Error code " + std::to_string(int(err)));
+                errorOut("deleteRole: Error code " + std::to_string(int(err)),false);
                 return BoolResponse(Response(err),false);
             }
             return BoolResponse(Response(4000),false);
@@ -2466,7 +2466,7 @@ OPTIONS\n\
             }
             catch (SleepyDiscord::ErrorCode err)
             {
-                errorOut("pruneMembers: Error code " + std::to_string(int(err)));
+                errorOut("pruneMembers: Error code " + std::to_string(int(err)),false);
                 return Response(err);
             }
             return Response(4000);
@@ -2484,7 +2484,7 @@ OPTIONS\n\
             }
             catch (SleepyDiscord::ErrorCode err)
             {
-                errorOut("getVoiceRegions: Error code " + std::to_string(int(err)));
+                errorOut("getVoiceRegions: Error code " + std::to_string(int(err)),false);
                 return ArrayResponse<VoiceRegion>(Response(err));
             }
             return ArrayResponse<VoiceRegion>(Response(4000));
@@ -2502,7 +2502,7 @@ OPTIONS\n\
             }
             catch (SleepyDiscord::ErrorCode err)
             {
-                errorOut("getServerInvites: Error code " + std::to_string(int(err)));
+                errorOut("getServerInvites: Error code " + std::to_string(int(err)),false);
                 return ArrayResponse<Invite>(Response(err));
             }
             return ArrayResponse<Invite>(Response(4000));
@@ -2522,7 +2522,7 @@ OPTIONS\n\
             }
             catch (SleepyDiscord::ErrorCode err)
             {
-                errorOut("createIntegration: Error code " + std::to_string(int(err)));
+                errorOut("createIntegration: Error code " + std::to_string(int(err)),false);
                 return BoolResponse(Response(err),false);
             }
             return BoolResponse(Response(4000),false);
@@ -2540,7 +2540,7 @@ OPTIONS\n\
             }
             catch (SleepyDiscord::ErrorCode err)
             {
-                errorOut("editIntegration: Error code " + std::to_string(int(err)));
+                errorOut("editIntegration: Error code " + std::to_string(int(err)),false);
                 return BoolResponse(Response(err),false);
             }
             return BoolResponse(Response(4000),false);
@@ -2558,7 +2558,7 @@ OPTIONS\n\
             }
             catch (SleepyDiscord::ErrorCode err)
             {
-                errorOut("deleteIntegration: Error code " + std::to_string(int(err)));
+                errorOut("deleteIntegration: Error code " + std::to_string(int(err)),false);
                 return BoolResponse(Response(err),false);
             }
             return BoolResponse(Response(4000),false);//std::move(convertResponse(response)),std::move(response.cast()));
@@ -2576,7 +2576,7 @@ OPTIONS\n\
             }
                 catch (SleepyDiscord::ErrorCode err)
             {
-                errorOut("syncIntegration: Error code " + std::to_string(int(err)));
+                errorOut("syncIntegration: Error code " + std::to_string(int(err)),false);
                 return BoolResponse(Response(err),false);
             }
             return BoolResponse(Response(4000),false);
@@ -2594,7 +2594,7 @@ OPTIONS\n\
             }
             catch (SleepyDiscord::ErrorCode err)
             {
-                errorOut("getServerEmbed: Error code " + std::to_string(int(err)));
+                errorOut("getServerEmbed: Error code " + std::to_string(int(err)),false);
                 return ObjectResponse<ServerEmbed>(Response(err),ServerEmbed());
             }
             return ObjectResponse<ServerEmbed>(Response(4000),ServerEmbed());
@@ -2725,12 +2725,12 @@ OPTIONS\n\
     
     int loadModule(Global &global, const std::string &path, size_t priority)
     {
-        verboseOut("Loading module \"" + path + "\" . . .");
+        verboseOut("Loading module \"" + path + "\" . . .",false);
         for (auto it = global.plugins.begin(), ite = global.plugins.end();it != ite;++it)
         {
             if ((*it)->getPath() == path)
             {
-                errorOut("Error: Module \"" + path + "\" is already loaded.");
+                errorOut("Error: Module \"" + path + "\" is already loaded.",false);
                 return 2;
             }
         }
@@ -2740,7 +2740,7 @@ OPTIONS\n\
         //else
         {
             delete mod;
-            errorOut("Error: Module \"" + path + "\" could not be loaded . . .");
+            errorOut("Error: Module \"" + path + "\" could not be loaded . . .",false);
             return 1;
         }
         return 0;
@@ -2808,10 +2808,10 @@ OPTIONS\n\
             if (!emplaced)
                 sorted.push_back(*pit);
         }
-        verboseOut("Loading " + std::to_string(sorted.size()) + " module(s) . . .");
+        verboseOut("Loading " + std::to_string(sorted.size()) + " module(s) . . .",false);
         for (auto it = sorted.begin(), ite = sorted.end();it != ite;++it)
             loadModule(global,"./modules/" + it->second,it->first);
-        verboseOut("Loaded " + std::to_string(global.plugins.size()) + " module(s) . . .");
+        verboseOut("Loaded " + std::to_string(global.plugins.size()) + " module(s) . . .",false);
         /*int i = 0;
         for (auto it = global.plugins.begin(), ite = global.plugins.end();it != ite;++it)
         {
@@ -2940,17 +2940,17 @@ OPTIONS\n\
     void loadAssets(Global &global)
     {
         //createDirs();
-        debugOut("Loading admins...");
+        debugOut("Loading admins...",false);
         loadAdmins(global);
-        debugOut("Loading modules...");
+        debugOut("Loading modules...",false);
         loadModules(global);
-        debugOut("Loading ignored channels...");
+        debugOut("Loading ignored channels...",false);
         loadIgnoredChannels(global);
-        debugOut("Loading ignored users...");
+        debugOut("Loading ignored users...",false);
         loadIgnoredUsers(global);
-        debugOut("Loading command aliases...");
+        debugOut("Loading command aliases...",false);
         loadAliases(global);
-        verboseOut("Assets loaded . . .");
+        verboseOut("Assets loaded . . .",false);
     }
     
     int cleanUp(BotClass *bot, Global &global)

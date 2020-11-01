@@ -107,11 +107,13 @@ int main(int argc, char *argv[])
     //farage = Farage::botConnect(online,FARAGE_TOKEN);
     global.discord = (void*)farage;
     Farage::loadAssets(global);
+    //std::this_thread::sleep_for(std::chrono::seconds(1));
     for (auto it = autoexec.begin(), ite = autoexec.end();it != ite;++it)
         Farage::processCscript(farage,global,*it);
-    std::atomic<bool> online, running;
+    std::atomic<bool> running;
     running = true;
-    farage->connect(online);
+    //std::this_thread::sleep_for(std::chrono::seconds(1));
+    //farage->connect(online);
 #ifdef _WIN32
     HANDLE events[] =
     {
@@ -144,9 +146,29 @@ int main(int argc, char *argv[])
     });
 #endif
     std::string cinput;
+    std::thread keepup([&farage,&running,FARAGE_TOKEN]
+    {
+        //farage->run();
+        //running = false;
+        for (int i = 0;;i++)
+        {
+            if (i > ((FARAGE_CONNECT_MAX_RETRIES < 0) ? i : FARAGE_CONNECT_MAX_RETRIES))
+            {
+                running = false;
+                break;
+            }
+            if (i)
+            {
+                delete farage;
+                std::this_thread::sleep_for(std::chrono::seconds(FARAGE_CONNECT_DELAY));
+                farage = Farage::botCreate(FARAGE_TOKEN);
+            }
+            farage->run();
+        }
+    });
     while (running)
     {
-        for (int i = 0;!online;i++)
+        /*for (int i = 0;!online;i++)
         {
             if (i)
                 std::this_thread::sleep_for(std::chrono::seconds(FARAGE_CONNECT_DELAY));
@@ -162,7 +184,7 @@ int main(int argc, char *argv[])
             }
             delete farage;
             (farage = Farage::botCreate(FARAGE_TOKEN))->connect(online);
-        }
+        }*/
 #ifndef _WIN32
         FD_ZERO(&cinset);
     #ifndef _GTCINTERFACE_
@@ -211,7 +233,8 @@ int main(int argc, char *argv[])
         }
 #endif
     }
-    running = false;
+    Farage::cleanUp(farage,global);
+    keepup.join();
 #ifndef _WIN32
     #ifdef _GTCINTERFACE_
     gtcinput.join();

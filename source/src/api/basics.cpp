@@ -59,7 +59,7 @@ Farage::GlobVar* Farage::findGlobVar(const std::string &name)
     return timer;
 }
 
-void Farage::consoleOut(const std::string &msg)
+void Farage::consoleOut(const std::string &msg, bool notry)
 {
     Farage::Global *global = Farage::recallGlobal();
     #ifndef _GTCINTERFACE_
@@ -67,10 +67,17 @@ void Farage::consoleOut(const std::string &msg)
     #else
         global->getInterface()->printLn(msg);
     #endif
-    global->getBuffer()->push_back(msg);
+    if (notry)
+        global->getBuffer()->push_back(msg);
+    else
+    {
+        auto b = global->tryGetBuffer();
+        if (b.owns_lock())
+            b->push_back(msg);
+    }
 }
 
-void Farage::errorOut(const std::string &msg)
+void Farage::errorOut(const std::string &msg, bool notry)
 {
     Farage::Global *global = Farage::recallGlobal();
     #ifndef _GTCINTERFACE_
@@ -78,10 +85,17 @@ void Farage::errorOut(const std::string &msg)
     #else
         global->getInterface()->printLn(msg);
     #endif
-    global->getBuffer()->push_back(msg);
+    if (notry)
+        global->getBuffer()->push_back(msg);
+    else
+    {
+        auto b = global->tryGetBuffer();
+        if (b.owns_lock())
+            b->push_back(msg);
+    }
 }
 
-void Farage::debugOut(const std::string &msg)
+void Farage::debugOut(const std::string &msg, bool notry)
 {
     Farage::Global *global = Farage::recallGlobal();
     if (global->debug)
@@ -91,11 +105,18 @@ void Farage::debugOut(const std::string &msg)
         #else
             global->getInterface()->printLn(msg);
         #endif
-        global->getBuffer()->push_back(msg);
+        if (notry)
+            global->getBuffer()->push_back(msg);
+        else
+        {
+            auto b = global->tryGetBuffer();
+            if (b.owns_lock())
+                b->push_back(msg);
+        }
     }
 }
 
-void Farage::verboseOut(const std::string &msg)
+void Farage::verboseOut(const std::string &msg, bool notry)
 {
     Farage::Global *global = Farage::recallGlobal();
     if (global->verbose)
@@ -105,7 +126,14 @@ void Farage::verboseOut(const std::string &msg)
         #else
             global->getInterface()->printLn(msg);
         #endif
-        global->getBuffer()->push_back(msg);
+        if (notry)
+            global->getBuffer()->push_back(msg);
+        else
+        {
+            auto b = global->tryGetBuffer();
+            if (b.owns_lock())
+                b->push_back(msg);
+        }
     }
 }
 
