@@ -56,10 +56,13 @@ namespace Farage
             const Info* getInfo();
             
             // returns the path to the plugin
-            std::string getPath() { return modulePath; }
+            inline std::string getPath() { return modulePath; }
             
             // returns the internal name of the plugin
-            std::string getModule() { return moduleName; }
+            inline std::string getModule() { return moduleName; }
+            
+            // returns the dlfcn pointer to the module
+            inline void* getModulePtr() { return module; }
             
             inline size_t getLoadPriority() { return priority; }
             int setLoadPriority(size_t loadPriority, bool write = false, short shift = 0);

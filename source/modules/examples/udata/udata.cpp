@@ -12,7 +12,7 @@ using namespace Farage;
 #define MAKEMENTION
 #include "common_func.h"
 
-#define VERSION "v0.8.0"
+#define VERSION "v0.8.1"
 
 #define UDEVAL
 
@@ -1096,11 +1096,8 @@ std::string messagesData(const ArrayResponse<Message>& msgs, std::string prop, c
     return out;
 }
 
-int evalCmd(Handle &handle, int argc, const std::string argv[], const Message &message)
+extern "C" void evaluateData(std::string& eval)
 {
-    Global* global = recallGlobal();
-    if (argc < 2)
-        sendMessage(message.channel_id,"Usage: `" + global->prefix(message.guild_id) + argv[0] + " <evaluate>`");
     static rens::regex specialptrn ("[\\.\\{\\}\\[\\]\\(\\)]");
     static rens::regex joinptrn ("\\s*\\$\\+\\s*");
     //static rens::regex inputptrn ("(?<!\\\\)\\$(\\d+)");
@@ -1110,7 +1107,6 @@ int evalCmd(Handle &handle, int argc, const std::string argv[], const Message &m
     static rens::regex rand2ptrn ("(?i)rand\\(([^)]*)\\)");
     static rens::regex argptrn ("^([^,]*)(,|$)");
     rens::smatch ml;
-    std::string eval = message.content.substr(message.content.find(argv[0]) + argv[0].size() + 1);
     std::string request = message.channel_id;
     if ((message.guild_id.size() == 0) && ((global->getAdminFlags(message.author.id) & AdminFlag::ROOT) == AdminFlag::ROOT))
         request.clear();
@@ -1232,6 +1228,15 @@ int evalCmd(Handle &handle, int argc, const std::string argv[], const Message &m
         eval = rens::regex_replace(eval,rens::regex(rens::regex_replace(ml[0].str(),specialptrn,"\\$0")),out,0);
     }
     eval = rens::regex_replace(eval,joinptrn,"");
+}
+
+int evalCmd(Handle &handle, int argc, const std::string argv[], const Message &message)
+{
+    Global* global = recallGlobal();
+    if (argc < 2)
+        sendMessage(message.channel_id,"Usage: `" + global->prefix(message.guild_id) + argv[0] + " <evaluate>`");
+    std::string eval = message.content.substr(message.content.find(argv[0]) + argv[0].size() + 1);
+    evaluateData(eval);
     sendMessage(message.channel_id,"**Eval**: " + eval);
     return PLUGIN_HANDLED;
 }
