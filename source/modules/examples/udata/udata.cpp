@@ -12,7 +12,7 @@ using namespace Farage;
 #define MAKEMENTION
 #include "common_func.h"
 
-#define VERSION "v0.8.2"
+#define VERSION "v0.8.3"
 
 #define UDEVAL
 
@@ -1096,13 +1096,13 @@ std::string messagesData(const ArrayResponse<Message>& msgs, std::string prop, c
     return out;
 }
 
-extern "C" void evaluateData(std::string& eval, const std::string& guildID, const std::string& channelID, const std::string& authorID)
+extern "C" void evaluateData(std::string& eval, const std::string& guildID, const std::string& channelID, const std::string& authorID, const std::string& messageID)
 {
     static rens::regex specialptrn ("[\\.\\{\\}\\[\\]\\(\\)]");
     static rens::regex joinptrn ("\\s*\\$\\+\\s*");
     //static rens::regex inputptrn ("(?<!\\\\)\\$(\\d+)");
     static rens::regex inputptrn ("\\$(\\d+)");
-    static rens::regex identptrn ("(?i)(user|member|guild|channel|role|message|messages\\(\\d+,\\d+\\))\\{(\\d+)(\\}|,\\d+\\})(\\.[\\w\\[\\]\\d\\.]+)?");
+    static rens::regex identptrn ("(?i)(user|member|guild|channel|role|message|messages\\(\\d+,\\d+\\))\\{(\\d+|this)(\\}|,\\d+\\})(\\.[\\w\\[\\]\\d\\.]+)?");
     static rens::regex randptrn ("(?i)rand\\((\\d+),?(\\d*)\\)");
     static rens::regex rand2ptrn ("(?i)rand\\(([^)]*)\\)");
     static rens::regex argptrn ("^([^,]*)(,|$)");
@@ -1181,16 +1181,30 @@ extern "C" void evaluateData(std::string& eval, const std::string& guildID, cons
         std::string prop = strlower(ml[4].str());
         if (ident == "user")
         {
+            if (id == "this")
+                id = authorID;
             if (id != who.id)
                 who = getUser(id).object;
             out = userData(who,prop);
         }
         else if (ident == "member")
+        {
+            if (id == "this")
+                id = authorID;
             out = memberData(getServerMember(guild,id),prop);//,guild);
+        }
         else if (ident == "guild")
+        {
+            if (id == "this")
+                id = guildID;
             out = guildData(getGuildCache(id),prop,request);
+        }
         else if (ident == "channel")
+        {
+            if (id == "this")
+                id = channelID;
             out = channelData(getChannelCache(guild,id),prop,request);
+        }
         else if (ident == "role")
         {
             Server server = getGuildCache(guild);
@@ -1207,6 +1221,8 @@ extern "C" void evaluateData(std::string& eval, const std::string& guildID, cons
         }
         else if (ident == "message")
         {
+            if (id == "this")
+                id = messageID;
             if (!customGuild)
                 guild = channel;
             if (chan.id != guild)
@@ -1217,6 +1233,8 @@ extern "C" void evaluateData(std::string& eval, const std::string& guildID, cons
         }
         else // messages
         {
+            if (id == "this")
+                id = messageID;
             if (!customGuild)
                 guild = guildID;
             if (chan.id != guild)
@@ -1236,7 +1254,7 @@ int evalCmd(Handle &handle, int argc, const std::string argv[], const Message &m
     if (argc < 2)
         sendMessage(message.channel_id,"Usage: `" + global->prefix(message.guild_id) + argv[0] + " <evaluate>`");
     std::string eval = message.content.substr(message.content.find(argv[0]) + argv[0].size() + 1);
-    evaluateData(eval);
+    evaluateData(eval,message.guild_id,message.channel_id,message.author.id,message.id);
     sendMessage(message.channel_id,"**Eval**: " + eval);
     return PLUGIN_HANDLED;
 }
