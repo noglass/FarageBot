@@ -522,22 +522,6 @@ OPTIONS\n\
         public:
             using SleepyDiscord::DiscordClient::DiscordClient;
             
-            void connect(std::atomic<bool> &online)
-            {
-                online = true;
-                std::thread([this, &online]
-                {
-                    //std::this_thread::sleep_for(std::chrono::seconds(2));
-                    this->run();
-                    //std::cerr<<"Discord disconnect."<<std::endl;
-                    online = false;
-                    errorOut("Discord disconnected.",false);
-                }).detach();
-                //std::this_thread::sleep_for(std::chrono::seconds(2));
-                //bot->waitTilReady();
-                //return bot;
-            }
-            
             void onReady(SleepyDiscord::Ready readyData)
             {
                 Farage::Global *global = Farage::recallGlobal();
@@ -1138,14 +1122,18 @@ OPTIONS\n\
                 rens::smatch ml;
                 bool blockEvent = false;
                 bool blockCmd = false;
-                for (auto it = global->plugins.begin(), ite = global->plugins.end();it != ite;++it)
+                bool blockHook = false;
+                for (auto it = global->plugins.begin(), ite = global->plugins.end();(!blockHook) && (it != ite);++it)
                 {
                     for (auto pit = (*it)->chatHooks.begin();pit != (*it)->chatHooks.end();)
                     {
                         if (rens::regex_search(fmessage.content,ml,(*pit)->pattern))
                         {
+                            int ret = PLUGIN_CONTINUE;
+                            if ((*pit)->func != nullptr)
+                                ret = (*(*pit)->func)(**it,*pit,ml,fmessage);
                             int flags = (*pit)->flags;
-                            if ((flags & HOOK_PRINT) == HOOK_PRINT)
+                            if (flags & HOOK_PRINT)
                             {
                                 auto cache = ((BotClass*)(global->discord))->getServerCache();
                                 std::string guild = fmessage.guild_id;
@@ -1160,9 +1148,6 @@ OPTIONS\n\
                                 }
                                 consoleOut("[" + (*pit)->name + "][" + guild + "](#" + channel + "): <" + fmessage.author.username + "> " + fmessage.content,false);
                             }
-                            int ret = PLUGIN_CONTINUE;
-                            if ((*pit)->func != nullptr)
-                                ret = (*(*pit)->func)(**it,*pit,ml,fmessage);
                             if (ret & PLUGIN_ERASE)
                             {
                                 delete *pit;
@@ -1172,11 +1157,11 @@ OPTIONS\n\
                                 pit++;
                             if (ret & PLUGIN_HANDLED)
                                 return;
-                            if ((flags & HOOK_BLOCK_EVENT) == HOOK_BLOCK_EVENT)
+                            if (flags & HOOK_BLOCK_EVENT)
                                 blockEvent = true;
-                            if ((flags & HOOK_BLOCK_CMD) == HOOK_BLOCK_CMD)
+                            if (flags & HOOK_BLOCK_CMD)
                                 blockCmd = true;
-                            if ((flags & HOOK_BLOCK_HOOK) == HOOK_BLOCK_HOOK)
+                            if (blockHook = (flags & HOOK_BLOCK_HOOK))
                                 break;
                         }
                         else
@@ -2956,6 +2941,7 @@ OPTIONS\n\
     int cleanUp(BotClass *bot, Global &global)
     {
         delete bot;
+        global.discord = nullptr;
         return 404;
     }
     
