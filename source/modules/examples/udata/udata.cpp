@@ -12,7 +12,7 @@ using namespace Farage;
 #define MAKEMENTION
 #include "common_func.h"
 
-#define VERSION "v0.8.4"
+#define VERSION "v0.8.5"
 
 #define UDEVAL
 
@@ -1242,6 +1242,7 @@ int evalCmd(Handle &handle, int argc, const std::string argv[], const Message &m
     if (argc < 2)
         sendMessage(message.channel_id,"Usage: `" + global->prefix(message.guild_id) + argv[0] + " <evaluate>`");
     std::string eval = message.content.substr(message.content.find(argv[0]) + argv[0].size() + 1);
+    rens::smatch ml;
     while (rens::regex_search(eval,ml,inputptrn))
     {
         int arg = (int)std::stoull(ml[1].str());
