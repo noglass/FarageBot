@@ -12,7 +12,7 @@ using namespace Farage;
 #define MAKEMENTION
 #include "common_func.h"
 
-#define VERSION "v0.8.1"
+#define VERSION "v0.8.2"
 
 #define UDEVAL
 
@@ -1096,7 +1096,7 @@ std::string messagesData(const ArrayResponse<Message>& msgs, std::string prop, c
     return out;
 }
 
-extern "C" void evaluateData(std::string& eval)
+extern "C" void evaluateData(std::string& eval, const std::string& guildID, const std::string& channelID, const std::string& authorID)
 {
     static rens::regex specialptrn ("[\\.\\{\\}\\[\\]\\(\\)]");
     static rens::regex joinptrn ("\\s*\\$\\+\\s*");
@@ -1107,8 +1107,8 @@ extern "C" void evaluateData(std::string& eval)
     static rens::regex rand2ptrn ("(?i)rand\\(([^)]*)\\)");
     static rens::regex argptrn ("^([^,]*)(,|$)");
     rens::smatch ml;
-    std::string request = message.channel_id;
-    if ((message.guild_id.size() == 0) && ((global->getAdminFlags(message.author.id) & AdminFlag::ROOT) == AdminFlag::ROOT))
+    std::string request = channelID;
+    if ((guildID.size() == 0) && ((global->getAdminFlags(authorID) & AdminFlag::ROOT) == AdminFlag::ROOT))
         request.clear();
     while (rens::regex_search(eval,ml,inputptrn))
     {
@@ -1171,7 +1171,7 @@ extern "C" void evaluateData(std::string& eval)
         std::string out;
         std::string ident = ml[1].str();
         std::string id = ml[2].str();
-        std::string guild = message.guild_id;
+        std::string guild = guildID;
         bool customGuild = false;
         if (ml[3].str().front() == ',')
         {
@@ -1208,7 +1208,7 @@ extern "C" void evaluateData(std::string& eval)
         else if (ident == "message")
         {
             if (!customGuild)
-                guild = message.channel_id;
+                guild = channel;
             if (chan.id != guild)
                 chan = getChannel(guild).object;
             if (msg.id != id)
@@ -1218,7 +1218,7 @@ extern "C" void evaluateData(std::string& eval)
         else // messages
         {
             if (!customGuild)
-                guild = message.channel_id;
+                guild = guildID;
             if (chan.id != guild)
                 chan = getChannel(guild).object;
             int when = std::stoi(ident.substr(9));
