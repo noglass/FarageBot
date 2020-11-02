@@ -12,7 +12,7 @@ using namespace Farage;
 #define MAKEMENTION
 #include "common_func.h"
 
-#define VERSION "v0.8.3"
+#define VERSION "v0.8.4"
 
 #define UDEVAL
 
@@ -1101,28 +1101,15 @@ extern "C" void evaluateData(std::string& eval, const std::string& guildID, cons
     static rens::regex specialptrn ("[\\.\\{\\}\\[\\]\\(\\)]");
     static rens::regex joinptrn ("\\s*\\$\\+\\s*");
     //static rens::regex inputptrn ("(?<!\\\\)\\$(\\d+)");
-    static rens::regex inputptrn ("\\$(\\d+)");
     static rens::regex identptrn ("(?i)(user|member|guild|channel|role|message|messages\\(\\d+,\\d+\\))\\{(\\d+|this)(\\}|,\\d+\\})(\\.[\\w\\[\\]\\d\\.]+)?");
     static rens::regex randptrn ("(?i)rand\\((\\d+),?(\\d*)\\)");
     static rens::regex rand2ptrn ("(?i)rand\\(([^)]*)\\)");
     static rens::regex argptrn ("^([^,]*)(,|$)");
+    Global* global = recallGlobal();
     rens::smatch ml;
     std::string request = channelID;
     if ((guildID.size() == 0) && ((global->getAdminFlags(authorID) & AdminFlag::ROOT) == AdminFlag::ROOT))
         request.clear();
-    while (rens::regex_search(eval,ml,inputptrn))
-    {
-        int arg = (int)std::stoull(ml[1].str());
-        if ((arg < argc) && (arg >= 0))
-        {
-            if (argv[arg].front() == '$')// || (argv[arg].front() == '\\'))
-                eval = rens::regex_replace(eval,inputptrn,argv[arg].substr(1),0);
-            else
-                eval = rens::regex_replace(eval,inputptrn,argv[arg],0);
-        }
-        else
-            eval = rens::regex_replace(eval,inputptrn,"",0);
-    }
     while (rens::regex_search(eval,ml,randptrn))
     {
         uint32_t r[2];
@@ -1224,7 +1211,7 @@ extern "C" void evaluateData(std::string& eval, const std::string& guildID, cons
             if (id == "this")
                 id = messageID;
             if (!customGuild)
-                guild = channel;
+                guild = channelID;
             if (chan.id != guild)
                 chan = getChannel(guild).object;
             if (msg.id != id)
@@ -1250,10 +1237,24 @@ extern "C" void evaluateData(std::string& eval, const std::string& guildID, cons
 
 int evalCmd(Handle &handle, int argc, const std::string argv[], const Message &message)
 {
+    static rens::regex inputptrn ("\\$(\\d+)");
     Global* global = recallGlobal();
     if (argc < 2)
         sendMessage(message.channel_id,"Usage: `" + global->prefix(message.guild_id) + argv[0] + " <evaluate>`");
     std::string eval = message.content.substr(message.content.find(argv[0]) + argv[0].size() + 1);
+    while (rens::regex_search(eval,ml,inputptrn))
+    {
+        int arg = (int)std::stoull(ml[1].str());
+        if ((arg < argc) && (arg >= 0))
+        {
+            if (argv[arg].front() == '$')// || (argv[arg].front() == '\\'))
+                eval = rens::regex_replace(eval,inputptrn,argv[arg].substr(1),0);
+            else
+                eval = rens::regex_replace(eval,inputptrn,argv[arg],0);
+        }
+        else
+            eval = rens::regex_replace(eval,inputptrn,"",0);
+    }
     evaluateData(eval,message.guild_id,message.channel_id,message.author.id,message.id);
     sendMessage(message.channel_id,"**Eval**: " + eval);
     return PLUGIN_HANDLED;
