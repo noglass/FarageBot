@@ -1109,7 +1109,6 @@ OPTIONS\n\
             
             void onMessage(SleepyDiscord::Message message)
             {
-                std::cout<<message.content<<std::endl;
                 Farage::Global *global = Farage::recallGlobal();
                 std::string ID = message.channelID;
                 for (auto it = global->ignoredChannels.begin(), ite = global->ignoredChannels.end();it != ite;++it)
