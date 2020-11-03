@@ -1109,6 +1109,7 @@ OPTIONS\n\
             
             void onMessage(SleepyDiscord::Message message)
             {
+                std::cout<<message.content<<std::endl;
                 Farage::Global *global = Farage::recallGlobal();
                 std::string ID = message.channelID;
                 for (auto it = global->ignoredChannels.begin(), ite = global->ignoredChannels.end();it != ite;++it)
@@ -1127,7 +1128,7 @@ OPTIONS\n\
                 {
                     for (auto pit = (*it)->chatHooks.begin();pit != (*it)->chatHooks.end();)
                     {
-                        if (rens::regex_search(fmessage.content,ml,(*pit)->pattern))
+                        if (rens::regex_search(message.content,ml,(*pit)->pattern))
                         {
                             int ret = PLUGIN_CONTINUE;
                             if ((*pit)->func != nullptr)
@@ -1136,8 +1137,8 @@ OPTIONS\n\
                             if (flags & HOOK_PRINT)
                             {
                                 auto cache = ((BotClass*)(global->discord))->getServerCache();
-                                std::string guild = fmessage.guild_id;
-                                std::string channel = fmessage.channel_id;
+                                std::string guild = message.serverID;
+                                std::string channel = message.channelID;
                                 auto server = cache->findServer(guild);
                                 if (server != cache->end())
                                 {
@@ -1146,7 +1147,7 @@ OPTIONS\n\
                                     if (chan->name.size() > 0)
                                         channel = chan->name;
                                 }
-                                consoleOut("[" + (*pit)->name + "][" + guild + "](#" + channel + "): <" + fmessage.author.username + "> " + fmessage.content,false);
+                                consoleOut("[" + (*pit)->name + "][" + guild + "](#" + channel + "): <" + message.author.username + "> " + message.content,false);
                             }
                             if (ret & PLUGIN_ERASE)
                             {
@@ -1165,11 +1166,11 @@ OPTIONS\n\
                                 break;
                         }
                         else
-                            pit++;
+                            ++pit;
                     }
                 }
-                std::string prefix = global->prefix(fmessage.guild_id);
-                bool prefixed = (fmessage.content.find(prefix) == 0);
+                std::string prefix = global->prefix(message.serverID);
+                bool prefixed = (message.content.find(prefix) == 0);
                 void *arg0 = (void*)(&fmessage);
                 if (!blockEvent)
                 {
@@ -1189,47 +1190,50 @@ OPTIONS\n\
                             return;
                     }
                 }
-                std::string command = fmessage.content;
-                bool permoverride = false;
-                if (prefixed)
+                if (!blockCmd)
                 {
-                    size_t space = 0;
-                    if ((command.size() > prefix.size()) && (command.at(prefix.size()) == ' '))
-                        space = 1;
-                    command.erase(0,prefix.size()+space);
-                    if (global->prefixedAliases.get(command,permoverride))
-                        fmessage.content = prefix + std::string(space,' ') + command;
-                }
-                else if (global->aliases.get(command,permoverride))
-                    prefixed = true;
-                if ((!blockCmd) && (prefixed) && (ID != global->self.id))
-                {
-                    AdminFlag flags;
-                    if (permoverride)
-                        flags = ROOT;
-                    else
-                        flags = global->getAdminFlags(fmessage.guild_id,ID);
-                    int argc = 0;
-                    std::string *argv = splitStringAny(nospace(command)," \t\n",argc);
-                    if (argc > 0)
+                    std::string command = message.content;
+                    bool permoverride = false;
+                    if (prefixed)
                     {
-                        auto plug = global->plugins.begin(), pluge = global->plugins.end();
-                        bool done = false;
-                        for (;plug != pluge;++plug)
+                        size_t space = 0;
+                        if ((command.size() > prefix.size()) && (command.at(prefix.size()) == ' '))
+                            space = 1;
+                        command.erase(0,prefix.size()+space);
+                        if (global->prefixedAliases.get(command,permoverride))
+                            fmessage.content = prefix + std::string(space,' ') + command;
+                    }
+                    else if (global->aliases.get(command,permoverride))
+                        prefixed = true;
+                    if ((prefixed) && (ID != global->self.id))
+                    {
+                        AdminFlag flags;
+                        if (permoverride)
+                            flags = ROOT;
+                        else
+                            flags = global->getAdminFlags(message.serverID,ID);
+                        int argc = 0;
+                        std::string *argv = splitStringAny(nospace(command)," \t\n",argc);
+                        if (argc > 0)
                         {
-                            if ((*plug)->getLoadPriority() != 0)
-                                break;
-                            if ((*plug)->callChatCmd(argv[0],flags,argc,argv,fmessage) == PLUGIN_HANDLED)
-                            {
-                                done = true;
-                                break;
-                            }
-                        }
-                        if ((!done) && (internals.call(this,*global,flags,argc,argv,message) != PLUGIN_HANDLED))
+                            auto plug = global->plugins.begin(), pluge = global->plugins.end();
+                            bool done = false;
                             for (;plug != pluge;++plug)
-                                if ((*plug)->callChatCmd(argv[0],flags,argc,argv,fmessage) == PLUGIN_HANDLED)
+                            {
+                                if ((*plug)->getLoadPriority() != 0)
                                     break;
-                        delete[] argv;
+                                if ((*plug)->callChatCmd(argv[0],flags,argc,argv,fmessage) == PLUGIN_HANDLED)
+                                {
+                                    done = true;
+                                    break;
+                                }
+                            }
+                            if ((!done) && (internals.call(this,*global,flags,argc,argv,message) != PLUGIN_HANDLED))
+                                for (;plug != pluge;++plug)
+                                    if ((*plug)->callChatCmd(argv[0],flags,argc,argv,fmessage) == PLUGIN_HANDLED)
+                                        break;
+                            delete[] argv;
+                        }
                     }
                 }
             }

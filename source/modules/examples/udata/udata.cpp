@@ -12,7 +12,7 @@ using namespace Farage;
 #define MAKEMENTION
 #include "common_func.h"
 
-#define VERSION "v0.8.5"
+#define VERSION "v0.8.7"
 
 #define UDEVAL
 
@@ -1120,20 +1120,20 @@ extern "C" void evaluateData(std::string& eval, const std::string& guildID, cons
             r[1] = std::stoull(ml[2].str());
         }
         else
-            r[1] = std::stoull(ml[1].str());
+            r[1] = std::stoull(ml[1].str())-1;
         eval.erase(ml[0].pos,ml[0].length());
         eval.insert(ml[0].pos,std::to_string(mtrand(r[0],r[1])));
     }
-    while (rens::regex_search(eval,ml,rand2ptrn))
+    /*while (rens::regex_search(eval,ml,rand2ptrn))
     {
         std::string str = ml[1].str();
         std::vector<std::string> opts;
         eval.erase(ml[0].pos,ml[0].length());
         if (str.size() > 0)
         {
-            /*for (size_t pos[2] = {0};pos[1] != std::string::npos;opts.emplace_back(str.substr(pos[0],(pos[1] = str.find(',',pos[0]))-pos[0])))
-                if (pos[1] > 0)
-                    pos[0] = pos[1]+1;*/
+            //for (size_t pos[2] = {0};pos[1] != std::string::npos;opts.emplace_back(str.substr(pos[0],(pos[1] = str.find(',',pos[0]))-pos[0])))
+            //    if (pos[1] > 0)
+            //        pos[0] = pos[1]+1;
             rens::smatch mll;
             //std::cout<<str<<std::endl;
             while ((str.size() > 0) && (rens::regex_search(str,mll,argptrn)))
@@ -1147,6 +1147,51 @@ extern "C" void evaluateData(std::string& eval, const std::string& guildID, cons
         }
         else
             eval.insert(ml[0].pos,std::to_string(mtrand(0,-1)));
+    }*/
+    while (rens::regex_search(eval,ml,rand2ptrn))
+    {
+        std::string str = ml[1].str();
+        evaluateData(str,guildID,channelID,authorID,messageID);
+        eval.erase(ml[1].position(),ml[1].length());
+        eval.insert(ml[1].position(),str);
+        if (rens::regex_search(eval,ml,randptrn))
+        {
+            uint32_t r[2];
+            r[0] = 0;
+            if (ml[2].length() > 0)
+            {
+                r[0] = std::stoull(ml[1].str());
+                r[1] = std::stoull(ml[2].str());
+            }
+            else
+                r[1] = std::stoull(ml[1].str())-1;
+            eval.erase(ml[0].pos,ml[0].length());
+            eval.insert(ml[0].pos,std::to_string(mtrand(r[0],r[1])));
+        }
+        if (rens::regex_search(eval,ml,rand2ptrn))
+        {
+            std::string str = ml[1].str();
+            std::vector<std::string> opts;
+            eval.erase(ml[0].pos,ml[0].length());
+            if (str.size() > 0)
+            {
+                //for (size_t pos[2] = {0};pos[1] != std::string::npos;opts.emplace_back(str.substr(pos[0],(pos[1] = str.find(',',pos[0]))-pos[0])))
+                //    if (pos[1] > 0)
+                //        pos[0] = pos[1]+1;
+                rens::smatch mll;
+                //std::cout<<str<<std::endl;
+                while ((str.size() > 0) && (rens::regex_search(str,mll,argptrn)))
+                {
+                    //std::cout<<mll[0].str()<<' '<<mll[1].str()<<std::endl;
+                    opts.emplace_back(mll[1].str());
+                    str = mll.suffix().str();
+                }
+                //std::cout<<opts.size()<<std::endl;
+                eval.insert(ml[0].pos,opts.at(mtrand(0,opts.size()-1)));
+            }
+            else
+                eval.insert(ml[0].pos,std::to_string(mtrand(0,-1)));
+        }
     }
     User who;
     Message msg;

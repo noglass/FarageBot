@@ -31,7 +31,7 @@ namespace pcre2w
             regex& operator= (std::string re);
             regex& operator= (const regex &other);
             
-            uint32_t getMatchCount() const;
+            inline uint32_t getMatchCount() const { return match_count; }
             
         private:
             int compile(PCRE2_SPTR re);
@@ -47,15 +47,15 @@ namespace pcre2w
             smatch_data& operator= (const smatch_data &other);
             std::string s;
             size_t pos;
-            std::string str();
-            size_t position();
-            size_t length();
-            void clear();
+            inline std::string str() const { return s; }
+            inline size_t position() const { return pos; }
+            inline size_t length() const { return s.size(); }
+            inline void clear() { s.clear(); pos = 0; }
             int compare(const std::string &str);
             int compare(const smatch_data &md);
             int compare(const char *str);
             int compare(const unsigned char *str);
-            std::string operator() ();
+            inline std::string operator() () { return s; }
     };
             
     class smatch
@@ -66,26 +66,26 @@ namespace pcre2w
             smatch() {}
             smatch(const smatch &other);
             smatch& operator= (const smatch &other);
-            size_t position();
-            smatch_data prefix();
-            smatch_data suffix();
+            inline size_t position() const { return pos; }
+            inline smatch_data prefix() const { return pref; }
+            inline smatch_data suffix() const { return suff; }
             std::vector<smatch_data> capture;
-            std::vector<smatch_data>::iterator begin();
-            std::vector<smatch_data>::iterator end();
-            std::vector<smatch_data>::reverse_iterator rbegin();
-            std::vector<smatch_data>::reverse_iterator rend();
-            std::vector<smatch_data>::const_iterator cbegin();
-            std::vector<smatch_data>::const_iterator cend();
-            std::vector<smatch_data>::const_reverse_iterator crbegin();
-            std::vector<smatch_data>::const_reverse_iterator crend();
+            inline std::vector<smatch_data>::iterator begin() { return capture.begin(); }
+            inline std::vector<smatch_data>::iterator end() { return capture.end(); }
+            inline std::vector<smatch_data>::reverse_iterator rbegin() { return capture.rbegin(); }
+            inline std::vector<smatch_data>::reverse_iterator rend() { return capture.rend(); }
+            inline std::vector<smatch_data>::const_iterator cbegin() { return capture.cbegin(); }
+            inline std::vector<smatch_data>::const_iterator cend() { return capture.cend(); }
+            inline std::vector<smatch_data>::const_reverse_iterator crbegin() { return capture.crbegin(); }
+            inline std::vector<smatch_data>::const_reverse_iterator crend() { return capture.crend(); }
             void populate(PCRE2_SPTR subject, pcre2_match_data *ml, int rc, const uint32_t cc);
-            smatch_data& operator[] (size_t n);
-            size_t size();
-            void clear();
-            bool empty();
-            size_t max_size();
+            inline smatch_data& operator[] (size_t n) { return capture.at(n); }
+            inline size_t size() const { return capture.size(); }
+            inline void clear() { pref.clear(); suff.clear(); capture.clear(); }
+            inline bool empty() { return (bool)capture.size(); }
+            inline size_t max_size() const { return capture.max_size(); }
             void swap(smatch &sm);
-            std::string format(const std::string &fmt);
+            std::string format(const std::string &fmt) const;
     };
     
     int regex_search(const unsigned char *subject, smatch &results, const regex &re, bool with = true);
