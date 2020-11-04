@@ -70,19 +70,27 @@ void pcre2w::smatch::populate(PCRE2_SPTR subject, pcre2_match_data *ml, int rc, 
             start = ovector[2*i];
             length = ovector[2*i+1] - ovector[2*i];
             if ((start == PCRE2_UNSET) || (length == PCRE2_UNSET))
-                capture.push_back({"",start});
+                capture.emplace_back({"",start});
             else
-                capture.push_back({sub.substr(start,length),start});
+                capture.emplace_back({sub.substr(start,length),start});
         }
         //std::cout<<"Vector filled size: "<<capture.size()<<std::endl;
         offset = ovector[1];
         if (offset < sub.size())
             suff = { sub.substr(offset,std::string::npos), offset };
-        if (cc < 61) while (capture.size() <= cc)
-            capture.push_back({"",PCRE2_UNSET});
+        //if (cc < 61) while (capture.size() <= cc)
+        //    capture.push_back({"",PCRE2_UNSET});
     }
     //std::cout<<"pcre2w::smatch::populate() end"<<std::endl;
 }
+
+pcre2w::smatch_data& pcre2w::smatch::operator[] (size_t n)
+{
+    while (n >= capture.size())
+        capture.emplace_back(pcre2w::smatch_data())
+    return capture.at(n);
+}
+
 void pcre2w::smatch::swap(pcre2w::smatch &sm)
 {
     pcre2w::smatch temp = sm;

@@ -12,7 +12,12 @@ using namespace Farage;
 #define HEXIFY
 #include "common_func.h"
 
-#define VERSION "v1.6.5"
+#define BASEVERSION "v1.6.6"
+#ifdef METTA_MINI
+    #define VERSION std::string(BASEVERSION) + "-minimal"
+#else
+    #define VERSION BASEVERSION
+#endif
 
 #define SOUNDEXTHRESHOLD    75
 #define SOUNDEXTHRESHOLD2   25
@@ -29,11 +34,13 @@ extern "C" Info Module
 
 namespace Mettaton
 {
+    #ifndef METTA_MINI
     struct koolAidMan
     {
         std::string id;
         int count;
     };
+    #endif
     struct faqBlocker
     {
         bool isName;
@@ -439,19 +446,20 @@ namespace Mettaton
             }
     } database;
     std::unordered_map<std::string,faqBlocker> faqBlock;
+    #ifndef METTA_MINI
     std::unordered_map<std::string,koolAidMan> koolaid;
     //int koolaidRefill = 3;
     GlobVar *koolaidRefill = nullptr;
     //std::string botID;
+    #endif
+    GlobVar *inviteLink = nullptr;
     std::string lastChannel;
-    ChatHook *chatHook = nullptr;
+    //ChatHook *chatHook = nullptr;
     std::chrono::high_resolution_clock::time_point uptime;
 };
 
-int chatHookChange(Handle&,GlobVar*,const std::string&,const std::string&,const std::string&);
-int messageCmd(Handle&,int,const std::string[]);
+//int chatHookChange(Handle&,GlobVar*,const std::string&,const std::string&,const std::string&);
 int typingCmd(Handle&,int,const std::string[]);
-int helpCmd(Handle&,int,const std::string[],const Message&);
 int addfaqCmd(Handle&,int,const std::string[],const Message&);
 int delfaqCmd(Handle&,int,const std::string[],const Message&);
 int addfaqcatCmd(Handle&,int,const std::string[],const Message&);
@@ -463,8 +471,10 @@ int faqCmd(Handle&,int,const std::string[],const Message&);
 int voteCmd(Handle&,int,const std::string[],const Message&);
 int inviteCmd(Handle&,int,const std::string[],const Message&);
 int replyCmd(Handle&,int,const std::string[]);
+#ifndef METTA_MINI
 int redirectReact(Handle&,ReactHook*,const ServerMember&,const Channel&,const std::string&,const std::string&,const Emoji&);
-//int phonetizeCmd(Handle&,int,const std::string[],const Message&);
+#endif
+int phonetizeCmd(Handle&,int,const std::string[],const Message&);
 int uptimeCmd(Handle&,int,const std::string[],const Message&);
 int whoamiCmd(Handle&,int,const std::string[],const Message&);
 
@@ -472,9 +482,11 @@ extern "C" int onModuleStart(Handle &handle, Global *global)
 {
     recallGlobal(global);
     handle.createGlobVar("mettaton_version",VERSION,"Mettaton Version",GVAR_CONSTANT);
+    #ifndef METTA_MINI
     Mettaton::koolaidRefill = handle.createGlobVar("ohyeah","3","How many `oh no`'s does it take to break a hole in the wall?",GVAR_DUPLICATE|GVAR_STORE,true,1.0);//->hookChange(&ohyeahChange);
+    #endif
+    Mettaton::inviteLink = handle.createGlobVar("invite","https://discord.gg/wavfwcu","Set an invite link for the invite command.",GVAR_DUPLICATE|GVAR_STORE);
     handle.regConsoleCmd("typing",&typingCmd,"Make me type in a channel.");
-    //handle.regChatCmd("help",&helpCmd,NOFLAG,"Help message.");
     handle.regChatCmd("addfaq",&addfaqCmd,NOFLAG,"Add or modify a faq.");
     handle.regChatCmd("delfaq",&delfaqCmd,PIN,"Delete a faq.");
     handle.regChatCmd("faq",&faqCmd,NOFLAG,"View a faq.");
@@ -485,14 +497,16 @@ extern "C" int onModuleStart(Handle &handle, Global *global)
     handle.regChatCmd("invite",&inviteCmd,NOFLAG,"Get a server invite... Maybe.");
     handle.regChatCmd("faqlog",&faqLogCmd,PIN,"View the Faq Audit Log.");
     handle.regChatCmd("faqblock",&faqBlockCmd,PIN,"Modify or view the faqblock list.");
-    //handle.regChatCmd("phonetize",&phonetizeCmd,NOFLAG,"View the phonetization of a string.");
+    handle.regChatCmd("phonetize",&phonetizeCmd,NOFLAG,"View the phonetization of a string.");
     handle.regChatCmd("uptime",&uptimeCmd,NOFLAG,"How long since my last crash or restart.");
     handle.regChatCmd("whoami",&whoamiCmd,NOFLAG,"Can't quite figure out who you are? Let Mettaton take a stab at it!");
-    handle.createGlobVar("message_output","true","Whether or not to output messages to STDOUT.",0,true,0.0,true,1.0)->hookChange(&chatHookChange);
-    Mettaton::chatHook = handle.hookChatPattern("chat",".",nullptr,HOOK_PRINT);
+    //handle.createGlobVar("message_output","true","Whether or not to output messages to STDOUT.",0,true,0.0,true,1.0)->hookChange(&chatHookChange);
+    //Mettaton::chatHook = handle.hookChatPattern("chat",".",nullptr,HOOK_PRINT);
     handle.regConsoleCmd("reply",&replyCmd,"Send a reply to the channel which last received a message.");
+    #ifndef METTA_MINI
     handle.hookReactionGuild("redirect",&redirectReact,0,"737112449798635610","➡️");
     handle.hookReactionGuild("redirectMobile",&redirectReact,0,"737112449798635610","➡");
+    #endif
     Mettaton::database.open("database.ini");
     if (Mettaton::database.database.exists("block"))
     {
@@ -508,12 +522,6 @@ extern "C" int onModuleStart(Handle &handle, Global *global)
     Mettaton::uptime = std::chrono::high_resolution_clock::now();
     return 0;
 }
-
-/*extern "C" int onReady(Handle &handle, Event event, void *data, void *nil, void *foo, void *bar)
-{
-    Mettaton::botID = ((Ready*)(data))->user.id;
-    return PLUGIN_CONTINUE;
-}*/
 
 extern "C" int onReaction(Handle &handle, Event event, void *member, void *channel, void *message, void *femoji)
 {
@@ -546,21 +554,37 @@ extern "C" int onDisconnect(Handle &handle, Event event, void *nil, void *foo, v
 
 extern "C" int onMessage(Handle &handle, Event event, void *message, void *nil, void *foo, void *bar)
 {
-    Global *global = recallGlobal();
     Message *msg = (Message*)message;
     if (msg->channel_id.size() < 1)
         return std::stoi("quit");
+    Mettaton::lastChannel = msg->channel_id;
+    Global *global = recallGlobal();
+    auto server = getGuildCache(msg->guild_id);
+    std::string guild = msg->guild_id;
+    std::string channel = msg->channel_id;
+    if (server.name.size() > 0)
+        guild = server.name;
+    for (auto& chan : server.channels)
+    {
+        if (chan.id == channel)
+        {
+            if (chan.name.size() > 0)
+                channel = chan.name;
+            break;
+        }
+    }
+    consoleOut("[" + guild + "](#" + channel + "): <" + msg->author.username + "> " + msg->content);
+    #ifndef METTA_MINI
     std::string prefix = global->prefix(msg->guild_id);
     //std::string prefix = global->prefix;
-    Mettaton::lastChannel = msg->channel_id;
-    if (msg->content.find(prefix) == 0)
+    /*if (msg->content.find(prefix) == 0)
     {
         std::string content = msg->content;
         content.erase(0,prefix.size());
         size_t pos = content.find(" ");
         if (pos != std::string::npos)
             content.erase(pos);
-        /*if (content == "groups")
+        *//*if (content == "groups")
         {
             //std::string nick = msg->author.user.nick;
             //std::vector<std::string> role;
@@ -573,7 +597,7 @@ extern "C" int onMessage(Handle &handle, Event event, void *message, void *nil, 
                 sendMessage(msg->channel_id,"Error: " + std::to_string(response.response.statusCode));
                 //reactToID(msg->channel_id,msg->id,"%E2%98%A0");
         }
-        else */if ((content == "about")
+        else *//*if ((content == "about")
          || (content == "groups")
          || (content == "jira")
          || (content == "mcc12")
@@ -587,8 +611,8 @@ extern "C" int onMessage(Handle &handle, Event event, void *message, void *nil, 
             reactToID(msg->channel_id,msg->id,"randomNegativeEmoji");
             return PLUGIN_HANDLED;
         }
-    }
-    else
+    }*/
+    if (msg->content.find(prefix) != 0)
     {
         int refill = Mettaton::koolaidRefill->getAsInt(msg->guild_id);
         auto channel = Mettaton::koolaid.find(msg->channel_id);
@@ -614,44 +638,37 @@ extern "C" int onMessage(Handle &handle, Event event, void *message, void *nil, 
         }
         else if (channel != Mettaton::koolaid.end())
             Mettaton::koolaid.erase(channel);
-    }
-    if ((msg->author.id != global->self.id) && (msg->channel_id != "541749565540532224"))
-    {
-        std::string balp = strlower(msg->content);
-        int balps = 0;
-        while (balp.find("balp") == 0)
+        if ((msg->author.id != global->self.id) && (msg->channel_id != "541749565540532224"))
         {
-            balps++;
-            balp.erase(0,((balp[4] == ' ') ? 5 : 4));
-        }
-        if (balps > 0)
-        {
-            balps = mtrand(1,balps*mtrand(1,5));
-            if (balps > 400)
-                balps = 400;
-            balp.clear();
-            if ((balps % 7) == 0)
-                messageChannelID(msg->channel_id,"*We can **balp** if we want to. We can **balp** your **balps** behind, cause your **balps** don't **balp** and if they don't **balp**-- Well, they're no **balps** of mine.*");
-            else
+            std::string balp = strlower(msg->content);
+            int balps = 0;
+            while (balp.find("balp") == 0)
             {
-                for (int i = 0;i < balps;i++)
-                    balp += "balp ";
-                messageChannelID(msg->channel_id,balp);
+                balps++;
+                balp.erase(0,((balp[4] == ' ') ? 5 : 4));
+            }
+            if (balps > 0)
+            {
+                balps = mtrand(1,balps*mtrand(1,5));
+                if (balps > 400)
+                    balps = 400;
+                balp.clear();
+                if ((balps % 7) == 0)
+                    messageChannelID(msg->channel_id,"*We can **balp** if we want to. We can **balp** your **balps** behind, cause your **balps** don't **balp** and if they don't **balp**-- Well, they're no **balps** of mine.*");
+                else
+                {
+                    for (int i = 0;i < balps;i++)
+                        balp += "balp ";
+                    messageChannelID(msg->channel_id,balp);
+                }
             }
         }
     }
+    #endif
     return PLUGIN_CONTINUE;
 }
 
-/*extern "C" int onMember(Handle &handle, Event event, void *serverID, void *member, void *foo, void *bar)
-{
-    std::string *server = (std::string*)serverID;
-    ServerMember *user = (ServerMember*)member;
-    editMember(*server,user->user.id,user->user.username,{"565997234999525407"});
-    return PLUGIN_CONTINUE;
-}*/
-
-int chatHookChange(Handle &handle, GlobVar *gvar, const std::string &newvalue,const std::string &oldvalue, const std::string &guild)
+/*int chatHookChange(Handle &handle, GlobVar *gvar, const std::string &newvalue,const std::string &oldvalue, const std::string &guild)
 {
     if (Mettaton::chatHook != nullptr)
         handle.unhookChatPattern(Mettaton::chatHook);
@@ -659,7 +676,7 @@ int chatHookChange(Handle &handle, GlobVar *gvar, const std::string &newvalue,co
     if (gvar->getAsBool())
         Mettaton::chatHook = handle.hookChatPattern("chat",".",nullptr,HOOK_PRINT);
     return PLUGIN_CONTINUE;
-}
+}*/
 
 int typingCmd(Handle &handle, int argc, const std::string argv[])
 {
@@ -687,13 +704,6 @@ int replyCmd(Handle &handle, int argc, const std::string argv[])
     }
     else
         consoleOut("No message to reply to!");
-    return PLUGIN_HANDLED;
-}
-
-int helpCmd(Handle &handle, int argc, const std::string args[], const Message &message)
-{
-    std::string prefix = recallGlobal()->prefix(message.guild_id);
-    messageReply(message,"```\nThe /r/MinecraftCommands2 personal assistant.\n\nAbout:\n  version\n  cmdhelp\nFaq:\n  faq\n  addfaq\n  delfaq\nInvite:\n  invite\nVote:\n  vote\nNo Category:\n  help   Shows this message.\n\nType `" + prefix + "command` for more info on a command.\n```");
     return PLUGIN_HANDLED;
 }
 
@@ -1306,12 +1316,16 @@ int voteCmd(Handle &handle, int argc, const std::string argv[], const Message &m
     //consoleOut("vote: " + std::to_string(argc));
     for (int i = 1;i < argc;i++)
     {
-        std::wstring test = converter.from_bytes(argv[i]);
+        std::string foo = argv[i];
+        std::wstring test = converter.from_bytes(foo);
         //consoleOut(":: " + std::to_string(test.size()) + " :: " + std::to_string(argv[i].size()));
-        if (argv[i].size() > test.size())
-            data->reactions.push_back(hexify(argv[i]));
-        else if (rens::regex_match(argv[i],ml,emojiptrn))
+        if (foo.size() > test.size())
+            data->reactions.push_back(hexify(foo));
+        else while (rens::regex_search(foo,ml,emojiptrn))
+        {
             data->reactions.push_back(ml[1].str());
+            foo = ml.suffix().str();
+        }
         //else
         //    break;
     }
@@ -1319,12 +1333,6 @@ int voteCmd(Handle &handle, int argc, const std::string argv[], const Message &m
     {
         data->reactions.push_back("%F0%9F%8E%B7");
         data->reactions.push_back("%E2%98%A0%EF%B8%8F");
-    }
-    for (auto it = data->reactions.begin(), ite = data->reactions.end();it != ite;++it)
-    {
-        consoleOut(std::to_string(argc) + " reacting with " + *it);
-        //auto response = reactToID(message.channel_id,message.id,*it);
-        //std::cout<<"reactToID response: "<<response.result<<", statusCode: "<<response.response.statusCode<<", Error: "<<response.response.error()<<std::endl;
     }
     auto it = data->reactions.begin();
     reactToID(message.channel_id,message.id,*it);
@@ -1343,10 +1351,11 @@ int voteCmd(Handle &handle, int argc, const std::string argv[], const Message &m
 int inviteCmd(Handle &handle, int argc, const std::string args[], const Message &message)
 {
     //messageReply(message,"Ask " + makeMention("221981109506801664",message.guild_id) + " for a new invite!");
-    messageReply(message,"https://discord.gg/wavfwcu");
+    messageReply(message,Mettaton::inviteLink->getAsString(message.guild_id));
     return PLUGIN_HANDLED;
 }
 
+#ifndef METTA_MINI
 int redirectReact(Handle& handle, ReactHook* hook, const ServerMember& member, const Channel& channel, const std::string& messageID, const std::string& guildID, const Emoji& emoji)
 {
     if (member.user.id != recallGlobal()->self.id)
@@ -1372,8 +1381,9 @@ int redirectReact(Handle& handle, ReactHook* hook, const ServerMember& member, c
     }
     return PLUGIN_HANDLED;
 }
+#endif
 
-/*int phonetizeCmd(Handle &handle, int argc, const std::string argv[], const Message &message)
+int phonetizeCmd(Handle &handle, int argc, const std::string argv[], const Message &message)
 {
     if (argc < 2)
         sendMessage(message.channel_id,"Usage: `" + recallGlobal()->prefix(message.guild_id) + argv[0] + " <string>`");
@@ -1383,7 +1393,7 @@ int redirectReact(Handle& handle, ReactHook* hook, const ServerMember& member, c
         sendMessage(message.channel_id,"Phonetics for " + argv[1] + "\nCode: `" + sound.code + "(" + std::to_string(sound.coder) + "):" + std::to_string(sound.coded) + "`, Full: `" + sound.full + '`');
     }
     return PLUGIN_HANDLED;
-}*/
+}
 
 int uptimeCmd(Handle &handle, int argc, const std::string argv[], const Message &message)
 {

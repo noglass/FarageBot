@@ -41,7 +41,7 @@ namespace pcre2w
     class smatch_data
     {
         public:
-            smatch_data() {}
+            smatch_data() : pos(PCRE2_UNSET) {}
             smatch_data(const std::string &st, size_t p);
             smatch_data(const smatch_data &other);
             smatch_data& operator= (const smatch_data &other);
@@ -79,7 +79,7 @@ namespace pcre2w
             inline std::vector<smatch_data>::const_reverse_iterator crbegin() { return capture.crbegin(); }
             inline std::vector<smatch_data>::const_reverse_iterator crend() { return capture.crend(); }
             void populate(PCRE2_SPTR subject, pcre2_match_data *ml, int rc, const uint32_t cc);
-            inline smatch_data& operator[] (size_t n) { return capture.at(n); }
+            smatch_data& operator[] (size_t n);
             inline size_t size() const { return capture.size(); }
             inline void clear() { pref.clear(); suff.clear(); capture.clear(); }
             inline bool empty() { return (bool)capture.size(); }

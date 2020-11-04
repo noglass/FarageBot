@@ -12,7 +12,7 @@ using namespace Farage;
 #define MAKEMENTION
 #include "common_func.h"
 
-#define VERSION "v0.9.2"
+#define VERSION "v0.9.3"
 
 #define UDEVAL
 
@@ -1096,10 +1096,9 @@ std::string messagesData(const ArrayResponse<Message>& msgs, std::string prop, c
     return out;
 }
 
-extern "C" void evaluateData(std::string& eval, const std::string& guildID, const std::string& channelID, const std::string& authorID, const std::string& messageID)
+void evaluateDataRe(std::string& eval, const std::string& guildID, const std::string& channelID, const std::string& authorID, const std::string& messageID)
 {
     static rens::regex specialptrn ("[\\.\\{\\}\\[\\]\\(\\)]");
-    static rens::regex joinptrn ("\\s*\\$\\+\\s*");
     //static rens::regex inputptrn ("(?<!\\\\)\\$(\\d+)");
     static rens::regex identptrn ("(?i)(user|member|guild|channel|role|message|messages\\(\\d+,\\d+\\))\\{(\\d+|this)(\\}|,\\d+\\})(\\.[\\w\\[\\]\\d\\.]+)?");
     static rens::regex randptrn ("(?i)rand\\((\\d+),?(\\d*)\\)");
@@ -1138,7 +1137,7 @@ extern "C" void evaluateData(std::string& eval, const std::string& guildID, cons
                 ipos -= argv[n].size();
             else
                 forward = true;
-            evaluateData(argv[n],guildID,channelID,authorID,messageID);
+            evaluateDataRe(argv[n],guildID,channelID,authorID,messageID);
             if (forward)
                 pos += argv[n].size();
             eval.insert(ipos,argv[n]);
@@ -1187,7 +1186,7 @@ extern "C" void evaluateData(std::string& eval, const std::string& guildID, cons
     while (rens::regex_search(eval,ml,rand2ptrn))
     {
         std::string str = ml[1].str();
-        evaluateData(str,guildID,channelID,authorID,messageID);
+        evaluateDataRe(str,guildID,channelID,authorID,messageID);
         eval.erase(ml[1].position(),ml[1].length());
         eval.insert(ml[1].position(),str);
         if (rens::regex_search(eval,ml,randptrn))
@@ -1314,6 +1313,12 @@ extern "C" void evaluateData(std::string& eval, const std::string& guildID, cons
         }
         eval = rens::regex_replace(eval,rens::regex(rens::regex_replace(ml[0].str(),specialptrn,"\\$0")),out,0);
     }
+}
+
+extern "C" void evaluateData(std::string& eval, const std::string& guildID, const std::string& channelID, const std::string& authorID, const std::string& messageID)
+{
+    static rens::regex joinptrn ("\\s*\\&\\+\\s*");
+    evaluateDataRe(eval,guildID,channelID,authorID,messageID);
     eval = rens::regex_replace(eval,joinptrn,"");
 }
 

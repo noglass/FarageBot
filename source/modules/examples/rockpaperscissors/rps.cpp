@@ -8,7 +8,7 @@
 #include "shared/libini.h"
 using namespace Farage;
 
-#define VERSION "0.8.5"
+#define VERSION "0.8.7"
 
 #define MAX_EMBED_WIDTH 45
 
@@ -287,7 +287,7 @@ extern "C" int onMessage(Handle &handle, Event event, void *message, void *nil, 
                 return 0;
             }
             std::string choice = lower(msg->content);
-            if (istokcs(RPS::rpsConf.find(game->gameMode,"opts"),choice," "))
+            if (istok(RPS::rpsConf.find(game->gameMode,"opts"),choice," "))
             {
                 player->choice = choice;
                 reaction(*msg,"%E2%9C%85");
@@ -936,7 +936,7 @@ void rpsConclude(std::vector<rpsGame>::iterator &game)
     {
         Global *global = recallGlobal();
         auto mod = RPS::rpsConf.topic_it(game->gameMode);
-        std::string opts = mod->find("opts");
+        std::string opts = lower(mod->find("opts"));
         std::string desc = game->player[0].name + " chose " + game->player[0].choice + " and " + game->player[1].name + " chose " + game->player[1].choice + ".";
         std::string title, result, decider, color = RPS::colors.Result(game->gameMode);
         if (game->player[0].choice == game->player[1].choice)
@@ -1178,7 +1178,7 @@ void rpsConcludeMulti(std::vector<rpsGame>::iterator &game)
 int rpsGetWinner(const std::string &mode, const std::string &v1, const std::string &v2, std::string &result)
 {
     auto mod = RPS::rpsConf.topic_it(mode);
-    std::string opts = mod->find("opts");
+    std::string opts = lower(mod->find("opts"));
     int ret;
     std::string str;
     if (!istok(opts,v1," "))
@@ -1286,7 +1286,7 @@ void rpsStartRound(std::vector<rpsGame>::iterator game)
         else
         {
             //player->choice = randomtok(temp," ");
-            player->choice = options.at(mtrand(0,options.size()-1));
+            player->choice = lower(options.at(mtrand(0,options.size()-1)));
             ++player;
         }
     }
