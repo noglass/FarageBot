@@ -70,9 +70,9 @@ void pcre2w::smatch::populate(PCRE2_SPTR subject, pcre2_match_data *ml, int rc, 
             start = ovector[2*i];
             length = ovector[2*i+1] - ovector[2*i];
             if ((start == PCRE2_UNSET) || (length == PCRE2_UNSET))
-                capture.emplace_back({"",start});
+                capture.push_back({"",start});
             else
-                capture.emplace_back({sub.substr(start,length),start});
+                capture.push_back({sub.substr(start,length),start});
         }
         //std::cout<<"Vector filled size: "<<capture.size()<<std::endl;
         offset = ovector[1];
@@ -87,7 +87,7 @@ void pcre2w::smatch::populate(PCRE2_SPTR subject, pcre2_match_data *ml, int rc, 
 pcre2w::smatch_data& pcre2w::smatch::operator[] (size_t n)
 {
     while (n >= capture.size())
-        capture.emplace_back(pcre2w::smatch_data())
+        capture.emplace_back(pcre2w::smatch_data());
     return capture.at(n);
 }
 
