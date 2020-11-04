@@ -78,8 +78,8 @@ void pcre2w::smatch::populate(PCRE2_SPTR subject, pcre2_match_data *ml, int rc, 
         offset = ovector[1];
         if (offset < sub.size())
             suff = { sub.substr(offset,std::string::npos), offset };
-        //if (cc < 1000) while (capture.size() <= cc)
-        //    capture.push_back({"",PCRE2_UNSET});
+        if (cc < 61) while (capture.size() <= cc)
+            capture.push_back({"",PCRE2_UNSET});
     }
     //std::cout<<"pcre2w::smatch::populate() end"<<std::endl;
 }

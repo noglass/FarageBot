@@ -12,7 +12,7 @@ using namespace Farage;
 #define MAKEMENTION
 #include "common_func.h"
 
-#define VERSION "v0.8.7"
+#define VERSION "v0.9.2"
 
 #define UDEVAL
 
@@ -1105,11 +1105,47 @@ extern "C" void evaluateData(std::string& eval, const std::string& guildID, cons
     static rens::regex randptrn ("(?i)rand\\((\\d+),?(\\d*)\\)");
     static rens::regex rand2ptrn ("(?i)rand\\(([^)]*)\\)");
     static rens::regex argptrn ("^([^,]*)(,|$)");
+    static rens::regex inputptrn ("&(\\d+)");
     Global* global = recallGlobal();
     rens::smatch ml;
     std::string request = channelID;
     if ((guildID.size() == 0) && ((global->getAdminFlags(authorID) & AdminFlag::ROOT) == AdminFlag::ROOT))
         request.clear();
+    while (rens::regex_search(eval,ml,inputptrn))
+    {
+        int argc = 0, n = std::stoi(ml[1].str());
+        std::string* argv = splitStringAny(nospace(eval)," \t\n",argc);
+        eval.erase(ml[0].position(),ml[0].length());
+        if (--n < 0)
+            eval.insert(ml[0].position(),std::to_string(argc));
+        else if ((n < argc) && (argv[n] != ml[0].str()))
+        {
+            size_t ipos = ml[0].position();
+            //for (int i = 0;i < n;++i)
+            //    t += argv[i].size()+1;
+            size_t pos = eval.find(argv[n]);
+            eval.erase(pos,argv[n].size());
+            rens::smatch ml2;
+            while (rens::regex_search(argv[n],ml2,inputptrn))
+            {
+                int m = std::stoi(ml2[1].str());
+                argv[n].erase(ml2[0].position(),ml2[0].length());
+                if ((m < argc) && (argv[m] != ml2[0].str()))
+                    argv[n].insert(ml2[0].position(),argv[m]);
+            }
+            bool forward = false;
+            if (pos < ipos)
+                ipos -= argv[n].size();
+            else
+                forward = true;
+            evaluateData(argv[n],guildID,channelID,authorID,messageID);
+            if (forward)
+                pos += argv[n].size();
+            eval.insert(ipos,argv[n]);
+            eval.insert(pos,argv[n]);
+        }
+        delete[] argv;
+    }
     while (rens::regex_search(eval,ml,randptrn))
     {
         uint32_t r[2];
@@ -1198,6 +1234,7 @@ extern "C" void evaluateData(std::string& eval, const std::string& guildID, cons
     Channel chan;
     while (rens::regex_search(eval,ml,identptrn))
     {
+        std::cout<<"ml.size(): "<<ml.size()<<std::endl;
         for (auto it = ml.begin(), ite = ml.end();it != ite;++it)
             std::cout<<":: "<<it->str()<<std::endl;
         std::string out;
@@ -1282,12 +1319,12 @@ extern "C" void evaluateData(std::string& eval, const std::string& guildID, cons
 
 int evalCmd(Handle &handle, int argc, const std::string argv[], const Message &message)
 {
-    static rens::regex inputptrn ("\\$(\\d+)");
+    //static rens::regex inputptrn ("\\$(\\d+)");
     Global* global = recallGlobal();
     if (argc < 2)
         sendMessage(message.channel_id,"Usage: `" + global->prefix(message.guild_id) + argv[0] + " <evaluate>`");
     std::string eval = message.content.substr(message.content.find(argv[0]) + argv[0].size() + 1);
-    rens::smatch ml;
+    /*rens::smatch ml;
     while (rens::regex_search(eval,ml,inputptrn))
     {
         int arg = (int)std::stoull(ml[1].str());
@@ -1300,7 +1337,7 @@ int evalCmd(Handle &handle, int argc, const std::string argv[], const Message &m
         }
         else
             eval = rens::regex_replace(eval,inputptrn,"",0);
-    }
+    }*/
     evaluateData(eval,message.guild_id,message.channel_id,message.author.id,message.id);
     sendMessage(message.channel_id,"**Eval**: " + eval);
     return PLUGIN_HANDLED;
