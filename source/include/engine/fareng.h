@@ -3842,16 +3842,18 @@ OPTIONS\n\
         {
             //Usage: cmdhelp [criteria] [page]
             AdminFlag flags = NOFLAG;
-            std::string warning, embed, channel = message.channelID;
+            std::string embed, channel = message.channelID;
             bool guildMsg = true;
-            if (std::string(message.serverID).size() < 1)
+            for (auto& ar : global.adminRoles)
+                flags |= global.getAdminFlags(ar.first,message.author.ID);
+            /*if (std::string(message.serverID).size() < 1)
             {
                 guildMsg = false;
                 if ((flags = global.getAdminFlags(message.author.ID)) != ROOT)
                     warning = "**By using this command outside of a guild channel, you will not see any commands that are granted via roles.**";
             }
             else
-                flags = global.getAdminFlags(message.serverID,message.author.ID);
+                flags = global.getAdminFlags(message.serverID,message.author.ID);*/
             std::string criteriastr = ".*";
             rens::regex criteria;
             std::vector<std::string> output;
@@ -3883,8 +3885,8 @@ OPTIONS\n\
             if (page > pages)
                 page = pages;
             embed = "{ \"color\": 10664674, \"title\": \"Displaying Page " + std::to_string(page) + '/' + std::to_string(pages) + " matching: `" + criteriastr + "`\", \"description\": \"";
-            if (warning.size() > 0)
-                embed = embed + warning + "\\n";
+            //if (warning.size() > 0)
+            //    embed = embed + warning + "\\n";
             if (page > 0)
             {
                 int i = (page-1)*10, j = i+10;

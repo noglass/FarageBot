@@ -5,7 +5,7 @@
 #include "shared/regex.h"
 using namespace Farage;
 
-#define VERSION "v0.2.8"
+#define VERSION "v0.3.2"
 
 extern "C" Info Module
 {
@@ -71,7 +71,12 @@ namespace NoNitro
                 for (auto tim = (*it)->timers.begin(), time = (*it)->timers.end();tim != time;++tim)
                     if ((*tim)->name == "vote")
                         seconds += ((timerDataStruct*)((*tim)->args))->reactions.size();
-                break;
+            }
+            else if ((*it)->getModule() == "manager")
+            {
+                for (auto tim = (*it)->timers.begin(), time = (*it)->timers.end();tim != time;++tim)
+                    if ((*tim)->name == "react")
+                        seconds += ((timerDataStruct*)((*tim)->args))->reactions.size();
             }
         }
         return seconds;
@@ -148,7 +153,8 @@ void NoNitro::hookEmoji(Handle &handle, const std::string& hook, const std::stri
 int NoNitro::reactTimer(Handle& handle, Timer* timer, void* data)
 {
     NoNitro::timerEmojiStruct* emoji = (NoNitro::timerEmojiStruct*)data;
-    if ((NoNitro::getVoteCount(emoji->global)) || (handle.findTimer("reactHook") != timer))
+    //if ((NoNitro::getVoteCount(emoji->global)) || (handle.findTimer("reactHook") != timer))
+    if ((NoNitro::getVoteCount(emoji->global)) || (handle.findTimer("unreactHook") != nullptr) || (handle.findTimer("removeHook") != nullptr))
         return PLUGIN_CONTINUE;
     //auto response = reactToID(emoji->channel,emoji->message,emoji->emoji);
     reactToID(emoji->channel,emoji->message,emoji->emoji);
@@ -163,9 +169,10 @@ int NoNitro::reactTimer(Handle& handle, Timer* timer, void* data)
 int NoNitro::unreactTimer(Handle& handle, Timer* timer, void* data)
 {
     NoNitro::timerEmojiStruct* emoji = (NoNitro::timerEmojiStruct*)data;
-    auto remove = handle.findTimer("removeHook");
+    //auto remove = handle.findTimer("removeHook");
     auto unreact = handle.findTimer("unreactHook");
-    if ((NoNitro::getVoteCount(emoji->global)) || (handle.findTimer("reactHook") != nullptr) || ((remove != nullptr) && (remove != timer)) || ((unreact != nullptr) && (unreact != timer)))
+    //if ((NoNitro::getVoteCount(emoji->global)) || (handle.findTimer("reactHook") != nullptr) || ((remove != nullptr) && (remove != timer)) || ((unreact != nullptr) && (unreact != timer)))
+    if ((NoNitro::getVoteCount(emoji->global)) || ((unreact != nullptr) && (unreact != timer)))
         return PLUGIN_CONTINUE;
     //auto response = reactToID(emoji->channel,emoji->message,emoji->emoji);
     removeReaction(emoji->channel,emoji->message,emoji->emoji,emoji->user);
@@ -280,7 +287,14 @@ int NoNitro::listEmojiHook(Handle &handle, int argc, const std::string argv[], c
 {
     std::string mess;
     for (auto &it : NoNitro::emojis)
+    {
+        if (mess.size() > 1700)
+        {
+            messageReply(message,mess);
+            mess.clear();
+        }
         mess = mess + it.first + ((it.second.name.size() > 0) ? (" (`" + it.second.name + "`) = ") : (" = ")) + Emoji(it.second.emoji).display() + '\n';
+    }
     messageReply(message,mess);
     consoleOut(mess);
     return PLUGIN_HANDLED;

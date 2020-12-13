@@ -2,6 +2,7 @@
 #include <iostream>
 #include <cstdio>
 #include <cstring>
+#include <ctime>
 #include <regex>
 #include <fstream>
 using namespace Farage;
@@ -9,7 +10,7 @@ using namespace Farage;
 #define REGSUBEX_STD
 #include "common_func.h"
 
-#define VERSION "v0.8.4"
+#define VERSION "v0.8.6"
 
 #define RETRIES 10
 
@@ -25,12 +26,22 @@ extern "C" Info Module
 
 int urbanCmd(Handle&,int,const std::string[],const Message&);
 
+namespace urbandic
+{
+    std::string year;
+}
+
 extern "C" int onModuleStart(Handle &handle, Global *global)
 {
     recallGlobal(global);
     handle.createGlobVar("urbandic_version",VERSION,"Urban Dictionary Version",GVAR_CONSTANT);
     handle.regChatCmd("whats",&urbanCmd,NOFLAG,"Lookup a definition on urbandictionary.com.");
     handle.regChatCmd("what's",&urbanCmd,NOFLAG,"Lookup a definition on urbandictionary.com.");
+    time_t t;
+    time(&t);
+    char year[5];
+    strftime(year,5,"%Y",localtime(&t));
+    urbandic::year = year;
     return 0;
 }
 
@@ -170,9 +181,9 @@ namespace urban
             std::string out = "{ \"color\": 13809920, \"author\": { \"name\": \"Urban Dictionary: " + criteria + "\", \"icon_url\": \"https://cdn.discordapp.com/attachments/577096847030485001/600249354263199767/udicon.png\" }, \"thumbnail\": { \"url\": \"https://cdn.discordapp.com/attachments/577096847030485001/669769835344953393/udlogo.png\" }, \"title\": \"" + std::to_string(result) + ' ' + regsubex(this->name,symptrn,"$1",&resolve_symbol) + "\", \"url\": \"" + this->link + "\", \"description\": \"";
             //https://urbandictionary.github.io/error.urbandictionary.com/logo.png
             std::string str = regsubex(definition,symptrn,"$1",&resolve_symbol);
-            if (str.size() > 2048)
+            if (str.size() > 2045)
             {
-                int i = 2043;
+                int i = 2040;
                 if (str.at(i) < 1)
                     for (;(i > -1) && (str.at(i) < 1);--i);
                 if ((str.find("]",i) < str.find("[",i)) || (str.find(")",i) < str.find("(")))
@@ -183,9 +194,9 @@ namespace urban
             }
             out += str + "\", \"fields\": [";
             str = regsubex(example,symptrn,"$1",&resolve_symbol);
-            if (str.size() > 1024)
+            if (str.size() > 1020)
             {
-                int i = 1019;
+                int i = 1015;
                 if (str.at(i) < 1)
                     for (;(i > -1) && (str.at(i) < 1);--i);
                 if ((str.find("]",i) < str.find("[",i)) || (str.find(")",i) < str.find("(")))
@@ -217,7 +228,7 @@ namespace urban
             out += "{ \"name\": \"" + footer + "\", \"value\": \"Submitted by " +  author.build() + ' ' + regsubex(date,symptrn,"$1",&resolve_symbol) + "\" }], ";
             if (image.size() > 0)
                 out += "\"image\": { \"url\": \"" + image + "\" }, ";
-            out += "\"footer\": { \"icon_url\": \"https://cdn.discordapp.com/attachments/577096847030485001/600249354263199767/udicon.png\", \"text\": \"© 1999-2020 Urban Dictionary ®\" } }";
+            out += "\"footer\": { \"icon_url\": \"https://cdn.discordapp.com/attachments/577096847030485001/600249354263199767/udicon.png\", \"text\": \"© 1999-" + urbandic::year + " Urban Dictionary ®\" } }";
             return std::move(out);
         }
     };
@@ -341,7 +352,7 @@ int urbanCmd(Handle &handle, int argc, const std::string argv[], const Message &
             }
             else
                 out += "Error!";
-            out += "\", \"footer\": { \"icon_url\": \"https://cdn.discordapp.com/attachments/577096847030485001/600249354263199767/udicon.png\", \"text\": \"© 1999-2020 Urban Dictionary ®\" } }";
+            out += "\", \"footer\": { \"icon_url\": \"https://cdn.discordapp.com/attachments/577096847030485001/600249354263199767/udicon.png\", \"text\": \"© 1999-" + urbandic::year + " Urban Dictionary ®\" } }";
             std::cout<<out<<std::endl;
             sendEmbed(message.channel_id,out);
             return PLUGIN_HANDLED;

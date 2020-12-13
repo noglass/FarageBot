@@ -5,6 +5,8 @@
 #include <vector>
 #include <unordered_map>
 #include <ctime>
+#include <cstdio>
+#include <cstring>
 using namespace Farage;
 
 #define SPLITSTRINGANY
@@ -12,7 +14,7 @@ using namespace Farage;
 #define MAKEMENTION
 #include "common_func.h"
 
-#define VERSION "v0.9.3"
+#define VERSION "v0.9.6"
 
 #define UDEVAL
 
@@ -87,7 +89,7 @@ int avatarCmd(Handle &handle, int argc, const std::string argv[], const Message 
                 //system((cmd + outfile + ' ' + avatar).c_str());
             }
             //sendFile(message.channel_id,outfile,"**" + who.username + "**#" + who.discriminator + "'s avatar");
-            ServerMember req = getServerMember(message.guild_id,message.author.id);
+            ServerMember req = getServerMember(message.guild_id,id);
             Server guild = getGuildCache(message.guild_id);
             int position = 0;
             for (auto r = guild.roles.begin(), re = guild.roles.end();r != re;++r)
@@ -96,15 +98,12 @@ int avatarCmd(Handle &handle, int argc, const std::string argv[], const Message 
                 {
                     if (r->id == *it)
                     {
-                        if (r->position > position)
+                        if ((r->position > position) && (r->color > 0))
                         {
                             position = r->position;
-                            if (r->color > 0)
-                            {
-                                std::string c = std::to_string(r->color);
-                                if (c.size() > 0)
-                                    color = c;
-                            }
+                            std::string c = std::to_string(r->color);
+                            if (c.size() > 0)
+                                color = c;
                         }
                     }
                 }
@@ -1096,6 +1095,37 @@ std::string messagesData(const ArrayResponse<Message>& msgs, std::string prop, c
     return out;
 }
 
+
+rens::regex rem ("[\\\\\"\\$`';\n]|\\\\n");
+std::string exec(const std::string& command, const int size = 128, bool getAll = false)
+{
+    std::string output;
+    char buffer[size];
+    FILE* outstream = popen(command.c_str(),"r");
+    if (outstream)
+    {
+        if (fgets(buffer,size,outstream) != NULL)
+            output = buffer;
+        if (getAll)
+            while (!feof(outstream))
+                if (fgets(buffer,size,outstream) != NULL)
+                    output.append(buffer);
+        pclose(outstream);
+    }
+    for (auto it = output.end(), ite = output.begin();(it-- != ite) && (*it == '\n');it = output.erase(it));
+    return output;
+}
+
+std::string calc(const std::string& expression)
+{
+    return exec("exec bash -c 'let \"foo=" + rens::regex_replace(expression,rem,"") + "\";echo $foo'");
+}
+
+std::string calcf(const std::string& expression)
+{
+    return exec("exec bash -c 'awk \"BEGIN { ; print " + rens::regex_replace(expression,rem,"") + "}\"'");
+}
+
 void evaluateDataRe(std::string& eval, const std::string& guildID, const std::string& channelID, const std::string& authorID, const std::string& messageID)
 {
     static rens::regex specialptrn ("[\\.\\{\\}\\[\\]\\(\\)]");
@@ -1105,6 +1135,7 @@ void evaluateDataRe(std::string& eval, const std::string& guildID, const std::st
     static rens::regex rand2ptrn ("(?i)rand\\(([^)]*)\\)");
     static rens::regex argptrn ("^([^,]*)(,|$)");
     static rens::regex inputptrn ("&(\\d+)");
+    static rens::regex balanced ("(\\((?>[^()]+|(?1))*\\))");
     Global* global = recallGlobal();
     rens::smatch ml;
     std::string request = channelID;
@@ -1158,6 +1189,23 @@ void evaluateDataRe(std::string& eval, const std::string& guildID, const std::st
             r[1] = std::stoull(ml[1].str())-1;
         eval.erase(ml[0].pos,ml[0].length());
         eval.insert(ml[0].pos,std::to_string(mtrand(r[0],r[1])));
+    }
+    size_t pos;
+    while ((pos = eval.find("calc")) != std::string::npos)
+    {
+        bool integer = false;
+        std::string sub = eval.substr(pos);
+        sub.erase(0,4);
+        if ((sub.size() > 0) && (sub.front() == 'i'))
+        {
+            integer = true;
+            sub.erase(0,1);
+        }
+        eval.erase(pos);
+        if (integer)
+            eval += regsubex(sub,balanced,"$1",&calc);
+        else
+            eval += regsubex(sub,balanced,"$1",&calcf);
     }
     /*while (rens::regex_search(eval,ml,rand2ptrn))
     {
