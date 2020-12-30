@@ -7,7 +7,7 @@ using namespace Farage;
 #define STRREPLACE
 #include "common_func.h"
 
-#define VERSION "v0.6.8"
+#define VERSION "v0.6.9"
 
 extern "C" Info Module
 {
@@ -167,7 +167,7 @@ int quoteCmd(Handle &handle, int argc, const std::string argv[], const Message &
         sendMessage(message.channel_id,"Usage: `" + global->prefix(message.guild_id) + argv[0] + " <link|id> [reply_text]`");
     else
     {
-        static rens::regex linkptrn ("^https://discord(app)?\\.com/channels/([0-9]+)/([0-9]+)/([0-9]+)|[0-9]+$");
+        static rens::regex linkptrn ("^https://(\w+\.)?discord(app)?\\.com/channels/([0-9]+)/([0-9]+)/([0-9]+)|[0-9]+$");
         rens::smatch ml;
         if (!rens::regex_search(argv[1],ml,linkptrn))
             sendMessage(message.channel_id,"Error: No message link or ID provided!");
@@ -182,9 +182,9 @@ int quoteCmd(Handle &handle, int argc, const std::string argv[], const Message &
             }
             else
             {
-                serv = ml[2].str();
-                chan = ml[3].str();
-                mes = ml[4].str();
+                serv = ml[3].str();
+                chan = ml[4].str();
+                mes = ml[5].str();
             }
             std::string reply;
             if (argc > 2)
