@@ -16,7 +16,7 @@ using namespace Farage;
 #define STRREPLACE
 #include "common_func.h"
 
-#define VERSION "v0.5.2"
+#define VERSION "v0.5.3"
 
 extern "C" Info Module
 {
@@ -989,14 +989,14 @@ int chatSearch(Handle& handle, int argc, const std::string argv[], const Message
         {
             if (when < 3)
             {
-                search = std::move(getMessages(channel,GetMessagesKey(1+when),cref,30).array);
+                search = std::move(getMessages(channel,GetMessagesKey(1+when),cref,50).array);
                 if (when == 0)
                     foundAll = true;
             }
             else
             {
-                search = std::move(getMessages(channel,before,cref,15).array);
-                std::vector<Message> msgs = getMessages(channel,after,cref,15).array;
+                search = std::move(getMessages(channel,before,cref,25).array);
+                std::vector<Message> msgs = getMessages(channel,after,cref,25).array;
                 search.reserve(search.size()+msgs.size());
                 for (auto it = msgs.begin(), ite = msgs.end();it != ite;++it)
                     search.push_back(std::move(*it));

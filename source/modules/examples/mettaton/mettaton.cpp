@@ -12,7 +12,7 @@ using namespace Farage;
 #define HEXIFY
 #include "common_func.h"
 
-#define BASEVERSION "v1.6.6"
+#define BASEVERSION "v1.6.7"
 #ifdef METTA_MINI
     #define VERSION std::string(BASEVERSION) + "-minimal"
 #else
@@ -488,15 +488,15 @@ extern "C" int onModuleStart(Handle &handle, Global *global)
     Mettaton::inviteLink = handle.createGlobVar("invite","https://discord.gg/wavfwcu","Set an invite link for the invite command.",GVAR_DUPLICATE|GVAR_STORE);
     handle.regConsoleCmd("typing",&typingCmd,"Make me type in a channel.");
     handle.regChatCmd("addfaq",&addfaqCmd,NOFLAG,"Add or modify a faq.");
-    handle.regChatCmd("delfaq",&delfaqCmd,PIN,"Delete a faq.");
+    handle.regChatCmd("delfaq",&delfaqCmd,CUSTOM2,"Delete a faq.");
     handle.regChatCmd("faq",&faqCmd,NOFLAG,"View a faq.");
-    handle.regChatCmd("addfaqcat",&addfaqcatCmd,PIN,"Create a faq category and/or add faqs to one.");
-    handle.regChatCmd("faquncat",&faquncatCmd,PIN,"Remove a faq from one or all categories.");
-    handle.regChatCmd("delfaqcat",&delfaqcatCmd,PIN,"Delete a faq category.");
+    handle.regChatCmd("addfaqcat",&addfaqcatCmd,CUSTOM2,"Create a faq category and/or add faqs to one.");
+    handle.regChatCmd("faquncat",&faquncatCmd,CUSTOM2,"Remove a faq from one or all categories.");
+    handle.regChatCmd("delfaqcat",&delfaqcatCmd,CUSTOM2,"Delete a faq category.");
     handle.regChatCmd("vote",&voteCmd,NOFLAG,"Start a vote.");
     handle.regChatCmd("invite",&inviteCmd,NOFLAG,"Get a server invite... Maybe.");
-    handle.regChatCmd("faqlog",&faqLogCmd,PIN,"View the Faq Audit Log.");
-    handle.regChatCmd("faqblock",&faqBlockCmd,PIN,"Modify or view the faqblock list.");
+    handle.regChatCmd("faqlog",&faqLogCmd,CUSTOM2,"View the Faq Audit Log.");
+    handle.regChatCmd("faqblock",&faqBlockCmd,CUSTOM2,"Modify or view the faqblock list.");
     handle.regChatCmd("phonetize",&phonetizeCmd,NOFLAG,"View the phonetization of a string.");
     handle.regChatCmd("uptime",&uptimeCmd,NOFLAG,"How long since my last crash or restart.");
     handle.regChatCmd("whoami",&whoamiCmd,NOFLAG,"Can't quite figure out who you are? Let Mettaton take a stab at it!");
