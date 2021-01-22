@@ -52,7 +52,7 @@ int curateHook(Handle& handle, ReactHook* hook, const ServerMember& member, cons
     std::string out = "> Credit: " + response.object.author.username + " Shared via " + makeMention(member.user.id,guildID);
     if (response.object.attachments.size() > 0)
     {
-        system(("curl -s -o " + response.object.attachments.front().filename + ' ' + response.object.attachments.front().url.substr(0,response.object.attachments.front().url.find_last_of('?'))).c_str())
+        system(("curl -s -o " + response.object.attachments.front().filename + ' ' + response.object.attachments.front().url.substr(0,response.object.attachments.front().url.find_last_of('?'))).c_str());
         system(("rm '" + response.object.attachments.front().filename + "' $(sleep 30) &").c_str());
         sendFile("650027620624236556",response.object.attachments.front().filename,response.object.content + '\n' + out);
             //success = false;
