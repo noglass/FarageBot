@@ -7,7 +7,7 @@ using namespace Farage;
 #define MAKEMENTION
 #include "common_func.h"
 
-#define VERSION "v0.3.3"
+#define VERSION "v0.3.4"
 
 extern "C" Info Module
 {
@@ -98,7 +98,7 @@ namespace MetaPin
                         }
                         else
                         {
-                            std::string file = "reddit/" + embed.author.name + '_' + embed.footer.text + url.substr(0,url.find_last_of('?')-1).substr(url.find_last_of('.'));
+                            std::string file = "reddit/" + embed.author.name + '_' + embed.footer.text + url.substr(0,url.find_last_of('?')).substr(url.find_last_of('.'));
                             system(("curl -s -o '" + file + "' '" + url + '\'').c_str());
                             std::ifstream image (file);
                             if (image.is_open())
