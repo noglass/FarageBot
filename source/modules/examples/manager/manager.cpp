@@ -16,7 +16,7 @@ using namespace Farage;
 #define STRREPLACE
 #include "common_func.h"
 
-#define VERSION "v0.5.3"
+#define VERSION "v0.5.4"
 
 extern "C" Info Module
 {
@@ -112,6 +112,7 @@ int chatWho(Handle&,int,const std::string[],const Message&);
 /*int chatHookReaction(Handle&,int,const std::string[],const Message&);
 int chatHookEdit(Handle&,int,const std::string[],const Message&);
 int chatHookDelete(Handle&,int,const std::string[],const Message&);*/
+int parseArg(Handle&,int,const std::string[]);
 
 extern "C" int onModuleStart(Handle& handle, Global* global)
 {
@@ -127,6 +128,7 @@ extern "C" int onModuleStart(Handle& handle, Global* global)
     handle.regChatCmd("delhook",&removeHookMsg,RCON,"Remove a hook.");
     handle.regChatCmd("search",&chatSearch,NOFLAG,"Search for a specific message.");
     handle.regChatCmd("who",&chatWho,GENERIC,"View admin flags for a user.");
+    handle.regConsoleCmd("parsearg",&parseArg,"Output parsed input arguments.");
     for (auto it = global->plugins.begin(), ite = global->plugins.end();it != ite;++it)
     {
         if ((*it)->getModule() == "udata")
@@ -1522,7 +1524,12 @@ int chatHookDelete(Handle& handle, int argc, const std::string argv[], const Mes
     return PLUGIN_HANDLED;
 }*/
 
-
+int parseArg(Handle& handle, int argc, const std::string argv[])
+{
+    for (int i = 0;i < argc;++i)
+        consoleOut("[" + std::to_string(i) + "]: " + argv[i]);
+    return PLUGIN_HANDLED;
+}
 
 
 

@@ -5,7 +5,7 @@
 #include "shared/regex.h"
 using namespace Farage;
 
-#define VERSION "v0.4.3"
+#define VERSION "v0.4.6"
 
 extern "C" Info Module
 {
@@ -129,6 +129,8 @@ namespace puffy
                 masked += "--nonude ";
             else if (argv[i] == "outline")
                 masked += "--outline ";
+            else if (argv[i] == "lulu")
+                masked += "--lulu ";
             else
             {
                 arg = argv[i];
@@ -223,7 +225,7 @@ namespace puffy
         }
         else
             //sendMessage(message.channel_id,"Usage: `" + recallGlobal()->prefix(message.guild_id) + argv[0] + " [options] [image url|custom emoji|null]`\nOptions (any combination of the following):\n  `nomask` to create a heartacat without applying the mask.\n  `aspect` (default) setting this will use poor resizing methods.\n  `noheart` do not render the heart.\n  `outline` add a black outline around the image.\n  `fancy` make a fancy cat!\n  `nonude` do not remove skin tone from svg images.\n  `nude <color>` set the skin tone color to remove from svg images.\n  `trans <color[,fuzz%]>` set a color for transparency.\n  `color <color>` set the main color of the cat.\n  `heart <color>` set the color of the hearts.\n  `alt <color>` set the cat's alternate color.\n  `stripe <color>` set the cat's stripe color.\n__You can also upload an image or enter `null` for no image__.");
-            sendEmbed(message.channel_id,"{ \"color\": 11474015, \"title\": \"How to Fill a Cat's Heart!\", \"fields\": [{ \"name\": \"`" + recallGlobal()->prefix(message.guild_id) + argv[0] + " [options] [image url|custom emoji|null]`\", \"value\": \"**Options:**\" }, { \"name\": \"`aspect`\", \"value\": \"disable optimized resizing techniques.\", \"inline\": true }, { \"name\": \"`noheart`\", \"value\": \"do not render the heart.\", \"inline\": true }, { \"name\": \"`nomask`\", \"value\": \"do not apply the heart mask.\", \"inline\": true }, { \"name\": \"`outline`\", \"value\": \"add a black outline around the image.\", \"inline\": true }, { \"name\": \"`fancy`\", \"value\": \"make a fancy cat!\", \"inline\": true }, { \"name\": \"`festive`\", \"value\": \"make a festive cat!\", \"inline\": true }, { \"name\": \"`nonude`\", \"value\": \"do not remove skin tone from svg images.\", \"inline\": true }, { \"name\": \"`nude <color>`\", \"value\": \"set the skin tone color to remove from svg images.\", \"inline\": true }, { \"name\": \"`color <color>`\", \"value\": \"set the main color of the cat.\", \"inline\": true }, { \"name\": \"`alt <color>`\", \"value\": \"set the cat's alternate color.\", \"inline\": true }, { \"name\": \"`heart <color>`\", \"value\": \"set the color of the hearts.\", \"inline\": true }, { \"name\": \"`stripe <color>`\", \"value\": \"set the cat's stripe color.\", \"inline\": true }, { \"name\": \"`trans <color[,fuzz%]>`\", \"value\": \"set a color for transparency, fuzz allows a threshold of similar colors.\", \"inline\": true }, { \"name\": \"By default, your profile picture will be used as the image.\", \"value\": \"__You can also upload an image or enter `null` for no image__\" }]}");
+            sendEmbed(message.channel_id,"{ \"color\": 11474015, \"title\": \"How to Fill a Cat's Heart!\", \"fields\": [{ \"name\": \"`" + recallGlobal()->prefix(message.guild_id) + argv[0] + " [options] [image url|custom emoji|null]`\", \"value\": \"**Options:**\" }, { \"name\": \"`aspect`\", \"value\": \"disable optimized resizing techniques.\", \"inline\": true }, { \"name\": \"`noheart`\", \"value\": \"do not render the heart.\", \"inline\": true }, { \"name\": \"`nomask`\", \"value\": \"do not apply the heart mask.\", \"inline\": true }, { \"name\": \"`outline`\", \"value\": \"add a black outline around the image.\", \"inline\": true }, { \"name\": \"`fancy`\", \"value\": \"make a fancy cat!\", \"inline\": true }, { \"name\": \"`festive`\", \"value\": \"make a festive cat!\", \"inline\": true }, { \"name\": \"`nonude`\", \"value\": \"do not remove skin tone from svg images.\", \"inline\": true }, { \"name\": \"`nude <color>`\", \"value\": \"set the skin tone color to remove from svg images.\", \"inline\": true }, { \"name\": \"`color <color>`\", \"value\": \"set the main color of the cat.\", \"inline\": true }, { \"name\": \"`alt <color>`\", \"value\": \"set the cat's alternate color.\", \"inline\": true }, { \"name\": \"`heart <color>`\", \"value\": \"set the color of the hearts.\", \"inline\": true }, { \"name\": \"`stripe <color>`\", \"value\": \"set the cat's stripe color.\", \"inline\": true }, { \"name\": \"`lulu`\", \"value\": \"Lulu cat, she cattin!!\", \"inline\": true }, { \"name\": \"`trans <color[,fuzz%]>`\", \"value\": \"set a color for transparency, fuzz allows a threshold of similar colors.\", \"inline\": true }, { \"name\": \"By default, your profile picture will be used as the image.\", \"value\": \"__You can also upload an image or enter `null` for no image__\" }]}");
         return PLUGIN_HANDLED;
     }
 }

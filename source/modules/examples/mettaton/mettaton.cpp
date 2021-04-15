@@ -12,7 +12,7 @@ using namespace Farage;
 #define HEXIFY
 #include "common_func.h"
 
-#define BASEVERSION "v1.6.7"
+#define BASEVERSION "v1.7.0"
 #ifdef METTA_MINI
     #define VERSION std::string(BASEVERSION) + "-minimal"
 #else
@@ -70,7 +70,7 @@ namespace Mettaton
         code.coder = values[*it-'a'];
         code.full = code.code;
         char previous = ' ';
-        for (;(it != ite) && (code.full.size() < 4);++it)
+        for (++it;(it != ite) && (code.full.size() < 4);++it)
         {
             if (!std::isalpha(*it))
                 continue;
@@ -477,6 +477,7 @@ int redirectReact(Handle&,ReactHook*,const ServerMember&,const Channel&,const st
 int phonetizeCmd(Handle&,int,const std::string[],const Message&);
 int uptimeCmd(Handle&,int,const std::string[],const Message&);
 int whoamiCmd(Handle&,int,const std::string[],const Message&);
+int hexifyCmd(Handle&,int,const std::string[],const Message&);
 
 extern "C" int onModuleStart(Handle &handle, Global *global)
 {
@@ -500,6 +501,7 @@ extern "C" int onModuleStart(Handle &handle, Global *global)
     handle.regChatCmd("phonetize",&phonetizeCmd,NOFLAG,"View the phonetization of a string.");
     handle.regChatCmd("uptime",&uptimeCmd,NOFLAG,"How long since my last crash or restart.");
     handle.regChatCmd("whoami",&whoamiCmd,NOFLAG,"Can't quite figure out who you are? Let Mettaton take a stab at it!");
+    handle.regChatCmd("hexify",&hexifyCmd,NOFLAG,"Turn input into hexadecimal.");
     //handle.createGlobVar("message_output","true","Whether or not to output messages to STDOUT.",0,true,0.0,true,1.0)->hookChange(&chatHookChange);
     //Mettaton::chatHook = handle.hookChatPattern("chat",".",nullptr,HOOK_PRINT);
     handle.regConsoleCmd("reply",&replyCmd,"Send a reply to the channel which last received a message.");
@@ -1363,7 +1365,7 @@ int redirectReact(Handle& handle, ReactHook* hook, const ServerMember& member, c
         ObjectResponse<Message> response = getMessage(channel.id,messageID);
         if (response.response.error())
             reactToID(channel.id,messageID,"%E2%9D%93");
-        else
+        else if (!response.object.author.bot)
         {
             for (auto it = response.object.reactions.begin(), ite = response.object.reactions.end();it != ite;++it)
             {
@@ -1491,6 +1493,12 @@ int whoamiCmd(Handle &handle, int argc, const std::string argv[], const Message 
     return PLUGIN_HANDLED;
 }
 
-
-
+int hexifyCmd(Handle &handle, int argc, const std::string argv[], const Message &message)
+{
+    if (argc < 2)
+        sendMessage(message.channel_id,"Usage: `" + recallGlobal()->prefix(message.guild_id) + argv[0] + " <string>`");
+    else
+        sendMessage(message.channel_id,"**Hex**: `" + hexify(argv[1]) + '`');
+    return PLUGIN_HANDLED;
+}
 

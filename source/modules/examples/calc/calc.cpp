@@ -4,7 +4,7 @@
 #include <cstring>
 using namespace Farage;
 
-#define VERSION "v0.0.9"
+#define VERSION "v0.1.0"
 
 extern "C" Info Module
 {
@@ -88,8 +88,8 @@ extern "C" int onModuleStart(Handle &handle, Global *global)
 {
     recallGlobal(global);
     handle.createGlobVar("calc_version",VERSION,"Calc Version",GVAR_CONSTANT);
-    handle.regChatCmd("calc",&calc::calcCmd,NOFLAG,"Perform integer math.");
-    handle.regChatCmd("calcf",&calc::calcFCmd,NOFLAG,"Perform floating point math.");
+    handle.regChatCmd("calcb",&calc::calcCmd,NOFLAG,"Perform integer math.");
+    handle.regChatCmd("calc",&calc::calcFCmd,NOFLAG,"Perform floating point math.");
     return 0;
 }
 

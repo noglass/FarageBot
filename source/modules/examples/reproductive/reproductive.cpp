@@ -12,7 +12,7 @@ using namespace Farage;
 #define SPLITSTRING
 #include "common_func.h"
 
-#define VERSION "v0.4.4"
+#define VERSION "v0.4.5"
 
 #define SOUNDEXTHRESHOLD    75
 #define SOUNDEXTHRESHOLD2   25
@@ -85,7 +85,7 @@ namespace dictionary
         //std::string encoded;
         code.full = code.code;
         char previous = ' ';
-        for (;(it != ite) && (code.full.size() < 4);++it)
+        for (++it;(it != ite) && (code.full.size() < 4);++it)
         {
             if (!std::isalpha(*it))
                 continue;
@@ -809,6 +809,137 @@ int dictReloadCmd(Handle& handle, int argc, const std::string argv[], const Mess
     return PLUGIN_HANDLED;
 }
 
+extern "C" void makeLewd(std::string& sentence, int args[4])
+{
+    int min = 1, max = 15, lewdmin = 0, lewdmax = 99;
+    if (args[0] > -1)
+        max = args[0];
+    if (args[1] > -1)
+        min = args[1];
+    if (min < 1)
+        min = 1;
+    size_t p;
+    if (args[2] > -1)
+        lewdmin = args[2];
+    if (args[3] > -1)
+        lewdmax = args[3];
+    lewdmax = mtrand(lewdmin,lewdmax);
+    dictionary::definition* last = dictionary::getAny(mtrand(lewdmin,lewdmax));
+    if (last == nullptr)
+    {
+        sentence = "Oh no! An error occurred!";
+        return;
+    }
+    sentence = last->word;
+    sentence.front() = std::toupper(sentence.front());
+    dictionary::definition* curr = last;
+    for (int words = mtrand(min,max);words;--words)
+    {
+        for (int tries = 15;tries && curr == last;tries--)
+        {
+            int lewd = mtrand(lewdmin,lewdmax);
+            switch (last->part)
+            {
+                case dictionary::speech::noun:
+                {
+                    int d = mtrand(0,4);
+                    if (d == 0)
+                        curr = dictionary::getSpecific(dictionary::dict.adverbs,lewd);
+                    if (d < 3)
+                        curr = dictionary::getSpecific(dictionary::dict.verbs,lewd);
+                    else
+                        curr = dictionary::getSpecific(dictionary::dict.conjunctions,lewd);
+                }
+                case dictionary::speech::verb:
+                {
+                    int d = mtrand(0,4);
+                    if (d == 0)
+                        curr = dictionary::getSpecific(dictionary::dict.adjectives,lewd);
+                    else if (d == 1)
+                        curr = dictionary::getSpecific(dictionary::dict.adverbs,lewd);
+                    else if (d == 2)
+                        curr = dictionary::getSpecific(dictionary::dict.conjunctions,lewd);
+                    else
+                        curr = dictionary::getSpecific(dictionary::dict.prepositions,lewd);
+                    break;
+                }
+                case dictionary::speech::pronoun:
+                {
+                    curr = dictionary::getSpecific(dictionary::dict.verbs,lewd);
+                    break;
+                }
+                case dictionary::speech::adjective:
+                {
+                    if (mtrand(0,1) == 0)
+                        curr = dictionary::getSpecific(dictionary::dict.nouns,lewd);
+                    else
+                        curr = dictionary::getSpecific(dictionary::dict.pronouns,lewd);
+                    break;
+                }
+                case dictionary::speech::adverb:
+                {
+                    int d = mtrand(0,4);
+                    if (d == 0)
+                        curr = dictionary::getSpecific(dictionary::dict.nouns,lewd);
+                    else if (d == 1)
+                        curr = dictionary::getSpecific(dictionary::dict.prepositions,lewd);
+                    else if (d == 2)
+                        curr = dictionary::getSpecific(dictionary::dict.conjunctions,lewd);
+                    else
+                        curr = dictionary::getSpecific(dictionary::dict.verbs,lewd);
+                    break;
+                }
+                case dictionary::speech::conjunction:
+                {
+                    int d = mtrand(0,11);
+                    if (d == 0)
+                        curr = dictionary::getSpecific(dictionary::dict.conjunctions,lewd);
+                    else if (d < 3)
+                        curr = dictionary::getSpecific(dictionary::dict.verbs,lewd);
+                    else if (d < 5)
+                        curr = dictionary::getSpecific(dictionary::dict.nouns,lewd);
+                    else if (d < 7)
+                        curr = dictionary::getSpecific(dictionary::dict.adjectives,lewd);
+                    else if (d < 9)
+                        curr = dictionary::getSpecific(dictionary::dict.prepositions,lewd);
+                    else
+                        curr = dictionary::getSpecific(dictionary::dict.pronouns,lewd);
+                    break;
+                }
+                case dictionary::speech::preposition:
+                {
+                    int d = mtrand(0,13);
+                    if (d == 0)
+                        curr = dictionary::getSpecific(dictionary::dict.prepositions,lewd);
+                    else if (d < 3)
+                        curr = dictionary::getSpecific(dictionary::dict.adverbs,lewd);
+                    else if (d < 6)
+                        curr = dictionary::getSpecific(dictionary::dict.verbs,lewd);
+                    else if (d < 9)
+                        curr = dictionary::getSpecific(dictionary::dict.pronouns,lewd);
+                    else if (d == 9)
+                        curr = dictionary::getSpecific(dictionary::dict.adjectives,lewd);
+                    else if (d == 10)
+                        curr = dictionary::getSpecific(dictionary::dict.nouns,lewd);
+                    else
+                        curr = dictionary::getSpecific(dictionary::dict.conjunctions,lewd);
+                }
+                default:
+                    curr = dictionary::getAny(lewd);
+            }
+            if (curr == nullptr)
+            {
+                sentence = "Oh no! An error occurred! " + sentence;
+                return;
+            }
+        }
+        while (curr == last)
+            curr = dictionary::getAny(1);
+        sentence += " " + curr->word;
+        last = curr;
+    }
+}
+
 int dictTestCmd(Handle& handle, int argc, const std::string argv[], const Message& message)
 {
     if ((dictionary::enable->getAsBool(message.guild_id) == false) || (message.channel_id == "541749565540532224"))
@@ -826,6 +957,7 @@ int dictTestCmd(Handle& handle, int argc, const std::string argv[], const Messag
     if ((argc > 4) && (((p = std::string("-0123456789").find_first_of(argv[4].front())) != std::string::npos) && ((p > 0) || (std::isdigit(argv[4].at(1))))))
         lewdmax = std::stoi(argv[4]);
     lewdmax = mtrand(lewdmin,lewdmax);
+    /*
     dictionary::definition* last = dictionary::getAny(mtrand(lewdmin,lewdmax));
     if (last == nullptr)
     {
@@ -939,7 +1071,10 @@ int dictTestCmd(Handle& handle, int argc, const std::string argv[], const Messag
             curr = dictionary::getAny(1);
         sentence += " " + curr->word;
         last = curr;
-    }
+    }*/
+    std::string sentence;
+    int i[4] = {max,min,lewdmin,lewdmax};
+    makeLewd(sentence,i);
     sendMessage(message.channel_id,sentence);
     return PLUGIN_HANDLED;
 }

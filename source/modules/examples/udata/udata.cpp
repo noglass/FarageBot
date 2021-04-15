@@ -7,6 +7,7 @@
 #include <ctime>
 #include <cstdio>
 #include <cstring>
+#include <dlfcn.h>
 using namespace Farage;
 
 #define SPLITSTRINGANY
@@ -14,7 +15,7 @@ using namespace Farage;
 #define MAKEMENTION
 #include "common_func.h"
 
-#define VERSION "v0.9.6"
+#define VERSION "v1.0.5"
 
 #define UDEVAL
 
@@ -33,6 +34,8 @@ int avatarCmd(Handle&,int,const std::string[],const Message&);
 int evalCmd(Handle&,int,const std::string[],const Message&);
 #endif
 
+void (*makeLewd)(std::string&,int[4]) = nullptr;
+
 extern "C" int onModuleStart(Handle &handle, Global *global)
 {
     recallGlobal(global);
@@ -41,7 +44,36 @@ extern "C" int onModuleStart(Handle &handle, Global *global)
 #ifdef UDEVAL
     handle.regChatCmd("udeval",&evalCmd,ROOT,"Evaluate an identifier{ID,...}[.prop]... string.");
 #endif
+    for (auto it = global->plugins.begin(), ite = global->plugins.end();it != ite;++it)
+    {
+        if ((*it)->getModule() == "reproductive")
+        {
+            *(void **) (&makeLewd) = dlsym((*it)->getModulePtr(),"makeLewd");
+            if (dlerror() != NULL)
+                makeLewd = nullptr;
+            break;
+        }
+    }
     return 0;
+}
+
+extern "C" int onModulesLoaded(Handle &handle, int event, void *iterator, void *position, void *foo, void *bar)
+{
+    Global* global = recallGlobal();
+    if (makeLewd == nullptr)
+    {
+        for (auto it = global->plugins.begin(), ite = global->plugins.end();it != ite;++it)
+        {
+            if ((*it)->getModule() == "reproductive")
+            {
+                *(void **) (&makeLewd) = dlsym((*it)->getModulePtr(),"makeLewd");
+                if (dlerror() != NULL)
+                    makeLewd = nullptr;
+                break;
+            }
+        }
+    }
+    return PLUGIN_CONTINUE;
 }
 
 int avatarCmd(Handle &handle, int argc, const std::string argv[], const Message &message)
@@ -410,7 +442,7 @@ std::string channelData(const Channel& chan, std::string prop, const std::string
     size_t pos = 0;
     if (prop.front() == '.')
         prop.erase(0,1);
-    bool hidden = false;
+    bool hidden = (chan.guild_id.size() == 0);
     for (auto it = chan.permission_overwrites.begin(), ite = chan.permission_overwrites.end();it != ite;++it)
     {
         if ((int64_t)it->deny & (int64_t)Permission::VIEW_CHANNEL)
@@ -808,7 +840,7 @@ std::string messageData(const Message& chan, std::string prop, const std::vector
     size_t pos = 0;
     if (prop.front() == '.')
         prop.erase(0,1);
-    bool hidden = false;
+    bool hidden = (chan.guild_id.size() == 0);
     for (auto it = perms.begin(), ite = perms.end();it != ite;++it)
     {
         if ((int64_t)it->deny & (int64_t)Permission::VIEW_CHANNEL)
@@ -1035,7 +1067,7 @@ std::string messagesData(const ArrayResponse<Message>& msgs, std::string prop, c
     size_t pos = 0;
     if (prop.front() == '.')
         prop.erase(0,1);
-    bool hidden = false;
+    bool hidden = (chan.guild_id.size() == 0);
     for (auto it = chan.permission_overwrites.begin(), ite = chan.permission_overwrites.end();it != ite;++it)
     {
         if ((int64_t)it->deny & (int64_t)Permission::VIEW_CHANNEL)
@@ -1067,7 +1099,7 @@ std::string messagesData(const ArrayResponse<Message>& msgs, std::string prop, c
                 else
                 {
                     size_t n = std::stoull(prop.substr(1));
-                    prop.erase(npos+1);
+                    prop.erase(0,npos+1);
                     if (n < msgs.array.size())
                     {
                         out = messageData(msgs.array[n],prop,chan.permission_overwrites,request);
@@ -1130,12 +1162,13 @@ void evaluateDataRe(std::string& eval, const std::string& guildID, const std::st
 {
     static rens::regex specialptrn ("[\\.\\{\\}\\[\\]\\(\\)]");
     //static rens::regex inputptrn ("(?<!\\\\)\\$(\\d+)");
-    static rens::regex identptrn ("(?i)(user|member|guild|channel|role|message|messages\\(\\d+,\\d+\\))\\{(\\d+|this)(\\}|,\\d+\\})(\\.[\\w\\[\\]\\d\\.]+)?");
+    static rens::regex identptrn ("(?i)(user|member|guild|channel|role|message|messages\\((\\d+|before|after|around),\\d+\\))\\{(\\d+|this)(\\}|,\\d+\\})(\\.[\\w\\[\\]\\d\\.]+)?");
     static rens::regex randptrn ("(?i)rand\\((\\d+),?(\\d*)\\)");
     static rens::regex rand2ptrn ("(?i)rand\\(([^)]*)\\)");
     static rens::regex argptrn ("^([^,]*)(,|$)");
     static rens::regex inputptrn ("&(\\d+)");
     static rens::regex balanced ("(\\((?>[^()]+|(?1))*\\))");
+    static rens::regex lewdptrn ("(?i)lewd\\((\\d*),?(\\d*),?(\\d*),?(\\d*)\\)");
     Global* global = recallGlobal();
     rens::smatch ml;
     std::string request = channelID;
@@ -1276,6 +1309,20 @@ void evaluateDataRe(std::string& eval, const std::string& guildID, const std::st
                 eval.insert(ml[0].pos,std::to_string(mtrand(0,-1)));
         }
     }
+    while (rens::regex_search(eval,ml,lewdptrn))
+    {
+        int in[4] = {-1};
+        for (int i = 0;i < 4;++i)
+        {
+            if (ml[i+1].str().size() == 0)
+                break;
+            in[i] = std::stoi(ml[i+1].str());
+        }
+        eval.erase(ml[0].pos,ml[0].length());
+        std::string lewd;
+        makeLewd(lewd,in);
+        eval.insert(ml[0].pos,lewd);
+    }
     User who;
     Message msg;
     Channel chan;
@@ -1286,15 +1333,15 @@ void evaluateDataRe(std::string& eval, const std::string& guildID, const std::st
             std::cout<<":: "<<it->str()<<std::endl;
         std::string out;
         std::string ident = ml[1].str();
-        std::string id = ml[2].str();
+        std::string id = ml[3].str();
         std::string guild = guildID;
         bool customGuild = false;
-        if (ml[3].str().front() == ',')
+        if (ml[4].str().front() == ',')
         {
-            guild = ml[3].str().substr(1,ml[3].str().size()-2);
+            guild = ml[4].str().substr(1,ml[4].str().size()-2);
             customGuild = true;
         }
-        std::string prop = strlower(ml[4].str());
+        std::string prop = strlower(ml[5].str());
         if (ident == "user")
         {
             if (id == "this")
@@ -1352,11 +1399,22 @@ void evaluateDataRe(std::string& eval, const std::string& guildID, const std::st
             if (id == "this")
                 id = messageID;
             if (!customGuild)
-                guild = guildID;
+                guild = channelID;
             if (chan.id != guild)
                 chan = getChannel(guild).object;
-            int when = std::stoi(ident.substr(9));
-            uint8_t limit = std::stoi(ident.substr(10 + std::to_string(when).size()));
+            int when;
+            std::string foo = ml[2].str();
+            if (std::isdigit(foo.front()))
+                when = std::stoi(foo);
+            else if (foo == "after")
+                when = 3;
+            else if (foo == "around")
+                when = 1;
+            else // before
+                when = 2;
+            if ((when > 3) || (when < 1))
+                when = 3;
+            uint8_t limit = std::stoi(ident.substr(10 + foo.size()));
             out = messagesData(getMessages(chan.id,GetMessagesKey(when),id,limit),prop,chan,request);
         }
         eval = rens::regex_replace(eval,rens::regex(rens::regex_replace(ml[0].str(),specialptrn,"\\$0")),out,0);

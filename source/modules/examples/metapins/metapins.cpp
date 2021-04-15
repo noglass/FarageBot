@@ -7,7 +7,7 @@ using namespace Farage;
 #define MAKEMENTION
 #include "common_func.h"
 
-#define VERSION "v0.3.4"
+#define VERSION "v0.3.6"
 
 extern "C" Info Module
 {
@@ -129,6 +129,34 @@ namespace MetaPin
         }
         return PLUGIN_HANDLED;
     }
+    int awwRepostHook(Handle& handle, ReactHook* hook, const ServerMember& member, const Channel& channel, const std::string& messageID, const std::string& guildID, const Emoji& emoji)
+    {
+        if ((member.user.id == recallGlobal()->self.id) || (channel.id == "737115353792118846"))
+            return PLUGIN_HANDLED;
+        ObjectResponse<Message> response = getMessage(channel.id,messageID);
+        if (response.response.error())
+            reactToID(channel.id,messageID,"%E2%9D%93");
+        else
+        {
+            for (auto it = response.object.reactions.begin(), ite = response.object.reactions.end();it != ite;++it)
+            {
+                if (it->emoji == emoji)
+                {
+                    if (it->count == 1)
+                    {
+                        std::vector<std::string> urls;
+                        std::string message = makeMention(member.user.id,guildID) + " https://discordapp.com/channels/" + guildID + '/' + channel.id + '/' + messageID + "\n> " + response.object.content;
+                        for (auto& att : response.object.attachments)
+                            message = message + ' ' + att.url;
+                        sendMessage("737115353792118846",message);
+                        reactToID(channel.id,messageID,emoji.encoded());
+                    }
+                    break;
+                }
+            }
+        }
+        return PLUGIN_HANDLED;
+    }
 };
 
 extern "C" int onModuleStart(Handle &handle, Global *global)
@@ -142,6 +170,7 @@ extern "C" int onModuleStart(Handle &handle, Global *global)
     handle.hookReaction("pinHook",&MetaPin::pinReactHook,0,"📌");
     handle.hookReactionChannel("feedHook",&MetaPin::shareFeedHook,0,"737115927157407744","🏆");
     handle.hookReactionChannel("slimFeedHook",&MetaPin::shareSlimFeedHook,0,"737115927157407744","heartcat:737118450115412048");
+    handle.hookReaction("awwRepostHook",&MetaPin::awwRepostHook,0,"🔁");
     MetaPin::pins.open("metapins.ini");
     return 0;
 }
