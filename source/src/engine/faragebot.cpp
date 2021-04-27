@@ -2,11 +2,12 @@
 
 //#define FARAGE_TIMEOUT      1
 
-#include "sleepy_discord/websocketpp_websocket.h"
+#include "sleepy_discord/sleepy_discord.h"
 #include "engine/fareng.h"
 
 int main(int argc, char *argv[])
 {
+    std::cerr<<"foo"<<std::endl;
 #ifdef FARAGE_USE_PCRE2
     if (!rens::regex_match("jit test",".*"))
     {
@@ -14,6 +15,7 @@ int main(int argc, char *argv[])
         return 101;
     }
 #endif
+    std::cerr<<"bar"<<std::endl;
 #ifdef _WIN32
     HANDLE timerTrigger[2];
     SECURITY_ATTRIBUTES saAttr;
@@ -43,6 +45,7 @@ int main(int argc, char *argv[])
             &Farage::Engine::getSelf,
             &Farage::Engine::sendTyping,
             &Farage::Engine::sendFile,
+            &Farage::Engine::sendFileEmbed,
             &Farage::Engine::getGuildCache,
             &Farage::Engine::getServerMember,
             &Farage::Engine::getChannelCache,
@@ -56,6 +59,7 @@ int main(int argc, char *argv[])
             &Farage::Engine::getReactions,
             &Farage::Engine::removeAllReactions,
             &Farage::Engine::editMessage,
+            &Farage::Engine::editMessageEmbed,
             &Farage::Engine::deleteMessage,
             &Farage::Engine::bulkDeleteMessages,
             &Farage::Engine::editChannelPermissions,

@@ -7,15 +7,16 @@ namespace Farage
 {
     struct Internals
     {
-        ObjectResponse<Message> (*sendMessage)(const std::string&, const std::string&, const std::string&, bool);
-        ObjectResponse<Message> (*sendEmbed)(const std::string&, const std::string&, Embed, bool);
+        ObjectResponse<Message> (*sendMessage)(const std::string&, const std::string&, const std::string&, const MessageReference&, bool);
+        ObjectResponse<Message> (*sendEmbed)(const std::string&, const std::string&, Embed, const MessageReference&, bool);
         BoolResponse (*reactToID)(const std::string&, const std::string&, const std::string&);
         ObjectResponse<Channel> (*getChannel)(const std::string&);
         ObjectResponse<Channel> (*getDirectMessageChannel)(const std::string&);
         ObjectResponse<User> (*getUser)(const std::string&);
         ObjectResponse<User> (*getSelf)();
         BoolResponse (*sendTyping)(const std::string&);
-        ObjectResponse<Message> (*sendFile)(const std::string&, const std::string&, const std::string&);
+        ObjectResponse<Message> (*sendFile)(const std::string&, const std::string&, const std::string&, const std::string&, const MessageReference&);
+        ObjectResponse<Message> (*sendFileEmbed)(const std::string&, const std::string&, const std::string&, Embed, const MessageReference&);
         Server (*getGuildCache)(const std::string&);
         ServerMember (*getServerMember)(const std::string&, const std::string&);
         Channel (*getChannelCache)(const std::string&, const std::string&);
@@ -26,9 +27,10 @@ namespace Farage
         ArrayResponse<Message> (*getMessages)(const std::string&, GetMessagesKey, const std::string&, uint8_t);
         ObjectResponse<Message> (*getMessage)(const std::string&, const std::string&);
         BoolResponse (*removeReaction)(const std::string&, const std::string&, const std::string&, const std::string&);
-        ArrayResponse<Reaction> (*getReactions)(const std::string&, const std::string&, const std::string&);
+        ArrayResponse<User> (*getReactions)(const std::string&, const std::string&, const std::string&);
         Response (*removeAllReactions)(const std::string&, const std::string&);
-        ObjectResponse<Message> (*editMessage)(const std::string&, const std::string&, const std::string&);
+        ObjectResponse<Message> (*editMessage)(const std::string&, const std::string&, const std::string&, const std::string&);
+        ObjectResponse<Message> (*editMessageEmbed)(const std::string&, const std::string&, const std::string&, Embed);
         BoolResponse (*deleteMessage)(const std::string&, const std::string&);
         BoolResponse (*bulkDeleteMessages)(const std::string&, const std::vector<std::string>&);
         BoolResponse (*editChannelPermissions)(const std::string&, const std::string&, int, int, const std::string&);

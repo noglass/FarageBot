@@ -10,7 +10,7 @@ using namespace Farage;
 #define SPLITSTRING
 #include "common_func.h"
 
-#define VERSION "v0.2.8"
+#define VERSION "v0.2.9"
 
 extern "C" Info Module
 {
@@ -46,8 +46,8 @@ int delrollsetCmd(Handle&,int,const std::string[],const Message&);
 int rollsetCmd(Handle&,int,const std::string[],const Message&);
 int rollsetsCmd(Handle&,int,const std::string[],const Message&);
 
-ObjectResponse<Message> (*sendMessageOriginal)(const std::string&, const std::string&, const std::string&, bool) = nullptr;
-ObjectResponse<Message> sendMessageMeta(const std::string& channel, const std::string& message, const std::string& json, bool tts = false)
+ObjectResponse<Message> (*sendMessageOriginal)(const std::string&, const std::string&, const std::string&, const MessageReference&, bool) = nullptr;
+ObjectResponse<Message> sendMessageMeta(const std::string& channel, const std::string& message, const std::string& json, const MessageReference& ref, bool tts = false)
 {
     if (channel == irc::storychan->getAsString())//"719678495877234749")
     {
@@ -68,9 +68,9 @@ ObjectResponse<Message> sendMessageMeta(const std::string& channel, const std::s
             meta = message.substr(0,pos);
         if ((n > 0) && (meta.size() == 0))
             meta = message + word;
-        return sendMessageOriginal(channel,meta,json,tts);
+        return sendMessageOriginal(channel,meta,json,{},tts);
     }
-    return sendMessageOriginal(channel,message,json,tts);
+    return sendMessageOriginal(channel,message,json,{},tts);
 }
 
 extern "C" int onModuleStart(Handle &handle, Global *global)

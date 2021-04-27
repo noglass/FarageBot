@@ -4,7 +4,7 @@
 #include <cstring>
 using namespace Farage;
 
-#define VERSION "v0.1.0"
+#define VERSION "v0.1.1"
 
 extern "C" Info Module
 {
@@ -18,7 +18,7 @@ extern "C" Info Module
 
 namespace calc
 {
-    rens::regex rem ("[\\\\\"\\$`';\n]|\\\\n");
+    rens::regex rem ("[\\\\\"\\$`';\n{}]|\\\\n");
     std::string exec(const std::string& command, const int size = 128, bool getAll = false)
     {
         std::string output;

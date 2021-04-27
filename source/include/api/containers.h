@@ -70,7 +70,7 @@ namespace Farage
         int color;
         bool hoist;
         int position;
-        int64_t permissions;
+        uint64_t permissions;
         bool managed;
         bool mentionable;
     };
@@ -105,7 +105,7 @@ namespace Farage
             else
                 custom = false;
         }
-        Emoji(std::string _id, std::string _name, std::vector<Role>&& _roles, User&& _user, bool _require_colons, bool _managed, bool _animated) :
+        Emoji(std::string _id, std::string _name, std::vector<std::string>&& _roles, User&& _user, bool _require_colons, bool _managed, bool _animated) :
             id(std::move(_id)), name(std::move(_name)), roles(std::move(_roles)), user(std::move(_user)), require_colons(_require_colons), managed(_managed), animated(_animated)
         {
             if (id.size() > 0)
@@ -115,7 +115,7 @@ namespace Farage
         }
         std::string id;
         std::string name;
-        std::vector<Role> roles;
+        std::vector<std::string> roles;
         User user;
         bool require_colons;
         bool managed;
@@ -277,7 +277,7 @@ namespace Farage
     struct Overwrite
     {
         std::string id;
-        std::string type;
+        int type;
         Permission allow;
         Permission deny;
     };
@@ -312,7 +312,7 @@ namespace Farage
         std::string splash;
         //bool owner;
         std::string owner_id;
-        int64_t permissions;
+        uint64_t permissions;
         std::string region;
         std::string afk_channel_id;
         int afk_timeout;
@@ -374,8 +374,6 @@ namespace Farage
     struct PresenceUpdate
     {
         User user;
-        std::vector<std::string> roles;
-        Activity game;
         std::string guild_id;
         std::string status;
         std::vector<Activity> activities;
@@ -437,7 +435,7 @@ namespace Farage
         Channel channel;
     };
     
-    struct ServerEmbed
+    struct ServerWidget
     {
         bool enabled;
         std::string channel_id;

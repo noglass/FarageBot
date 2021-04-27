@@ -5,21 +5,21 @@
 
 namespace Farage
 {
-    inline ObjectResponse<Message> sendMessage(const std::string &channelID, const std::string &message, const std::string &json = "", bool tts = false)
+    inline ObjectResponse<Message> sendMessage(const std::string &channelID, const std::string &message, const std::string &json = "", const MessageReference &ref = {}, bool tts = false)
     {
-        return recallGlobal()->callbacks.sendMessage(channelID,message,json,tts);
+        return recallGlobal()->callbacks.sendMessage(channelID,message,json,ref,tts);
     }
-    inline ObjectResponse<Message> messageChannel(const Channel &channel, const std::string &message, const std::string &json = "", bool tts = false)
+    inline ObjectResponse<Message> messageChannel(const Channel &channel, const std::string &message, const std::string &json = "", const MessageReference &ref = {}, bool tts = false)
     {
-        return recallGlobal()->callbacks.sendMessage(channel.id,message,json,tts);
+        return recallGlobal()->callbacks.sendMessage(channel.id,message,json,ref,tts);
     }
-    inline ObjectResponse<Message> messageChannelID(const std::string &channelID, const std::string &message, const std::string &json = "", bool tts = false)
+    inline ObjectResponse<Message> messageChannelID(const std::string &channelID, const std::string &message, const std::string &json = "", const MessageReference &ref = {}, bool tts = false)
     {
-        return recallGlobal()->callbacks.sendMessage(channelID,message,json,tts);
+        return recallGlobal()->callbacks.sendMessage(channelID,message,json,ref,tts);
     }
-    inline ObjectResponse<Message> messageReply(const Message &msg, const std::string &message, const std::string &json = "", bool tts = false)
+    inline ObjectResponse<Message> messageReply(const Message &msg, const std::string &message, const std::string &json = "", const MessageReference &ref = {}, bool tts = false)
     {
-        return recallGlobal()->callbacks.sendMessage(msg.channel_id,message,json,tts);
+        return recallGlobal()->callbacks.sendMessage(msg.channel_id,message,json,ref,tts);
     }
     inline BoolResponse reaction(const Message &msg, const std::string &emoji)
     {
@@ -49,17 +49,21 @@ namespace Farage
     {
         return recallGlobal()->callbacks.sendTyping(channelID);
     }
-    inline ObjectResponse<Message> sendEmbed(const std::string &channelID, const std::string &json, const std::string &message = "", bool tts = false)
+    inline ObjectResponse<Message> sendEmbed(const std::string &channelID, const std::string &json, const std::string &message = "", const MessageReference &ref = {}, bool tts = false)
     {
-        return recallGlobal()->callbacks.sendMessage(channelID,message,json,tts);
+        return recallGlobal()->callbacks.sendMessage(channelID,message,json,ref,tts);
     }
-    inline ObjectResponse<Message> sendEmbed(const std::string &channelID, Embed embed, const std::string &message = "", bool tts = false)
+    inline ObjectResponse<Message> sendEmbed(const std::string &channelID, Embed embed, const std::string &message = "", const MessageReference &ref = {}, bool tts = false)
     {
-        return recallGlobal()->callbacks.sendEmbed(channelID,message,std::move(embed),tts);
+        return recallGlobal()->callbacks.sendEmbed(channelID,message,std::move(embed),ref,tts);
     }
-    inline ObjectResponse<Message> sendFile(const std::string &channelID, const std::string &filepath, const std::string &message = "")
+    inline ObjectResponse<Message> sendFile(const std::string &channelID, const std::string &filepath, const std::string &message = "", const std::string &json = "", const MessageReference &ref = {})
     {
-        return recallGlobal()->callbacks.sendFile(channelID,filepath,message);
+        return recallGlobal()->callbacks.sendFile(channelID,filepath,message,json,ref);
+    }
+    inline ObjectResponse<Message> sendFile(const std::string &channelID, const std::string &filepath, const std::string &message, Embed embed, const MessageReference &ref = {})
+    {
+        return recallGlobal()->callbacks.sendFileEmbed(channelID,filepath,message,std::move(embed),ref);
     }
     inline Server getGuildCache(const std::string &guildID)
     {
@@ -101,7 +105,7 @@ namespace Farage
     {
         return recallGlobal()->callbacks.removeReaction(channelID,messageID,emoji,userID);
     }
-    inline ArrayResponse<Reaction> getReactions(const std::string &channelID, const std::string &messageID, const std::string &emoji)
+    inline ArrayResponse<User> getReactions(const std::string &channelID, const std::string &messageID, const std::string &emoji)
     {
         return recallGlobal()->callbacks.getReactions(channelID,messageID,emoji);
     }
@@ -109,9 +113,13 @@ namespace Farage
     {
         return recallGlobal()->callbacks.removeAllReactions(channelID,messageID);
     }
-    inline ObjectResponse<Message> editMessage(const std::string &channelID, const std::string &messageID, const std::string &newMessage)
+    inline ObjectResponse<Message> editMessage(const std::string &channelID, const std::string &messageID, const std::string &newMessage, const std::string &json = "")
     {
-        return recallGlobal()->callbacks.editMessage(channelID,messageID,newMessage);
+        return recallGlobal()->callbacks.editMessage(channelID,messageID,newMessage,json);
+    }
+    inline ObjectResponse<Message> editMessage(const std::string &channelID, const std::string &messageID, const std::string &newMessage, Embed embed)
+    {
+        return recallGlobal()->callbacks.editMessageEmbed(channelID,messageID,newMessage,std::move(embed));
     }
     inline BoolResponse deleteMessage(const std::string &channelID, const std::string &messageID)
     {

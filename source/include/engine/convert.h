@@ -87,7 +87,7 @@ namespace Farage
     {
         return Overwrite{
             std::move(overwrite.ID),
-            std::move(overwrite.type),
+            static_cast<int>(overwrite.type),
             std::move(Farage::Permission(overwrite.allow)),
             std::move(Farage::Permission(overwrite.deny))
         };
@@ -198,10 +198,10 @@ namespace Farage
     
     Emoji convertEmoji(SleepyDiscord::Emoji emoji)
     {
-        std::vector<Role> roles;
+        std::vector<std::string> roles;
         roles.reserve(emoji.roles.size());
         for (auto it = emoji.roles.begin(), ite = emoji.roles.end();it != ite;++it)
-            roles.push_back(std::move(convertRole(std::move(*it))));
+            roles.push_back(std::move(*it));
         Emoji femoji(
             std::move(emoji.ID),
             std::move(emoji.name),
@@ -273,18 +273,10 @@ namespace Farage
     {
         PresenceUpdate fpresence = {
             std::move(convertUser(presence.user)),
-            std::vector<std::string>(presence.roleIDs.size()),
-            std::move(convertActivity(std::move(presence.currentActivity))),
             std::move(presence.serverID),
             std::move(presence.status),
             std::vector<Activity>(presence.activities.size())
         };
-        fpresence.roles.assign(presence.roleIDs.begin(),presence.roleIDs.end());
-        /*{
-            auto itt = fpresence.roles.begin();
-            for (auto it = presence.roleIDs.begin(), ite = presence.roleIDs.end();it != ite;++it,++itt)
-                itt->assign(*it);
-        }*/
         {
             auto itt = fpresence.activities.begin();
             for (auto it = presence.activities.begin(), ite = presence.activities.end();it != ite;++it,++itt)
@@ -295,7 +287,12 @@ namespace Farage
     
     Response convertResponse(SleepyDiscord::Response response)
     {
-        return Response(std::move(response.statusCode),std::move(response.text),std::move(response.header));
+        Response fresponse;
+        fresponse.statusCode = response.statusCode;
+        fresponse.text = std::move(response.text);
+        for (auto& h : response.header)
+            fresponse.header.emplace(std::move(h));
+        return fresponse;//Response(std::move(response.statusCode),std::move(response.text),std::move(response.header));
     }
     
     VoiceState convertVoiceState(SleepyDiscord::VoiceState state)
@@ -318,9 +315,9 @@ namespace Farage
         return Invite{ std::move(invite.code), std::move(convertServer(std::move(invite.server))), std::move(convertChannel(std::move(invite.channel))) };
     }
     
-    ServerEmbed convertServerEmbed(SleepyDiscord::ServerEmbed embed)
+    ServerWidget convertServerWidget(SleepyDiscord::ServerWidget embed)
     {
-        return ServerEmbed{ std::move(embed.enabled), std::move(embed.channelID) };
+        return ServerWidget{ std::move(embed.enabled), std::move(embed.channelID) };
     }
     
     Attachment convertAttachment(SleepyDiscord::Attachment attach)
@@ -482,9 +479,62 @@ namespace Farage
         };
         return std::move(fref);
     }
+    SleepyDiscord::MessageReference convertMessageReference(MessageReference ref)
+    {
+        SleepyDiscord::MessageReference ret;
+        ret.messageID = std::move(ref.message_id);
+        ret.channelID = std::move(ref.channel_id);
+        ret.serverID = std::move(ref.guild_id);
+        return std::move(ret);
+    }
     
-    template<class T>
-    Message convertMessage(T message)
+    Message convertMessage(SleepyDiscord::Message message)
+    {
+        Message fmessage = {
+            std::move(message.ID),
+            std::move(message.channelID),
+            std::move(message.serverID),
+            std::move(convertUser(std::move(message.author))),
+            std::move(convertServerMember(std::move(message.member))),
+            std::move(message.content),
+            std::move(message.timestamp),
+            std::move(message.editedTimestamp),
+            std::move(message.tts),
+            std::move(message.mentionEveryone),
+            std::vector<User>(message.mentions.size()),
+            std::vector<std::string>(message.mentionRoles.size()),
+            std::vector<Attachment>(message.attachments.size()),
+            std::vector<Embed>(message.embeds.size()),
+            std::vector<Reaction>(message.reactions.size()),
+            std::move(message.pinned),
+            std::move(message.webhookID),
+            std::move(message.type),
+            std::move(convertMessageReference(std::move(message.messageReference)))
+        };
+        {
+            auto itt = fmessage.mentions.begin();
+            for (auto it = message.mentions.begin(), ite = message.mentions.end();it != ite;++it,++itt)
+                *itt = std::move(convertUser(std::move(*it)));
+        }
+        fmessage.mention_roles.assign(message.mentionRoles.begin(),message.mentionRoles.end());
+        {
+            auto itt = fmessage.attachments.begin();
+            for (auto it = message.attachments.begin(), ite = message.attachments.end();it != ite;++it,++itt)
+                *itt = std::move(convertAttachment(std::move(*it)));
+        }
+        {
+            auto itt = fmessage.embeds.begin();
+            for (auto it = message.embeds.begin(), ite = message.embeds.end();it != ite;++it,++itt)
+                *itt = std::move(convertEmbed(std::move(*it)));
+        }
+        {
+            auto itt = fmessage.reactions.begin();
+            for (auto it = message.reactions.begin(), ite = message.reactions.end();it != ite;++it,++itt)
+                *itt = std::move(convertReaction(std::move(*it)));
+        }
+        return std::move(fmessage);
+    }
+    Message convertMessage(Farage::EditMessage message)
     {
         Message fmessage = {
             std::move(message.ID),
@@ -530,14 +580,6 @@ namespace Farage
         }
         return std::move(fmessage);
     }
-    inline Message convertMessage(Farage::EditMessage message)
-    {
-        return convertMessage<Farage::EditMessage>(message);
-    }
-    inline Message convertMessage(SleepyDiscord::Message message)
-    {
-        return convertMessage<SleepyDiscord::Message>(message);
-    }
                                                                                 
     inline User                convertObject(SleepyDiscord::User user)                 { return convertUser(std::move(user)); }
     inline Overwrite           convertObject(SleepyDiscord::Overwrite overwrite)       { return convertOverwrite(std::move(overwrite)); }
@@ -559,7 +601,7 @@ namespace Farage
     inline Reaction            convertObject(SleepyDiscord::Reaction reaction)         { return convertReaction(std::move(reaction)); }
     inline Invite              convertObject(SleepyDiscord::Invite invite)             { return convertInvite(std::move(invite)); }
     inline VoiceRegion         convertObject(SleepyDiscord::VoiceRegion region)        { return convertVoiceRegion(std::move(region)); }
-    inline ServerEmbed         convertObject(SleepyDiscord::ServerEmbed embed)         { return convertServerEmbed(std::move(embed)); }
+    inline ServerWidget        convertObject(SleepyDiscord::ServerWidget embed)        { return convertServerWidget(std::move(embed)); }
     inline Attachment          convertObject(SleepyDiscord::Attachment attach)         { return convertAttachment(std::move(attach)); }
     inline Embed               convertObject(SleepyDiscord::Embed embed)               { return convertEmbed(std::move(embed)); }
     
