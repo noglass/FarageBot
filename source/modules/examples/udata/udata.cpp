@@ -15,7 +15,7 @@ using namespace Farage;
 #define MAKEMENTION
 #include "common_func.h"
 
-#define VERSION "v1.1.2"
+#define VERSION "v1.1.3"
 
 #define UDEVAL
 
@@ -124,7 +124,7 @@ int fetchpfpurl(const User& who, std::string& avatar)
         avatar += ".png";
     else
     {
-        avatar = "https://cdn.discordapp.com/embed/avatars/" + who.discriminator + ".png";
+        avatar = "https://cdn.discordapp.com/embed/avatars/" + std::to_string(std::stoi(who.discriminator) % 5) + ".png";
         return 2;
     }
     return 1;
@@ -160,7 +160,6 @@ int avatarCmd(Handle &handle, int argc, const std::string argv[], const Message 
         std::string avatar;
         if (fetchpfpurl(who,avatar))
         {
-            avatar += "?size=1024";
             //sendFile(message.channel_id,outfile,"**" + who.username + "**#" + who.discriminator + "'s avatar");
             /*ServerMember req = getServerMember(message.guild_id,id);
             Server guild = getGuildCache(message.guild_id);
@@ -181,7 +180,7 @@ int avatarCmd(Handle &handle, int argc, const std::string argv[], const Message 
                     }
                 }
             }*/
-            std::string output = "{ \"color\":" + color + ", \"author\": { \"name\": \"" + who.username + "#" + who.discriminator + "'s avatar\", \"icon_url\": \"" + avatar + "\" }, \"image\": { \"url\": \"" + avatar + "\" }, \"description\": \"" + makeMention(who.id) + "\" }";
+            std::string output = "{ \"color\":" + color + ", \"author\": { \"name\": \"" + who.username + "#" + who.discriminator + "'s avatar\", \"icon_url\": \"" + avatar.erase(avatar.size()-3) + ".png\" }, \"image\": { \"url\": \"" + avatar + "?size=1024\" }, \"description\": \"" + makeMention(who.id) + "\" }";
             //std::cout<<output<<std::endl;
             sendEmbed(message.channel_id,output);
         }
@@ -204,10 +203,9 @@ int bannerCmd(Handle &handle, int argc, const std::string argv[], const Message 
             id = ml[1].str();
         User who = getUser(id).object;
         std::string color = std::to_string(who.accent_color);
-        std::string avatar;
-        if (fetchpfburl(who,avatar))
+        std::string avatar, banner;
+        if (fetchpfburl(who,banner))
         {
-            avatar += "?size=1024";
             //sendFile(message.channel_id,outfile,"**" + who.username + "**#" + who.discriminator + "'s avatar");
             /*ServerMember req = getServerMember(message.guild_id,id);
             Server guild = getGuildCache(message.guild_id);
@@ -228,7 +226,8 @@ int bannerCmd(Handle &handle, int argc, const std::string argv[], const Message 
                     }
                 }
             }*/
-            std::string output = "{ \"color\":" + color + ", \"author\": { \"name\": \"" + who.username + "#" + who.discriminator + "'s banner\", \"icon_url\": \"" + avatar + "\" }, \"image\": { \"url\": \"" + avatar + "\" }, \"description\": \"" + makeMention(who.id) + "\" }";
+            fetchpfpurl(who,avatar);
+            std::string output = "{ \"color\":" + color + ", \"author\": { \"name\": \"" + who.username + "#" + who.discriminator + "'s banner\", \"icon_url\": \"" + avatar.erase(avatar.size()-3) + ".png\" }, \"image\": { \"url\": \"" + banner + "?size=1024\" }, \"description\": \"" + makeMention(who.id) + "\" }";
             //std::cout<<output<<std::endl;
             sendEmbed(message.channel_id,output);
         }
