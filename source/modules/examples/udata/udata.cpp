@@ -15,7 +15,7 @@ using namespace Farage;
 #define MAKEMENTION
 #include "common_func.h"
 
-#define VERSION "v1.1.4"
+#define VERSION "v1.1.5"
 
 #define UDEVAL
 
@@ -161,25 +161,28 @@ int avatarCmd(Handle &handle, int argc, const std::string argv[], const Message 
         if (fetchpfpurl(who,avatar))
         {
             //sendFile(message.channel_id,outfile,"**" + who.username + "**#" + who.discriminator + "'s avatar");
-            /*ServerMember req = getServerMember(message.guild_id,id);
-            Server guild = getGuildCache(message.guild_id);
-            int position = 0;
-            for (auto r = guild.roles.begin(), re = guild.roles.end();r != re;++r)
+            if (color == "0")
             {
-                for (auto it = req.roles.begin(), ite = req.roles.end();it != ite;++it)
+                ServerMember req = getServerMember(message.guild_id,id);
+                Server guild = getGuildCache(message.guild_id);
+                int position = 0;
+                for (auto r = guild.roles.begin(), re = guild.roles.end();r != re;++r)
                 {
-                    if (r->id == *it)
+                    for (auto it = req.roles.begin(), ite = req.roles.end();it != ite;++it)
                     {
-                        if ((r->position > position) && (r->color > 0))
+                        if (r->id == *it)
                         {
-                            position = r->position;
-                            std::string c = std::to_string(r->color);
-                            if (c.size() > 0)
-                                color = c;
+                            if ((r->position > position) && (r->color > 0))
+                            {
+                                position = r->position;
+                                std::string c = std::to_string(r->color);
+                                if (c.size() > 0)
+                                    color = c;
+                            }
                         }
                     }
                 }
-            }*/
+            }
             std::string output = "{ \"color\":" + color + ", \"author\": { \"name\": \"" + who.username + "#" + who.discriminator + "'s avatar\", \"icon_url\": \"" + avatar.erase(avatar.size()-3) + "png\" }, \"image\": { \"url\": \"" + avatar + "?size=1024\" }, \"description\": \"" + makeMention(who.id) + "\" }";
             //std::cout<<output<<std::endl;
             sendEmbed(message.channel_id,output);
@@ -207,25 +210,28 @@ int bannerCmd(Handle &handle, int argc, const std::string argv[], const Message 
         if (fetchpfburl(who,banner))
         {
             //sendFile(message.channel_id,outfile,"**" + who.username + "**#" + who.discriminator + "'s avatar");
-            /*ServerMember req = getServerMember(message.guild_id,id);
-            Server guild = getGuildCache(message.guild_id);
-            int position = 0;
-            for (auto r = guild.roles.begin(), re = guild.roles.end();r != re;++r)
+            if (color == "0")
             {
-                for (auto it = req.roles.begin(), ite = req.roles.end();it != ite;++it)
+                ServerMember req = getServerMember(message.guild_id,id);
+                Server guild = getGuildCache(message.guild_id);
+                int position = 0;
+                for (auto r = guild.roles.begin(), re = guild.roles.end();r != re;++r)
                 {
-                    if (r->id == *it)
+                    for (auto it = req.roles.begin(), ite = req.roles.end();it != ite;++it)
                     {
-                        if ((r->position > position) && (r->color > 0))
+                        if (r->id == *it)
                         {
-                            position = r->position;
-                            std::string c = std::to_string(r->color);
-                            if (c.size() > 0)
-                                color = c;
+                            if ((r->position > position) && (r->color > 0))
+                            {
+                                position = r->position;
+                                std::string c = std::to_string(r->color);
+                                if (c.size() > 0)
+                                    color = c;
+                            }
                         }
                     }
                 }
-            }*/
+            }
             fetchpfpurl(who,avatar);
             std::string output = "{ \"color\":" + color + ", \"author\": { \"name\": \"" + who.username + "#" + who.discriminator + "'s banner\", \"icon_url\": \"" + avatar.erase(avatar.size()-3) + "png\" }, \"image\": { \"url\": \"" + banner + "?size=1024\" }, \"description\": \"" + makeMention(who.id) + "\" }";
             //std::cout<<output<<std::endl;
