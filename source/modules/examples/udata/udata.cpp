@@ -15,7 +15,7 @@ using namespace Farage;
 #define MAKEMENTION
 #include "common_func.h"
 
-#define VERSION "v1.1.6"
+#define VERSION "v1.1.7"
 
 #define UDEVAL
 
@@ -163,6 +163,7 @@ int avatarCmd(Handle &handle, int argc, const std::string argv[], const Message 
             //sendFile(message.channel_id,outfile,"**" + who.username + "**#" + who.discriminator + "'s avatar");
             if (color == "0")
             {
+                color = "39835";
                 ServerMember req = getServerMember(message.guild_id,id);
                 Server guild = getGuildCache(message.guild_id);
                 int position = 0;
@@ -212,6 +213,7 @@ int bannerCmd(Handle &handle, int argc, const std::string argv[], const Message 
             //sendFile(message.channel_id,outfile,"**" + who.username + "**#" + who.discriminator + "'s avatar");
             if (color == "0")
             {
+                color = "39835";
                 ServerMember req = getServerMember(message.guild_id,id);
                 Server guild = getGuildCache(message.guild_id);
                 int position = 0;
