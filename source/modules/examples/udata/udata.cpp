@@ -250,7 +250,7 @@ int bannerCmd(Handle &handle, int argc, const std::string argv[], const Message 
         else if (color != "0")
         {
             fetchpfpurl(who,avatar);
-            std::string output = "{ \"color\":" + color + ", \"author\": { \"name\": \"" + who.username + "#" + who.discriminator + "'s banner\", \"icon_url\": \"" + avatar.substr(0,avatar.size()-3) + "png\" }, \"image\": { \"url\": \"https://www.colorhexa.com/" + int2hex(std:stoi(color)) + ".png\" }, \"description\": \"" + makeMention(who.id) + "\" }";
+            std::string output = "{ \"color\":" + color + ", \"author\": { \"name\": \"" + who.username + "#" + who.discriminator + "'s banner\", \"icon_url\": \"" + avatar.substr(0,avatar.size()-3) + "png\" }, \"image\": { \"url\": \"https://www.colorhexa.com/" + int2hex(std::stoi(color)) + ".png\" }, \"description\": \"" + makeMention(who.id) + "\" }";
         }
         else
             reaction(message,"%E2%9D%93");
