@@ -15,7 +15,7 @@ using namespace Farage;
 #define MAKEMENTION
 #include "common_func.h"
 
-#define VERSION "v1.0.9"
+#define VERSION "v1.1.0"
 
 #define UDEVAL
 
@@ -41,6 +41,7 @@ extern "C" int onModuleStart(Handle &handle, Global *global)
     recallGlobal(global);
     handle.createGlobVar("udata_version",VERSION,"User Data Version",GVAR_CONSTANT);
     handle.regChatCmd("pfp",&avatarCmd,NOFLAG,"Get a user's avatar.");
+    handle.regChatCmd("pfb",&bannerCmd,NOFLAG,"Get a user's banner.");
 #ifdef UDEVAL
     handle.regChatCmd("udeval",&evalCmd,ROOT,"Evaluate an identifier{ID,...}[.prop]... string.");
 #endif
@@ -139,19 +140,19 @@ int avatarCmd(Handle &handle, int argc, const std::string argv[], const Message 
         sendMessage(message.channel_id,"Usage: `" + recallGlobal()->prefix(message.guild_id) + argv[0] + " <user_id>`");
     else
     {
-        std::string color = "39835";
         std::string id = argv[1];
         static rens::regex pingptrn ("<@!?([0-9]+)>");
         rens::smatch ml;
         if (regex_match(id,ml,pingptrn))
             id = ml[1].str();
         User who = getUser(id).object;
+        std::string color = std::to_string(who.accent_color);
         std::string avatar;
         if (fetchpfpurl(who,avatar))
         {
             avatar += "?size=1024";
             //sendFile(message.channel_id,outfile,"**" + who.username + "**#" + who.discriminator + "'s avatar");
-            ServerMember req = getServerMember(message.guild_id,id);
+            /*ServerMember req = getServerMember(message.guild_id,id);
             Server guild = getGuildCache(message.guild_id);
             int position = 0;
             for (auto r = guild.roles.begin(), re = guild.roles.end();r != re;++r)
@@ -169,8 +170,55 @@ int avatarCmd(Handle &handle, int argc, const std::string argv[], const Message 
                         }
                     }
                 }
-            }
+            }*/
             std::string output = "{ \"color\":" + color + ", \"author\": { \"name\": \"" + who.username + "#" + who.discriminator + "'s avatar\", \"icon_url\": \"" + avatar + "\" }, \"image\": { \"url\": \"" + avatar + "\" }, \"description\": \"" + makeMention(who.id) + "\" }";
+            //std::cout<<output<<std::endl;
+            sendEmbed(message.channel_id,output);
+        }
+        else
+            reaction(message,"%E2%9D%93");
+    }
+    return PLUGIN_HANDLED;
+}
+
+int bannerCmd(Handle &handle, int argc, const std::string argv[], const Message &message)
+{
+    if (argc < 2)
+        sendMessage(message.channel_id,"Usage: `" + recallGlobal()->prefix(message.guild_id) + argv[0] + " <user_id>`");
+    else
+    {
+        std::string id = argv[1];
+        static rens::regex pingptrn ("<@!?([0-9]+)>");
+        rens::smatch ml;
+        if (regex_match(id,ml,pingptrn))
+            id = ml[1].str();
+        User who = getUser(id).object;
+        std::string color = std::to_string(who.accent_color);
+        std::string avatar;
+        if (fetchpfburl(who,avatar))
+        {
+            avatar += "?size=1024";
+            //sendFile(message.channel_id,outfile,"**" + who.username + "**#" + who.discriminator + "'s avatar");
+            /*ServerMember req = getServerMember(message.guild_id,id);
+            Server guild = getGuildCache(message.guild_id);
+            int position = 0;
+            for (auto r = guild.roles.begin(), re = guild.roles.end();r != re;++r)
+            {
+                for (auto it = req.roles.begin(), ite = req.roles.end();it != ite;++it)
+                {
+                    if (r->id == *it)
+                    {
+                        if ((r->position > position) && (r->color > 0))
+                        {
+                            position = r->position;
+                            std::string c = std::to_string(r->color);
+                            if (c.size() > 0)
+                                color = c;
+                        }
+                    }
+                }
+            }*/
+            std::string output = "{ \"color\":" + color + ", \"author\": { \"name\": \"" + who.username + "#" + who.discriminator + "'s banner\", \"icon_url\": \"" + avatar + "\" }, \"image\": { \"url\": \"" + avatar + "\" }, \"description\": \"" + makeMention(who.id) + "\" }";
             //std::cout<<output<<std::endl;
             sendEmbed(message.channel_id,output);
         }
