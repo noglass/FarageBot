@@ -15,7 +15,7 @@ using namespace Farage;
 #define MAKEMENTION
 #include "common_func.h"
 
-#define VERSION "v1.1.1"
+#define VERSION "v1.1.2"
 
 #define UDEVAL
 
@@ -120,18 +120,27 @@ int fetchpfpurl(const User& who, std::string& avatar)
     avatar = "https://cdn.discordapp.com/avatars/" + who.id + '/' + who.avatar;
     if (who.avatar.substr(0,2) == "a_")
         avatar += ".gif";
-    else
+    else if who.avatar.size() > 0)
         avatar += ".png";
-    return 0;
+    else
+    {
+        avatar = "https://cdn.discordapp.com/embed/avatars/" + who.discriminator + ".png";
+        return 2;
+    }
+    return 1;
 }
 
 int fetchpfburl(const User& who, std::string& avatar)
 {
-    avatar = "https://cdn.discordapp.com/banners/" + who.id + '/' + who.banner;
-    if (who.banner.substr(0,2) == "a_")
-        avatar += ".gif";
-    else
-        avatar += ".png";
+    if (who.banner.size() > 0)
+    {
+        avatar = "https://cdn.discordapp.com/banners/" + who.id + '/' + who.banner;
+        if (who.banner.substr(0,2) == "a_")
+            avatar += ".gif";
+        else
+            avatar += ".png";
+        return 1;
+    }
     return 0;
 }
 
