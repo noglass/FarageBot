@@ -120,7 +120,7 @@ int fetchpfpurl(const User& who, std::string& avatar)
     avatar = "https://cdn.discordapp.com/avatars/" + who.id + '/' + who.avatar;
     if (who.avatar.substr(0,2) == "a_")
         avatar += ".gif";
-    else if who.avatar.size() > 0)
+    else if (who.avatar.size() > 0)
         avatar += ".png";
     else
     {
