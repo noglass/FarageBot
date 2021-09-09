@@ -15,7 +15,7 @@ using namespace Farage;
 #define MAKEMENTION
 #include "common_func.h"
 
-#define VERSION "v1.1.5"
+#define VERSION "v1.1.6"
 
 #define UDEVAL
 
@@ -183,7 +183,7 @@ int avatarCmd(Handle &handle, int argc, const std::string argv[], const Message 
                     }
                 }
             }
-            std::string output = "{ \"color\":" + color + ", \"author\": { \"name\": \"" + who.username + "#" + who.discriminator + "'s avatar\", \"icon_url\": \"" + avatar.erase(avatar.size()-3) + "png\" }, \"image\": { \"url\": \"" + avatar + "?size=1024\" }, \"description\": \"" + makeMention(who.id) + "\" }";
+            std::string output = "{ \"color\":" + color + ", \"author\": { \"name\": \"" + who.username + "#" + who.discriminator + "'s avatar\", \"icon_url\": \"" + avatar.substr(0,avatar.size()-3) + "png\" }, \"image\": { \"url\": \"" + avatar + "?size=1024\" }, \"description\": \"" + makeMention(who.id) + "\" }";
             //std::cout<<output<<std::endl;
             sendEmbed(message.channel_id,output);
         }
@@ -233,7 +233,7 @@ int bannerCmd(Handle &handle, int argc, const std::string argv[], const Message 
                 }
             }
             fetchpfpurl(who,avatar);
-            std::string output = "{ \"color\":" + color + ", \"author\": { \"name\": \"" + who.username + "#" + who.discriminator + "'s banner\", \"icon_url\": \"" + avatar.erase(avatar.size()-3) + "png\" }, \"image\": { \"url\": \"" + banner + "?size=1024\" }, \"description\": \"" + makeMention(who.id) + "\" }";
+            std::string output = "{ \"color\":" + color + ", \"author\": { \"name\": \"" + who.username + "#" + who.discriminator + "'s banner\", \"icon_url\": \"" + avatar.substr(0,avatar.size()-3) + "png\" }, \"image\": { \"url\": \"" + banner + "?size=1024\" }, \"description\": \"" + makeMention(who.id) + "\" }";
             //std::cout<<output<<std::endl;
             sendEmbed(message.channel_id,output);
         }
