@@ -15,7 +15,7 @@ using namespace Farage;
 #define MAKEMENTION
 #include "common_func.h"
 
-#define VERSION "v1.0.5"
+#define VERSION "v1.0.8"
 
 #define UDEVAL
 
@@ -76,6 +76,48 @@ extern "C" int onModulesLoaded(Handle &handle, int event, void *iterator, void *
     return PLUGIN_CONTINUE;
 }
 
+int fetchpfpurl(const User& who, std::string& avatar)
+{
+    if (who.avatar.size() > 0)
+    {
+        std::string line;
+        std::string outfile = "pfp/" + who.avatar;
+        std::string cmd = "curl -s -o ";
+        avatar = "https://cdn.discordapp.com/avatars/" + who.id + '/' + who.avatar;
+        system((cmd + outfile + ".gif " + avatar + ".gif").c_str());
+        std::ifstream image (outfile + ".gif");
+        if (image.is_open())
+        {
+            bool err = (image.peek() == std::char_traits<char>::eof());
+            //image.close();
+            std::getline(image,line);
+            if ((err) || (line.find("image transform failed") == 0))
+            {
+                system(("rm " + outfile + ".gif").c_str());
+                outfile += ".png";
+                avatar += ".png";
+                //system((cmd + outfile + ' ' + avatar).c_str());
+                return 1;
+            }
+            else
+            {
+                outfile += ".gif";
+                avatar += ".gif";
+                system(("rm " + outfile).c_str());
+                return 2;
+            }
+        }
+        else
+        {
+            outfile += ".png";
+            avatar += ".png";
+            //system((cmd + outfile + ' ' + avatar).c_str());
+            return 1;
+        }
+    }
+    return 0;
+}
+
 int avatarCmd(Handle &handle, int argc, const std::string argv[], const Message &message)
 {
     if (argc < 2)
@@ -89,37 +131,10 @@ int avatarCmd(Handle &handle, int argc, const std::string argv[], const Message 
         if (regex_match(id,ml,pingptrn))
             id = ml[1].str();
         User who = getUser(id).object;
-        if (who.avatar.size() > 0)
+        std::string avatar;
+        if (fetchpfpurl(who,avatar))
         {
-            std::string outfile = "pfp/" + who.id + message.timestamp;
-            std::string cmd = "curl -s -o ";
-            std::string avatar = "https://cdn.discordapp.com/avatars/" + who.id + '/' + who.avatar;
-            system((cmd + outfile + ".gif " + avatar + ".gif?size=1024").c_str());
-            std::ifstream image (outfile + ".gif");
-            if (image.is_open())
-            {
-                bool err = (image.peek() == std::char_traits<char>::eof());
-                image.close();
-                if (err)
-                {
-                    system(("rm " + outfile + ".gif").c_str());
-                    outfile += ".png";
-                    avatar += ".png?size=1024";
-                    //system((cmd + outfile + ' ' + avatar).c_str());
-                }
-                else
-                {
-                    outfile += ".gif";
-                    avatar += ".gif?size=1024";
-                    system(("rm " + outfile).c_str());
-                }
-            }
-            else
-            {
-                outfile += ".png";
-                avatar += ".png?size=1024";
-                //system((cmd + outfile + ' ' + avatar).c_str());
-            }
+            avatar += "?size=1024";
             //sendFile(message.channel_id,outfile,"**" + who.username + "**#" + who.discriminator + "'s avatar");
             ServerMember req = getServerMember(message.guild_id,id);
             Server guild = getGuildCache(message.guild_id);
@@ -181,13 +196,18 @@ std::string userData(const User& who, std::string prop)
                 out = who.avatar;
                 pos = 6;
             }
+            else if (!prop.find("pfp"))
+            {
+                fetchpfpurl(who,out);
+                pos = 3;
+            }
             else if (!prop.find("bot"))
             {
                 if (who.bot)
                     out = "true";
                 else
                     out = "false";
-                pos = 8;
+                pos = 3;
             }
             else if (!prop.find("mfa_enabled"))
             {
@@ -209,6 +229,16 @@ std::string userData(const User& who, std::string prop)
             {
                 out = who.email;
                 pos = 5;
+            }
+            else if (!prop.find("banner"))
+            {
+                out = who.banner;
+                pos = 6;
+            }
+            else if (!prop.find("accent_color"))
+            {
+                out = std::to_string(who.accent_color);
+                pos = 12;
             }
             else
             {

@@ -10,7 +10,7 @@ using namespace Farage;
 #define SPLITSTRING
 #include "common_func.h"
 
-#define VERSION "v0.2.9"
+#define VERSION "v0.3.0"
 
 extern "C" Info Module
 {
@@ -217,7 +217,12 @@ int addrollsetCmd(Handle &handle, int argc, const std::string argv[], const Mess
             if (set == setend)
                 sendMessage(message.channel_id,"No rollset named `" + ref + "`.");
             else if (set->exists("outcomes"))
-                sendMessage(message.channel_id,"`" + set->topic() + "` has the following outcomes: " + set->find("outcomes"));
+            {
+                int n;
+                std::string* outcomes = splitString(set->find("outcomes")," ",n);
+                sendMessage(message.channel_id,"`" + set->topic() + "` has the following outcomes (" + std::to_string(n) + "): " + set->find("outcomes"));
+                delete[] outcomes;
+            }
             else
             {
                 if (set->exists("references"))

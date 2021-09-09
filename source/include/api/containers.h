@@ -61,6 +61,8 @@ namespace Farage
         //std::string locale;
         bool verified;
         std::string email;
+        std::string banner;
+        size_t accent_color;
     };
     
     struct Role

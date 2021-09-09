@@ -79,7 +79,9 @@ namespace Farage
             std::move(user.bot),
             std::move(user.mfa_enabled),
             std::move(user.verified),
-            std::move(user.email)
+            std::move(user.email),
+            std::move(user.banner),
+            std::move(user.accent_color)
         };
     }
     

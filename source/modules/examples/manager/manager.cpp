@@ -16,7 +16,7 @@ using namespace Farage;
 #define STRREPLACE
 #include "common_func.h"
 
-#define VERSION "v0.5.4"
+#define VERSION "v0.5.5"
 
 extern "C" Info Module
 {
@@ -1390,13 +1390,27 @@ int chatHookMsg(Handle& handle, int argc, const std::string argv[])
 
 int listHookMsg(Handle& handle, int argc, const std::string argv[], const Message& message)
 {
-    std::string out;
+    std::string out, line;
+    bool empty = true;
     for (auto& h : Manager::hookDatas)
-        out += "Hook: `" + h.first + "`: from '" + h.second.from + "', in '" + h.second.guild + ":" + h.second.channel + "', triggering " + (h.second.chat ? "(chat) " : "(console) ") + "```\n" + h.second.command + "\n```\n";
-    if (out.size() < 1)
+    {
+        empty = false;
+        line = "Hook: `" + h.first + "`: from '" + h.second.from + "', in '" + h.second.guild + ":" + h.second.channel + "', triggering " + (h.second.chat ? "(chat) " : "(console) ") + "```\n" + h.second.command + "\n```";
+        if (out.size() + line.size() < 1900)
+        {
+            if (out.size())
+                out = out + '\n' + line;
+            else
+                out += line;
+        }
+        else
+        {
+            sendMessage(message.channel_id,out);
+            out = line;
+        }
+    }
+    if (empty)
         out = "No hooks set!";
-    else
-        out.erase(out.size()-1);
     sendMessage(message.channel_id,out);
     return PLUGIN_HANDLED;
 }
