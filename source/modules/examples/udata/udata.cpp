@@ -156,7 +156,7 @@ int avatarCmd(Handle &handle, int argc, const std::string argv[], const Message 
         if (regex_match(id,ml,pingptrn))
             id = ml[1].str();
         auto response = getUser(id);
-        if (!response.error())
+        if (!response.response.error())
         {
             User who = response.object;
             std::string color = std::to_string(who.accent_color);
@@ -216,7 +216,7 @@ int bannerCmd(Handle &handle, int argc, const std::string argv[], const Message 
         if (regex_match(id,ml,pingptrn))
             id = ml[1].str();
         auto response = getUser(id);
-        if (!response.error())
+        if (!response.response.error())
         {
             User who = response.object;
             std::string color = std::to_string(who.accent_color);
