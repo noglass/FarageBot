@@ -15,7 +15,7 @@ using namespace Farage;
 #define MAKEMENTION
 #include "common_func.h"
 
-#define VERSION "v1.2.0"
+#define VERSION "v1.2.1"
 
 #define UDEVAL
 
@@ -130,6 +130,14 @@ int fetchpfpurl(const User& who, std::string& avatar)
     return 1;
 }
 
+std::string int2hex(const uint32_t color)
+{
+    std::string out(6,'0');
+    for (uint8_t i = 0, j = 20;i<6;++i,j -= 4)
+        out[i] = "0123456789ABCDEF"[(color>>j) & 0x0f];
+    return std::move(out);
+}
+
 int fetchpfburl(const User& who, std::string& avatar)
 {
     if (who.banner.size() > 0)
@@ -140,6 +148,11 @@ int fetchpfburl(const User& who, std::string& avatar)
         else
             avatar += ".png";
         return 1;
+    }
+    else if (who.accent_color)
+    {
+        avatar = "https://www.colorhexa.com/" + int2hex(who.accent_color) + ".png";
+        return 2;
     }
     return 0;
 }
@@ -196,14 +209,6 @@ int avatarCmd(Handle &handle, int argc, const std::string argv[], const Message 
     return PLUGIN_HANDLED;
 }
 
-std::string int2hex(const uint32_t color)
-{
-    std::string out(6,'0');
-    for (uint8_t i = 0, j = 20;i<6;++i,j -= 4)
-        out[i] = "0123456789ABCDEF"[(color>>j) & 0x0f];
-    return std::move(out);
-}
-
 int bannerCmd(Handle &handle, int argc, const std::string argv[], const Message &message)
 {
     if (argc < 2)
@@ -252,12 +257,12 @@ int bannerCmd(Handle &handle, int argc, const std::string argv[], const Message 
                 //std::cout<<output<<std::endl;
                 sendEmbed(message.channel_id,output);
             }
-            else if (who.accent_color)
+            /*else if (who.accent_color)
             {
                 fetchpfpurl(who,avatar);
                 std::string output = "{ \"color\":" + color + ", \"author\": { \"name\": \"" + who.username + "#" + who.discriminator + "'s banner\", \"icon_url\": \"" + avatar.substr(0,avatar.size()-3) + "png\" }, \"image\": { \"url\": \"https://www.colorhexa.com/" + int2hex(who.accent_color) + ".png\" }, \"description\": \"" + makeMention(who.id) + "\" }";
                 sendEmbed(message.channel_id,output);
-            }
+            }*/
         }
         else
             reaction(message,"%E2%9D%93");
