@@ -15,7 +15,7 @@ using namespace Farage;
 #define MAKEMENTION
 #include "common_func.h"
 
-#define VERSION "v1.0.8"
+#define VERSION "v1.0.9"
 
 #define UDEVAL
 
@@ -78,7 +78,7 @@ extern "C" int onModulesLoaded(Handle &handle, int event, void *iterator, void *
 
 int fetchpfpurl(const User& who, std::string& avatar)
 {
-    if (who.avatar.size() > 0)
+    /*if (who.avatar.size() > 0)
     {
         std::string line;
         std::string outfile = "pfp/" + who.avatar;
@@ -114,7 +114,22 @@ int fetchpfpurl(const User& who, std::string& avatar)
             //system((cmd + outfile + ' ' + avatar).c_str());
             return 1;
         }
-    }
+    }*/
+    avatar = "https://cdn.discordapp.com/avatars/" + who.id + '/' + who.avatar;
+    if (who.avatar.substr(0,2) == "a_")
+        avatar += ".gif";
+    else
+        avatar += ".png";
+    return 0;
+}
+
+int fetchpfburl(const User& who, std::string& avatar)
+{
+    avatar = "https://cdn.discordapp.com/banners/" + who.id + '/' + who.banner;
+    if (who.banner.substr(0,2) == "a_")
+        avatar += ".gif";
+    else
+        avatar += ".png";
     return 0;
 }
 
@@ -239,6 +254,11 @@ std::string userData(const User& who, std::string prop)
             {
                 out = std::to_string(who.accent_color);
                 pos = 12;
+            }
+            else if (!prop.find("pfb"))
+            {
+                fetchpfburl(who,out);
+                pos = 3;
             }
             else
             {
