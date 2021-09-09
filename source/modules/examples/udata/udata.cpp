@@ -15,7 +15,7 @@ using namespace Farage;
 #define MAKEMENTION
 #include "common_func.h"
 
-#define VERSION "v1.1.0"
+#define VERSION "v1.1.1"
 
 #define UDEVAL
 
@@ -30,6 +30,7 @@ extern "C" Info Module
 };
 
 int avatarCmd(Handle&,int,const std::string[],const Message&);
+int bannerCmd(Handle&,int,const std::string[],const Message&);
 #ifdef UDEVAL
 int evalCmd(Handle&,int,const std::string[],const Message&);
 #endif
