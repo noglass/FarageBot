@@ -15,7 +15,7 @@ using namespace Farage;
 #define MAKEMENTION
 #include "common_func.h"
 
-#define VERSION "v1.2.1"
+#define VERSION "v1.2.2"
 
 #define UDEVAL
 
@@ -257,6 +257,8 @@ int bannerCmd(Handle &handle, int argc, const std::string argv[], const Message 
                 //std::cout<<output<<std::endl;
                 sendEmbed(message.channel_id,output);
             }
+            else
+                reaction(message,"%E2%9D%8C");
             /*else if (who.accent_color)
             {
                 fetchpfpurl(who,avatar);
