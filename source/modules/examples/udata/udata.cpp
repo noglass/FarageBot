@@ -15,7 +15,7 @@ using namespace Farage;
 #define MAKEMENTION
 #include "common_func.h"
 
-#define VERSION "v1.1.8"
+#define VERSION "v1.1.9"
 
 #define UDEVAL
 
@@ -251,6 +251,7 @@ int bannerCmd(Handle &handle, int argc, const std::string argv[], const Message 
         {
             fetchpfpurl(who,avatar);
             std::string output = "{ \"color\":" + color + ", \"author\": { \"name\": \"" + who.username + "#" + who.discriminator + "'s banner\", \"icon_url\": \"" + avatar.substr(0,avatar.size()-3) + "png\" }, \"image\": { \"url\": \"https://www.colorhexa.com/" + int2hex(std::stoi(color)) + ".png\" }, \"description\": \"" + makeMention(who.id) + "\" }";
+            sendEmbed(message.channel_id,output);
         }
         else
             reaction(message,"%E2%9D%93");
