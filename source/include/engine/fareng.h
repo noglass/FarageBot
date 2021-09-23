@@ -345,7 +345,7 @@ namespace Farage
                     }
                     else if (arg == "--help")
                     {
-                        consoleOut("FarageBot " + std::string(FARAGE_ENGINE) + " written by nigel.\n\thttps://github.com/nigelSaysHesHappy/FarageBot/\n  Farage API " + std::string(FARAGE_API_VERSION) + "\n  Powered by " + std::string(SLEEPY_VERSION) + ".\n\thttps://github.com/yourWaifu/sleepy-discord/\n\n\
+                        consoleOut("FarageBot " + std::string(FARAGE_ENGINE) + " written by Madison.\n\thttps://github.com/noglass/FarageBot/\n  Farage API " + std::string(FARAGE_API_VERSION) + "\n  Powered by " + std::string(SLEEPY_VERSION) + ".\n\thttps://github.com/yourWaifu/sleepy-discord/\n\n\
 DESCRIPTION\n\tCan't Barrage Bot the Modular Discord Farage Bot!\n\n\
 USAGE\n\
 \t" + argv[0] + " [OPTIONS]\n\n\
