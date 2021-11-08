@@ -15,7 +15,7 @@ using namespace Farage;
 #define MAKEMENTION
 #include "common_func.h"
 
-#define VERSION "v1.2.2"
+#define VERSION "v1.5.6"
 
 #define UDEVAL
 
@@ -36,6 +36,7 @@ int evalCmd(Handle&,int,const std::string[],const Message&);
 #endif
 
 void (*makeLewd)(std::string&,int[4]) = nullptr;
+void (*getFaq)(std::string&) = nullptr;
 
 extern "C" int onModuleStart(Handle &handle, Global *global)
 {
@@ -46,6 +47,7 @@ extern "C" int onModuleStart(Handle &handle, Global *global)
 #ifdef UDEVAL
     handle.regChatCmd("udeval",&evalCmd,ROOT,"Evaluate an identifier{ID,...}[.prop]... string.");
 #endif
+    /*int found = 0;
     for (auto it = global->plugins.begin(), ite = global->plugins.end();it != ite;++it)
     {
         if ((*it)->getModule() == "reproductive")
@@ -53,27 +55,43 @@ extern "C" int onModuleStart(Handle &handle, Global *global)
             *(void **) (&makeLewd) = dlsym((*it)->getModulePtr(),"makeLewd");
             if (dlerror() != NULL)
                 makeLewd = nullptr;
-            break;
+            found |= 1;
         }
-    }
+        else if ((*it)->getModule() == "mettaton")
+        {
+            *(void **) (&getFaq) = dlsym((*it)->getModulePtr(),"getFaqValue");
+            if (dlerror() != NULL)
+                getFaq = nullptr;
+            found |= 2;
+        }
+        if (found == 3)
+            break;
+    }*/
     return 0;
 }
 
 extern "C" int onModulesLoaded(Handle &handle, int event, void *iterator, void *position, void *foo, void *bar)
 {
     Global* global = recallGlobal();
-    if (makeLewd == nullptr)
+    int found = 0;
+    for (auto it = global->plugins.begin(), ite = global->plugins.end();it != ite;++it)
     {
-        for (auto it = global->plugins.begin(), ite = global->plugins.end();it != ite;++it)
+        if ((*it)->getModule() == "reproductive")
         {
-            if ((*it)->getModule() == "reproductive")
-            {
-                *(void **) (&makeLewd) = dlsym((*it)->getModulePtr(),"makeLewd");
-                if (dlerror() != NULL)
-                    makeLewd = nullptr;
-                break;
-            }
+            *(void **) (&makeLewd) = dlsym((*it)->getModulePtr(),"makeLewd");
+            if (dlerror() != NULL)
+                makeLewd = nullptr;
+            found |= 1;
         }
+        else if ((*it)->getModule() == "mettaton")
+        {
+            *(void **) (&getFaq) = dlsym((*it)->getModulePtr(),"getFaqValue");
+            if (dlerror() != NULL)
+                getFaq = nullptr;
+            found |= 2;
+        }
+        if (found == 3)
+            break;
     }
     return PLUGIN_CONTINUE;
 }
@@ -739,6 +757,18 @@ std::string guildData(const Server& chan, std::string prop, const std::string& r
                 out = chan.icon;
                 pos = 4;
             }
+            else if (!prop.find("pfp"))
+            {
+                pos = 3;
+                if (chan.icon.size() > 0)
+                {
+                    out = "https://cdn.discordapp.com/icons/" + chan.id + '/' + chan.icon;
+                    if (chan.icon.find("a_") == 0)
+                        out += ".gif";
+                    else
+                        out += ".png";
+                }
+            }
             else if (!prop.find("splash"))
             {
                 out = chan.splash;
@@ -1300,17 +1330,172 @@ std::string calcf(const std::string& expression)
     return exec("exec bash -c 'awk \"BEGIN { ; print " + rens::regex_replace(expression,rem,"") + "}\"'");
 }
 
+std::string duration(int64_t seconds)
+{
+    std::string output;
+    if (seconds < 0)
+    {
+        seconds *= -1;
+        output = "Negative ";
+    }
+    size_t minutes = 0, hours = 0, days = 0, weeks = 0;//, months = 0, years = 0;
+    minutes = (hours = seconds / 60) % 60;
+    seconds %= 60;
+    hours = (days = hours / 60) % 24;
+    days = (weeks = days / 24) % 7;
+    weeks /= 7;
+    /*months = (years = months / 30) % 12;
+    years /= 12;
+    if (years)
+        output += std::to_string(years) + " year" + (years > 1 ? "s, " : ", ");
+    if (months)
+        output += std::to_string(months) + " month" + (months > 1 ? "s, " : ", ");*/
+    if (weeks)
+        output += std::to_string(weeks) + " week" + (weeks > 1 ? "s, " : ", ");
+    if (days)
+        output += std::to_string(days) + " day" + (days > 1 ? "s, " : ", ");
+    if (hours)
+        output += std::to_string(hours) + " hour" + (hours > 1 ? "s, " : ", ");
+    if (minutes)
+        output += std::to_string(minutes) + " minute" + (minutes > 1 ? "s, " : ", ");
+    output += std::to_string(seconds) + " second";
+    if ((seconds > 1) || (seconds == 0))
+        output += "s";
+    return std::move(output);
+}
+
+bool isLeap(int year)
+{
+    if (year % 4 == 0)
+    {
+        if (year % 100 == 0)
+        {
+            if (year % 400 == 0)
+                return true;
+            else
+                return false;
+        }
+        return true;
+    }
+    return false;
+}
+
+std::string timedur(time_t start, time_t end)
+{
+    static const int monthDays[12] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
+    std::string output;
+    bool future = (start < end);
+    tm st, ed;
+    if (future)
+    {
+        gmtime_r(&start,&st);
+        gmtime_r(&end,&ed);
+    }
+    else
+    {
+        gmtime_r(&end,&st);
+        gmtime_r(&start,&ed);
+    }
+    bool leap = false;
+    int seconds = 0, minutes = 0, hours = 0, days = 0, months = 0, years = 0;
+    years = ed.tm_year - st.tm_year;
+    if ((years) && ((st.tm_mon > ed.tm_mon) || ((st.tm_mon == ed.tm_mon) && (st.tm_mday > ed.tm_mday))))
+        --years;
+    if (st.tm_year == ed.tm_year)
+        months = ed.tm_mon - st.tm_mon;
+    else if (st.tm_mon < ed.tm_mon)
+        months = ed.tm_mon - st.tm_mon;
+    else if (st.tm_mon != ed.tm_mon)
+        months = 12 - st.tm_mon + ed.tm_mon;
+    if (st.tm_mday > ed.tm_mday)
+        --months;
+    if (months < 0)
+        months = 11;
+    if (st.tm_mday > ed.tm_mday)
+    {
+        int m = st.tm_mon;
+        if (st.tm_mon == ed.tm_mon)
+            if (--m < 0)
+                m = 11;
+        if (m == 1)
+            leap = isLeap(1900 + st.tm_year);
+        days = monthDays[m] - st.tm_mday + leap + ed.tm_mday;
+    }
+    else
+        days = ed.tm_mday - st.tm_mday;
+    
+    int sTime = (st.tm_hour * 60 + st.tm_min) * 60 + st.tm_sec;
+    int eTime = (ed.tm_hour * 60 + ed.tm_min) * 60 + ed.tm_sec;
+    if (eTime < sTime)
+    {
+        --days;
+        seconds = (24*60*60) - sTime + eTime;
+    }
+    else
+        seconds = eTime - sTime;
+    
+    if (days < 0)
+    {
+        int m = st.tm_mon - 1;
+        if (m < 0)
+            m = 11;
+        if (m == 1)
+            leap = isLeap(1900 + st.tm_year);
+        days = monthDays[m] - st.tm_mday + leap + ed.tm_mday;
+        --months;
+    }
+    if (months < 0)
+    {
+        months = 11;
+        --years;
+    }
+    
+    minutes = (hours = seconds / 60) % 60;
+    hours = (hours / 60) % 24;
+    seconds %= 60;
+    
+    if (years)
+        output += std::to_string(years) + " year" + (years > 1 ? "s, " : ", ");
+    if (months)
+        output += std::to_string(months) + " month" + (months > 1 ? "s, " : ", ");
+    if (days)
+        output += std::to_string(days) + " day" + (days > 1 ? "s, " : ", ");
+    if (hours)
+        output += std::to_string(hours) + " hour" + (hours > 1 ? "s, " : ", ");
+    if (minutes)
+        output += std::to_string(minutes) + " minute" + (minutes > 1 ? "s, " : ", ");
+    if (seconds)
+    {
+        output += std::to_string(seconds) + " second";
+        if ((seconds > 1) || (seconds == 0))
+            output += "s";
+    }
+    else
+       output.erase(output.size()-2);
+    /*if (future)
+        output += " from <t:" + std::to_string(start) + ">";
+    else
+        output += " before <t:" + std::to_string(start) + ">";*/
+    return std::move(output);
+}
+
 void evaluateDataRe(std::string& eval, const std::string& guildID, const std::string& channelID, const std::string& authorID, const std::string& messageID)
 {
-    static rens::regex specialptrn ("[\\.\\{\\}\\[\\]\\(\\)]");
-    //static rens::regex inputptrn ("(?<!\\\\)\\$(\\d+)");
-    static rens::regex identptrn ("(?i)(user|member|guild|channel|role|message|messages\\((\\d+|before|after|around),\\d+\\))\\{(\\d+|this)(\\}|,\\d+\\})(\\.[\\w\\[\\]\\d\\.]+)?");
-    static rens::regex randptrn ("(?i)rand\\((\\d+),?(\\d*)\\)");
-    static rens::regex rand2ptrn ("(?i)rand\\(([^)]*)\\)");
-    static rens::regex argptrn ("^([^,]*)(,|$)");
-    static rens::regex inputptrn ("&(\\d+)");
-    static rens::regex balanced ("(\\((?>[^()]+|(?1))*\\))");
-    static rens::regex lewdptrn ("(?i)lewd\\((\\d*),?(\\d*),?(\\d*),?(\\d*)\\)");
+    static const rens::regex specialptrn ("[\\.\\{\\}\\[\\]\\(\\)]");
+    //static const rens::regex inputptrn ("(?<!\\\\)\\$(\\d+)");
+    static const rens::regex identptrn ("(?i)(user|member|guild|channel|role|message|messages\\((\\d+|before|after|around),\\d+\\))\\{(\\d+|this)(\\}|,\\d+\\})(\\.[\\w\\[\\]\\d\\.]+)?");
+    static const rens::regex randptrn ("(?i)rand\\((\\d+),?(\\d*)\\)");
+    static const rens::regex rand2ptrn ("(?i)rand\\(([^)]*)\\)");
+    static const rens::regex argptrn ("^([^,]*)(,|$)");
+    static const rens::regex inputptrn ("&(\\d+)");
+    static const rens::regex balanced ("^(\\((?>[^()]+|(?1))*\\))");
+    static const rens::regex lewdptrn ("(?i)lewd\\((\\d*),?(\\d*),?(\\d*),?(\\d*)\\)");
+    static const rens::regex timeptrn ("(?i)\\btime\\(\\)");
+    static const rens::regex time2ptrn ("(?i)\\btime\\(([^,]+),([^)]+)\\)");
+    static const rens::regex strftimeptrn ("(?i)strftime\\((-?\\d+),([^)]+)\\)");
+    static const rens::regex durationptrn ("(?i)duration\\((-?\\d+)\\)");
+    static const rens::regex timediffptrn ("(?i)timediff\\((-?\\d+),?(-?\\d+)?\\)");
+    static const rens::regex faqptrn ("(?i)faq\\(([^)]+)\\)");
     Global* global = recallGlobal();
     rens::smatch ml;
     std::string request = channelID;
@@ -1351,6 +1536,60 @@ void evaluateDataRe(std::string& eval, const std::string& guildID, const std::st
         }
         delete[] argv;
     }
+    size_t pos;
+    while ((pos = eval.find("calc")) != std::string::npos)
+    {
+        bool integer = false, matched = false;
+        std::string sub = eval.substr(pos);
+        sub.erase(0,4);
+        if ((sub.size() > 0) && (sub.front() == 'i'))
+        {
+            integer = true;
+            sub.erase(0,1);
+        }
+        eval.erase(pos);
+        while (rens::regex_search(sub,ml,balanced))
+        {
+            matched = true;
+            std::string str = ml[1].str();
+            evaluateDataRe(str,guildID,channelID,authorID,messageID);
+            if (integer)
+                eval += ml.prefix().str() + calc(str);
+            else
+                eval += ml.prefix().str() + calcf(str);
+            sub = ml.suffix().str();
+        }
+        if ((!matched) || (sub.size() > 0))
+            eval += sub;
+        /*if (integer)
+            eval += regsubex(sub,balanced,"$1",&calc);
+        else
+            eval += regsubex(sub,balanced,"$1",&calcf);*/
+    }
+    while (rens::regex_search(eval,ml,timeptrn))
+    {
+        eval.erase(ml[0].pos,ml[0].length());
+        eval.insert(ml[0].pos,std::to_string(time(NULL)));
+    }
+    while (rens::regex_search(eval,ml,strftimeptrn))
+    {
+        char foo[300];
+        time_t u = std::stoll(ml[1].str());
+        tm* t = gmtime(&u);
+        strftime(foo,300,ml[2].str().c_str(),t);
+        eval.erase(ml[0].pos,ml[0].length());
+        eval.insert(ml[0].pos,foo);
+    }
+    while (rens::regex_search(eval,ml,time2ptrn))
+    {
+        tm t = {0};
+        std::string str = ml[1].str();
+        evaluateDataRe(str,guildID,channelID,authorID,messageID);
+        strptime(str.c_str(),ml[2].str().c_str(),&t);
+        eval.erase(ml[0].pos,ml[0].length());
+        time_t tt = mktime(&t) + 60*60;
+        eval.insert(ml[0].pos,std::to_string(tt));
+    }
     while (rens::regex_search(eval,ml,randptrn))
     {
         uint32_t r[2];
@@ -1365,22 +1604,29 @@ void evaluateDataRe(std::string& eval, const std::string& guildID, const std::st
         eval.erase(ml[0].pos,ml[0].length());
         eval.insert(ml[0].pos,std::to_string(mtrand(r[0],r[1])));
     }
-    size_t pos;
-    while ((pos = eval.find("calc")) != std::string::npos)
+    while (rens::regex_search(eval,ml,strftimeptrn))
     {
-        bool integer = false;
-        std::string sub = eval.substr(pos);
-        sub.erase(0,4);
-        if ((sub.size() > 0) && (sub.front() == 'i'))
-        {
-            integer = true;
-            sub.erase(0,1);
-        }
-        eval.erase(pos);
-        if (integer)
-            eval += regsubex(sub,balanced,"$1",&calc);
+        char foo[300];
+        time_t u = std::stoll(ml[1].str());
+        tm* t = gmtime(&u);
+        strftime(foo,300,ml[2].str().c_str(),t);
+        eval.erase(ml[0].pos,ml[0].length());
+        eval.insert(ml[0].pos,foo);
+    }
+    while (rens::regex_search(eval,ml,durationptrn))
+    {
+        eval.insert(ml[0].pos + ml[0].length(),duration(std::stoll(ml[1].str())));
+        eval.erase(ml[0].pos,ml[0].length());
+    }
+    while (rens::regex_search(eval,ml,timediffptrn))
+    {
+        time_t t;
+        if (ml[2].length() > 0)
+            t = std::stoll(ml[2].str());
         else
-            eval += regsubex(sub,balanced,"$1",&calcf);
+            t = time(NULL);
+        eval.insert(ml[0].pos + ml[0].length(),timedur(t,std::stoll(ml[1].str())));
+        eval.erase(ml[0].pos,ml[0].length());
     }
     /*while (rens::regex_search(eval,ml,rand2ptrn))
     {
@@ -1451,7 +1697,7 @@ void evaluateDataRe(std::string& eval, const std::string& guildID, const std::st
                 eval.insert(ml[0].pos,std::to_string(mtrand(0,-1)));
         }
     }
-    while (rens::regex_search(eval,ml,lewdptrn))
+    if (makeLewd != nullptr) while (rens::regex_search(eval,ml,lewdptrn))
     {
         int in[4] = {-1};
         for (int i = 0;i < 4;++i)
@@ -1464,6 +1710,13 @@ void evaluateDataRe(std::string& eval, const std::string& guildID, const std::st
         std::string lewd;
         makeLewd(lewd,in);
         eval.insert(ml[0].pos,lewd);
+    }
+    if (getFaq != nullptr) while (rens::regex_search(eval,ml,faqptrn))
+    {
+        std::string faq = ml[1].str();
+        getFaq(faq);
+        eval.erase(ml[0].pos,ml[0].length());
+        eval.insert(ml[0].pos,faq);
     }
     User who;
     Message msg;

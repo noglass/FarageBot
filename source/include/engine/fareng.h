@@ -1573,16 +1573,10 @@ OPTIONS\n\
                 return ObjectResponse<Message>();
             try
             {
-                if (json.size() < 1)
-                {
-                    SleepyDiscord::ObjectResponse<SleepyDiscord::Message> response = ((BotClass*)(bot))->uploadFile(chan,filepath,message,SleepyDiscord::Embed(),convertMessageReference(ref));
-                    return ObjectResponse<Message>(std::move(convertResponse(response)),std::move(convertMessage(std::move(response.cast()))));
-                }
-                else
-                {
-                    SleepyDiscord::ObjectResponse<SleepyDiscord::Message> response = ((BotClass*)(bot))->uploadFile(chan,filepath,message,SleepyDiscord::Embed(json),convertMessageReference(ref));
-                    return ObjectResponse<Message>(std::move(convertResponse(response)),std::move(convertMessage(std::move(response.cast()))));
-                }
+                SleepyDiscord::ObjectResponse<SleepyDiscord::Message> response = ((BotClass*)(bot))->uploadFile(chan,filepath,message,(json.size() < 1 ? SleepyDiscord::Embed() : SleepyDiscord::Embed(json)),convertMessageReference(ref));
+                SleepyDiscord::Message object;
+                response.cast(object);
+                return ObjectResponse<Message>(std::move(convertResponse(response)),std::move(convertMessage(std::move(object))));
             }
             catch (SleepyDiscord::ErrorCode err)
             {

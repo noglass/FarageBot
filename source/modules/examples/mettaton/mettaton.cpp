@@ -5,6 +5,7 @@
 #include <locale>
 #include <codecvt>
 #include <chrono>
+#include <cmath>
 #include "shared/libini.h"
 using namespace Farage;
 
@@ -12,7 +13,7 @@ using namespace Farage;
 #define HEXIFY
 #include "common_func.h"
 
-#define BASEVERSION "v1.7.0"
+#define BASEVERSION "v1.7.5"
 #ifdef METTA_MINI
     #define VERSION std::string(BASEVERSION) + "-minimal"
 #else
@@ -458,6 +459,12 @@ namespace Mettaton
     std::chrono::high_resolution_clock::time_point uptime;
 };
 
+extern "C" void getFaqValue(std::string& faq)
+{
+    std::string foo;
+    faq = Mettaton::database.lookup(faq,foo);
+}
+
 //int chatHookChange(Handle&,GlobVar*,const std::string&,const std::string&,const std::string&);
 int typingCmd(Handle&,int,const std::string[]);
 int addfaqCmd(Handle&,int,const std::string[],const Message&);
@@ -524,6 +531,22 @@ extern "C" int onModuleStart(Handle &handle, Global *global)
     Mettaton::uptime = std::chrono::high_resolution_clock::now();
     return 0;
 }
+
+/*
+extern "C" int onEditEmojis(const std::string& server, std::vector<Emoji> emojis)
+{
+    if (server != "737112449798635610")
+        return PLUGIN_CONTINUE;
+    bool found = false;
+    for (auto it = emojis.begin(), ite = emojis.end();it != ite;++it)
+        if (it->id == drinkitgvar)
+            found = true;
+    if (!found)
+    {
+        
+    }
+    return PLUGIN_CONTINUE;
+}*/
 
 extern "C" int onReaction(Handle &handle, Event event, void *member, void *channel, void *message, void *femoji)
 {
@@ -642,25 +665,58 @@ extern "C" int onMessage(Handle &handle, Event event, void *message, void *nil, 
             Mettaton::koolaid.erase(channel);
         if ((msg->author.id != global->self.id) && (msg->channel_id != "541749565540532224"))
         {
-            std::string balp = strlower(msg->content);
-            int balps = 0;
-            while (balp.find("balp") == 0)
-            {
-                balps++;
-                balp.erase(0,((balp[4] == ' ') ? 5 : 4));
-            }
-            if (balps > 0)
-            {
-                balps = mtrand(1,balps*mtrand(1,5));
-                if (balps > 400)
-                    balps = 400;
-                balp.clear();
-                if ((balps % 7) == 0)
-                    messageChannelID(msg->channel_id,"*We can **balp** if we want to. We can **balp** your **balps** behind, cause your **balps** don't **balp** and if they don't **balp**-- Well, they're no **balps** of mine.*");
-                else
+            /*{
+                std::string balp = strlower(msg->content);
+                int balps = 0;
+                while (balp.find("balp") == 0)
                 {
-                    for (int i = 0;i < balps;i++)
-                        balp += "balp ";
+                    balps++;
+                    balp.erase(0,((balp[4] == ' ') ? 5 : 4));
+                }
+                if (balps > 0)
+                {
+                    balps = mtrand(1,balps*mtrand(1,5));
+                    if (balps > 400)
+                        balps = 400;
+                    balp.clear();
+                    if ((balps % 7) == 0)
+                        messageChannelID(msg->channel_id,"*We can **balp** if we want to. We can **balp** your **balps** behind, cause your **balps** don't **balp** and if they don't **balp**-- Well, they're no **balps** of mine.*");
+                    else
+                    {
+                        for (int i = 0;i < balps;i++)
+                            balp += "balp ";
+                        messageChannelID(msg->channel_id,balp);
+                    }
+                }
+            }*/
+            {
+                std::string balp = strlower(msg->content);
+                int balps = 0, boqs = 0;
+                for (bool foo, bar = false;(foo = (balp.find("balp") == 0)) || (bar = (balp.find("boq") == 0));balp.erase(0,balp.front() == ' '))
+                {
+                    balp.erase(0,(foo ? 4 : 3));
+                    balps += foo;
+                    boqs += bar;
+                    bar = false;
+                }
+                if ((boqs += balps) > 0)
+                {
+                    int ratio = round(double(balps)/double(boqs)*100.0);
+                    balps = mtrand(1,(boqs)*mtrand(1,5));
+                    if (balps > 400)
+                        balps = 400;
+                    balp.clear();
+                    if ((balps % 7) == 0)
+                    {
+                        if (balps < boqs)
+                            balp = "*We can **boq** if we want to. We can **balp** your **boqs** behind, cause your **balps** don't **boq** and if they don't **boq**-- Well, they're no **balps** of mine.*";
+                        else if (balps == boqs)
+                            balp = "*We can **balp** if we want to. We can **balp** your **balps** behind, cause your **balps** don't **balp** and if they don't **balp**-- Well, they're no **balps** of mine.*";
+                        else
+                            balp = "*We can **boq** if we want to. We can **boq** your **boqs** behind, cause your **boqs** don't **boq** and if they don't **boq**-- Well, they're no **boqs** of mine.*";
+                    }
+                    else for (;balps--;)
+                        balp += (mtrand(1,100) > ratio ? "boq " : "balp ");
                     messageChannelID(msg->channel_id,balp);
                 }
             }

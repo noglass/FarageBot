@@ -10,7 +10,7 @@ using namespace Farage;
 #define REGSUBEX_STD
 #include "common_func.h"
 
-#define VERSION "v0.8.6"
+#define VERSION "v0.9.1"
 
 #define RETRIES 10
 
@@ -104,22 +104,22 @@ namespace urban
 {
     static std::regex nonptrn ("<div class=\"shrug space\">[^<]*</div><div class=\"term space\">([^<]*)</div>");
     static std::regex tryptrn ("<li><a href=\"([^\"]*)\">([^<]*)</a></li>");
-    static std::regex nameptrn ("<div class=\"def-header\"><a class=\"word\" href=\"(/define\\.php\\?term=[^\"]*)\" name=\"[^\"]*\">([^<]+)</a>");
-    static std::regex catptrn ("<a href=\"(/category\\.php\\?category=[^\"]*)\"><span style=\"[^\"]*\">([^<]*)</span></a></span>");
-    static std::regex defptrn ("<div class=\"meaning\">(.+?)</div>");
-    static std::regex examptrn ("<div class=\"example\">(.+?)</div>");
+    static std::regex nameptrn ("<div class=\"def-header\"><a class=\"word\" href=\"(/define\\.php\\?term=[^\"]*)\" name=\"[^\"]*\">([^<]+)</a>"); // good
+    //static std::regex catptrn ("<a href=\"(/category\\.php\\?category=[^\"]*)\"><span style=\"[^\"]*\">([^<]*)</span></a></span>");
+    static std::regex defptrn ("<div class=\"meaning\">(.+?)</div>"); // good
+    static std::regex examptrn ("<div class=\"example\">(.+?)</div>"); // good
     static std::regex tagptrn ("<div class=\"tags\">((<a href=\"/tags\\.php\\?tag=[^\"]*\">[^<]*</a>)*)</div>");
     static std::regex tagsptrn ("<a href=\"(/tags\\.php\\?tag=[^\"]*)\">([^<]*)</a>");
-    static std::regex authptrn ("<div class=\"contributor\">by <a href=\"(/author\\.php\\?author=[^\"]*)\">([^<]*)</a>([^<]+)</div>");
-    static std::regex footptrn ("<div class=\"def-footer\"><div class=\"[^\"]*\"><div class=\"[^\"]*\"><div class=\"[^\"]*\"><div class=\"[^\"]*\"><a class=\"up\"><i class=\"[^\"]*\"><svg xmlns=\"[^\"]*\" viewBox=\"[^\"]*\"><path d=\"[^\"]*\"/></svg></i><span class=\"count\">(\\d+)</span></a><a class=\"down\"><i class=\"[^\"]*\"><svg xmlns=\"[^\"]*\" viewBox=\"[^\"]*\"><path d=\"[^\"]*\"/></svg></i><span class=\"count\">(\\d+)</span>");
-    static std::regex brptrn ("<[bB][rR]/?>");
-    static std::regex hrefptrn ("<a class=\"autolink\" href=\"([^\"]*)\" on[cC]lick=\"[^\"]*\">([^<]*)</a>");
+    static std::regex authptrn ("<div class=\"contributor\">by <a href=\"(/author\\.php\\?author=[^\"]*)\">([^<]*)</a>([^<]+)</div>"); // good
+    static std::regex footptrn ("<div class=\"def-footer\"><div class=\"[^\"]*\"><div class=\"[^\"]*\"><div class=\"[^\"]*\"><div class=\"[^\"]*\"><a class=\"up\"><i class=\"[^\"]*\"><svg xmlns=\"[^\"]*\" viewBox=\"[^\"]*\"><path d=\"[^\"]*\"/></svg></i><span class=\"count\">(\\d+)</span></a><a class=\"down\"><i class=\"[^\"]*\"><svg xmlns=\"[^\"]*\" viewBox=\"[^\"]*\"><path d=\"[^\"]*\"/></svg></i><span class=\"count\">(\\d+)</span>"); // this is not good!!
+    static std::regex brptrn ("<[bB][rR]/?>"); // good
+    static std::regex hrefptrn ("<a class=\"autolink\" href=\"([^\"]*)\" on[cC]lick=\"[^\"]*\">([^<]*)</a>"); // good
     static rens::regex imgptrn ("(?i)\"([^\\s]*?\\.(jpe?g|png|gif|webp))\"");
-    static std::regex urlptrn ("<a href=\"(/define\\.php\\?term=.+?)&amp;page=(\\d+)\">\\2</a>");
-    static std::regex symptrn ("&(#?\\w+);");
-    static std::regex aposptrn ("'(.*)'");
-    static std::regex bsptrn ("(\\\\)");
-    static std::regex ribbonptrn ("<div class=\"ribbon\">(\\d+|Top definition)</div>");
+    static std::regex urlptrn ("<a href=\"(/define\\.php\\?term=.+?)&amp;page=(\\d+)\">\\2</a>"); // good
+    static std::regex symptrn ("&(#?\\w+);"); // good
+    static std::regex aposptrn ("'(.*)'"); // good
+    static std::regex bsptrn ("(\\\\)"); // good
+    //static std::regex ribbonptrn ("<div class=\"ribbon\">(\\d+|Top definition)</div>"); // not good!
     struct object
     {
         std::string name;
@@ -225,6 +225,8 @@ namespace urban
                     out += tagstr;
                 out += "\" }, ";
             }
+            if (footer.size() < 1)
+                footer = "** **";
             out += "{ \"name\": \"" + footer + "\", \"value\": \"Submitted by " +  author.build() + ' ' + regsubex(date,symptrn,"$1",&resolve_symbol) + "\" }], ";
             if (image.size() > 0)
                 out += "\"image\": { \"url\": \"" + image + "\" }, ";
@@ -290,7 +292,7 @@ int urbanCmd(Handle &handle, int argc, const std::string argv[], const Message &
         std::string out, output;
         const int size = 1024;
         char buffer[size];
-        sendTyping(message.channel_id);
+        //sendTyping(message.channel_id);
         static std::regex nonspace ("[^\\s\\n]");
         FILE* outstream;
         for (int tries = RETRIES;(tries) && (output.size() == 0);--tries)
@@ -307,7 +309,7 @@ int urbanCmd(Handle &handle, int argc, const std::string argv[], const Message &
                         if (!headend)
                         {
                             out.append(buffer);
-                            if ((pos = out.find("<!-- End comScore Tag -->")) != std::string::npos)
+                            if ((pos = out.find("document.head.insertBefore(btScript, document.head.firstElementChild);")) != std::string::npos)
                             {
                                 headend = true;
                                 out.erase(0,pos);
@@ -322,6 +324,7 @@ int urbanCmd(Handle &handle, int argc, const std::string argv[], const Message &
                 pclose(outstream);
             }
         }
+        //std::cout<<"urbandic: "<<output<<std::endl;
         while ((pos = output.find_first_of("\r\n")) != std::string::npos)
             output.erase(pos,1);
         std::smatch ml;
@@ -401,7 +404,7 @@ int urbanCmd(Handle &handle, int argc, const std::string argv[], const Message &
                                 if (!headend)
                                 {
                                     out.append(buffer);
-                                    if ((pos = out.find("<!-- End comScore Tag -->")) != std::string::npos)
+                                    if ((pos = out.find("document.head.insertBefore(btScript, document.head.firstElementChild);")) != std::string::npos)
                                     {
                                         headend = true;
                                         out.erase(0,pos);
@@ -432,10 +435,10 @@ int urbanCmd(Handle &handle, int argc, const std::string argv[], const Message &
         }
         std::vector<urban::entry> definitions;
         //"<div class=\"def-header\"><a class=\"word\" href=\"(/define\\.php\\?term=[^\"]*)\" name=\"[^\"]*\">([^<]+)</a>"
-        while (std::regex_search(output,ml,urban::ribbonptrn))
+        while (std::regex_search(output,ml,urban::nameptrn))
         {
-            output = ml.suffix();
-            std::regex_search(output,ml,urban::nameptrn);
+            //output = ml.suffix();
+            //std::regex_search(output,ml,urban::nameptrn);
             urban::entry def ({std::regex_replace(ml[2].str(),urban::bsptrn,"\\\\"),"https://www.urbandictionary.com" + std::regex_replace(ml[1].str(),urban::bsptrn,"\\\\")});
             output = ml.suffix();
             //"<a href=\"(/category\\.php\\?category=[^\"]*)\"><span style=\"[^\"]*\">([^<]*)</span></a></span>"

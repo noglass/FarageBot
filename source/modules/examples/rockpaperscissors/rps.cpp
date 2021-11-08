@@ -8,7 +8,7 @@
 #include "shared/libini.h"
 using namespace Farage;
 
-#define VERSION "0.8.7"
+#define VERSION "0.8.8"
 
 #define MAX_EMBED_WIDTH 45
 
@@ -280,7 +280,6 @@ extern "C" int onMessage(Handle &handle, Event event, void *message, void *nil, 
                 messageReply(*msg,"The game needs to be accepted first!");
                 return 0;
             }
-            int p = 0;
             if (player->choice.size() > 0)
             {
                 messageReply(*msg,"You have already made your choice!");
@@ -377,7 +376,7 @@ int chatRPS(Handle &handle, int argc, const std::string argv[], const Message &m
     }
     if (argc == 1)
     {
-        if ((message.mentions.size() < 1) && (arg1 != "multi") && (arg1 != "multibot") && (arg1 != "@everyone") && (arg1 != "@here"))
+        if ((arg1.find("<@") != 0) && (arg1 != "multi") && (arg1 != "multibot") && (arg1 != "@everyone") && (arg1 != "@here"))
         {
             if (arg1 == "mods")
             {

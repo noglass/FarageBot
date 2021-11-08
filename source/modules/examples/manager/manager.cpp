@@ -16,7 +16,7 @@ using namespace Farage;
 #define STRREPLACE
 #include "common_func.h"
 
-#define VERSION "v0.5.5"
+#define VERSION "v0.5.6"
 
 extern "C" Info Module
 {
@@ -113,6 +113,8 @@ int chatWho(Handle&,int,const std::string[],const Message&);
 int chatHookEdit(Handle&,int,const std::string[],const Message&);
 int chatHookDelete(Handle&,int,const std::string[],const Message&);*/
 int parseArg(Handle&,int,const std::string[]);
+int udrconCmd(Handle&,int,const std::string[],const Message&);
+int udchatCmd(Handle&,int,const std::string[],const Message&);
 
 extern "C" int onModuleStart(Handle& handle, Global* global)
 {
@@ -129,6 +131,8 @@ extern "C" int onModuleStart(Handle& handle, Global* global)
     handle.regChatCmd("search",&chatSearch,NOFLAG,"Search for a specific message.");
     handle.regChatCmd("who",&chatWho,GENERIC,"View admin flags for a user.");
     handle.regConsoleCmd("parsearg",&parseArg,"Output parsed input arguments.");
+    handle.regChatCmd("udrcon",&udrconCmd,ROOT,"Evaluate and execute a 'identifier{ID,...}[.prop]...' string as a console command.");
+    handle.regChatCmd("udchat",&udchatCmd,ROOT,"Evaluate and execute a 'identifier{ID,...}[.prop]...' string as a chat command.");
     for (auto it = global->plugins.begin(), ite = global->plugins.end();it != ite;++it)
     {
         if ((*it)->getModule() == "udata")
@@ -1545,7 +1549,64 @@ int parseArg(Handle& handle, int argc, const std::string argv[])
     return PLUGIN_HANDLED;
 }
 
+int udrconCmd(Handle& handle, int argc, const std::string argv[], const Message& message)
+{
+    if (argc < 2)
+        sendMessage(message.channel_id,"Usage: `" + recallGlobal()->prefix(message.guild_id) + argv[0] + " <command string>`");
+    else
+    {
+        std::string cmd = message.content.substr(message.content.find(argv[0]) + argv[0].size());
+        //for (int a = 1;a < argc;cmd.append(argv[a++]) + ' ');
+        if (Manager::evalData != nullptr)
+            Manager::evalData(cmd,message.guild_id,message.channel_id,message.author.id,message.id);
+        std::string output = serverCommand(cmd);
+        size_t s = output.size();
+        if (s > 0)
+        {
+            if (s > 1993)
+            {
+                output.erase(0,s % 1993);
+                if ((s = output.size()-1) > 1992)
+                    output.erase(0,s/1993*1993);
+            }
+            sendMessage(message.channel_id,"```\n" + output + "```");
+        }
+        else
+            reactToID(message.channel_id,message.id,"%E2%9C%85");
+    }
+    return PLUGIN_HANDLED;
+}
 
+int udchatCmd(Handle& handle, int argc, const std::string argv[], const Message& message)
+{
+    Global* global = recallGlobal();
+    if (argc < 2)
+        sendMessage(message.channel_id,"Usage: `" + global->prefix(message.guild_id) + argv[0] + " <command string>`");
+    else
+    {
+        std::string cmd = message.content.substr(message.content.find(argv[0]) + argv[0].size());
+        if (Manager::evalData != nullptr)
+            Manager::evalData(cmd,message.guild_id,message.channel_id,message.author.id,message.id);
+        Message modified = message;
+        modified.content = std::move(cmd);
+        switch (Manager::callChatCmd(global,modified))
+        {
+            case PLUGIN_HANDLED:
+            {
+                reactToID(message.channel_id,message.id,"%E2%9C%85"); // ✅
+                break;
+            }
+            case PLUGIN_CONTINUE:
+            {
+                reactToID(message.channel_id,message.id,"%E2%9D%93"); // ❓
+                break;
+            }
+            default:
+                reactToID(message.channel_id,message.id,"%E2%9D%97"); // ❗
+        }
+    }
+    return PLUGIN_HANDLED;
+}
 
 
 
