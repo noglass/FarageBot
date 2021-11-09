@@ -10,7 +10,7 @@ using namespace Farage;
 #define MAKEMENTION
 #include "common_func.h"
 
-#define VERSION "v0.2.1"
+#define VERSION "v0.2.2"
 
 extern "C" Info Module
 {
@@ -363,7 +363,7 @@ namespace boggle
                 name = name + " & " + player.name;
                 tie = true;
             }
-            sendEmbed(game->chan,"{\"color\": 44269, \"title\": \"" + player.name + "'s Boggle Results!\", \"description\": Total Valid Words: " + std::to_string(valid) + "\\nTotal Points: " + std::to_string(player.total) + "!\", \"fields\": [" + fields + "]}");
+            sendEmbed(game->chan,"{\"color\": 44269, \"title\": \"" + player.name + "'s Boggle Results!\", \"description\": Total Valid Words: " + std::to_string(valid) + " - Total Points: " + std::to_string(player.total) + "!\", \"fields\": [" + fields + "]}");
         }
         if (tie)
             sendMessage(game->chan,"Congratulations to " + name + "! You won with " + std::to_string(points) + "!!");
@@ -519,14 +519,19 @@ extern "C" int onMessage(Handle& handle, Event event, void* message, void* nil, 
             {
                 ++w;
                 std::string word = ml[1].str();
-                int points = boggle::validateWord(game->board,word);
-                if (points)
-                {
-                    player->words.emplace(word,points);
-                    ++v;
-                }
+                if (player->words.find(word) != player->words.end())
+                    invalid = invalid + ' ' + word + "(you already found it!)";
                 else
-                    invalid = invalid + ' ' + word;
+                {
+                    int points = boggle::validateWord(game->board,word);
+                    if (points)
+                    {
+                        player->words.emplace(word,points);
+                        ++v;
+                    }
+                    else
+                        invalid = invalid + ' ' + word;
+                }
             }
             if (v)
                 reaction(*msg,"%E2%9C%85");
