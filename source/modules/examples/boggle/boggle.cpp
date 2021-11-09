@@ -528,8 +528,8 @@ extern "C" int onMessage(Handle& handle, Event event, void* message, void* nil, 
                 else
                     invalid = invalid + ' ' + word;
             }
-            //if (v)
-                //reaction(*msg,"%E2%9C%85");
+            if (v)
+                reaction(*msg,"%E2%9C%85");
             if (invalid.size() > 0)
                 sendMessage(msg->channel_id,"The following words were deemed invalid:" + invalid);
             return PLUGIN_HANDLED;

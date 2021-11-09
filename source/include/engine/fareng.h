@@ -1038,8 +1038,11 @@ OPTIONS\n\
                             break;
                         }
                     }
-                    if (!found)
-                        member.user.id = user;
+                    if ((!found) || (member.user.id.size() < 1) || (channel.id.size < 1))
+                    {
+                        member.user.id = userID;
+                        channel.id = channelID;
+                    }
                 }
                 
                 bool blockEvent = false;
