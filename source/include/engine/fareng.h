@@ -1023,18 +1023,25 @@ OPTIONS\n\
                 std::string guild, guildName;
                 ServerMember member;
                 Channel channel;
-                for (auto it = cache->begin(), ite = cache->end();it != ite;++it)
                 {
-                    auto chanIt = it->findChannel(channelID);
-                    if (chanIt != it->channels.end())
+                    bool found = false;
+                    for (auto it = cache->begin(), ite = cache->end();it != ite;++it)
                     {
-                        guild = it->ID;
-                        guildName = it->name;
-                        member = convertServerMember(*it->findMember(userID));
-                        channel = convertChannel(*chanIt);
-                        break;
+                        auto chanIt = it->findChannel(channelID);
+                        if (chanIt != it->channels.end())
+                        {
+                            found = true;
+                            guild = it->ID;
+                            guildName = it->name;
+                            member = convertServerMember(*it->findMember(userID));
+                            channel = convertChannel(*chanIt);
+                            break;
+                        }
                     }
+                    if (!found)
+                        member.user.id = user;
                 }
+                
                 bool blockEvent = false;
                 for (auto it = global->plugins.begin(), ite = global->plugins.end();it != ite;++it)
                 {
