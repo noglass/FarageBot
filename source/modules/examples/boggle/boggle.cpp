@@ -10,7 +10,7 @@ using namespace Farage;
 #define MAKEMENTION
 #include "common_func.h"
 
-#define VERSION "v0.2.0"
+#define VERSION "v0.2.1"
 
 extern "C" Info Module
 {
@@ -399,9 +399,9 @@ namespace boggle
         else
         {
             auto response = sendFile(game->chan,"gameboard.png","","{\"color\": 44269, \"image\": { \"url\": \"attachment://gameboard.png\" }, \"title\": \"Boggle\", \"description\": \"Type `" + global->prefix(game->guild_id) + "boggle` to join!\"}");
-            if (!response.response.error())
+            if ((!response.response.error()) && (response.object.attachments.size() > 0))
             {
-                //game->board_url = response.object.attachments.front().url;
+                game->board_url = response.object.attachments.front().url;
                 //consoleOut(game->board_url);
                 std::cout<<response.object.attachments.front().url<<std::endl;
             }
