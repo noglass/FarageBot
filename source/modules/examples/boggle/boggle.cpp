@@ -10,7 +10,7 @@ using namespace Farage;
 #define MAKEMENTION
 #include "common_func.h"
 
-#define VERSION "v0.2.2"
+#define VERSION "v0.2.5"
 
 extern "C" Info Module
 {
@@ -112,6 +112,7 @@ namespace boggle
     };
     
     std::vector<Game> games;
+    std::unordered_set<std::string> dictionary;
     GlobVar *wobbleVar = nullptr;
     
     std::string upper(std::string text)
@@ -314,7 +315,7 @@ namespace boggle
         return ite;
     }
     
-    void concludeGame(std::vector<Game>::iterator game)
+    void concludeGame(std::vector<Game>::iterator game, bool strict = true)
     {
         std::unordered_set<std::string> words, dupes;
         for (auto& player : game->player)
@@ -323,17 +324,26 @@ namespace boggle
                 if (words.emplace(word.first).second == false)
                     dupes.emplace(word.first);
         }
+        auto dend = dictionary.end();
         for (auto& player : game->player)
         {
-            auto wend = player.words.end();
             for (auto& dupe : dupes)
             {
                 auto w = player.words.find(dupe);
-                if (w != wend)
+                if (w != player.words.end())
                 {
                     player.words.emplace("~~" + w->first + "~~",0);
                     player.words.erase(w);
                 }
+            }
+            std::vector<std::string> illegal;
+            for (auto& word : player.words)
+                if (dictionary.find(word.first) == dend)
+                    illegal.emplace_back(word);
+            for (auto& ill : illegal)
+            {
+                player.words.erase(ill);
+                player.words.emplace("~~" + ill + "~~",0);
             }
         }
         std::string name;
@@ -341,7 +351,7 @@ namespace boggle
         bool tie = false;
         for (auto& player : game->player)
         {
-            std::string fields;
+            std::string fields = ", \"fields\": [";
             int valid = 0;
             player.total = 0;
             for (auto& word : player.words)
@@ -350,8 +360,11 @@ namespace boggle
                 player.total += word.second;
                 valid += (word.second != 0);
             }
-            if (fields.size() > 0)
+            if (fields.size() > 13)
+            {
                 fields.erase(fields.size()-1);
+                fields += ']';
+            }
             if (player.total > points)
             {
                 name = player.name;
@@ -363,12 +376,12 @@ namespace boggle
                 name = name + " & " + player.name;
                 tie = true;
             }
-            sendEmbed(game->chan,"{\"color\": 44269, \"title\": \"" + player.name + "'s Boggle Results!\", \"description\": Total Valid Words: " + std::to_string(valid) + " - Total Points: " + std::to_string(player.total) + "!\", \"fields\": [" + fields + "]}");
+            sendEmbed(game->chan,"{\"color\": 44269, \"title\": \"" + player.name + "'s Boggle Results!\", \"description\": \"Total Valid Words: " + std::to_string(valid) + "\\nTotal Points: " + std::to_string(player.total) + "!\"" + fields + '}');
         }
         if (tie)
-            sendMessage(game->chan,"Congratulations to " + name + "! You won with " + std::to_string(points) + "!!");
-        else
             sendMessage(game->chan,"Congratulations to " + name + "! You have all tied with " + std::to_string(points) + "!!");
+        else
+            sendMessage(game->chan,"Congratulations to " + name + "! You won with " + std::to_string(points) + "!!");
         games.erase(game);
     }
     
@@ -453,6 +466,17 @@ extern "C" int onModuleStart(Handle &handle, Global *global)
     handle.createGlobVar("boggle_version",VERSION,"Boggle Version",GVAR_CONSTANT);
     boggle::wobbleVar = handle.createGlobVar("boggle_wobble","0","Control the rotation and wobble of the letters on the board. 1 = no 90 or 180 degree rotation, 2 = no variable wobble, 3 = neither, 0 = both.",GVAR_DUPLICATE|GVAR_STORE,true,0.0,true,3.0);
     handle.regChatCmd("boggle",&boggleCmd,NOFLAG,"Play Boggle.");
+    std::ifstream dic ("source/modules/examples/boggle/rawdic.txt");
+    if (dic.is_open())
+    {
+        std::string line;
+        while (std::getline(dic,line))
+            boggle::dictionary.emplace(line);
+        dic.close();
+        consoleOut("Loaded " + std::to_string(boggle::dictionary.size()) + " Boggle words . . .");
+    }
+    else
+        consoleOut("Error loading Boggle dictionary . . . Make sure 'source/modules/examples/boggle/rawdic.txt' exists!");
     return 0;
 }
 
@@ -520,7 +544,7 @@ extern "C" int onMessage(Handle& handle, Event event, void* message, void* nil, 
                 ++w;
                 std::string word = ml[1].str();
                 if (player->words.find(word) != player->words.end())
-                    invalid = invalid + ' ' + word + "(you already found it!)";
+                    invalid = invalid + ' ' + word + " (you already found it!)";
                 else
                 {
                     int points = boggle::validateWord(game->board,word);
