@@ -11,7 +11,7 @@ using namespace Farage;
 #define MAKEMENTION
 #include "common_func.h"
 
-#define VERSION "v0.2.5"
+#define VERSION "v0.2.7"
 
 extern "C" Info Module
 {
@@ -275,8 +275,10 @@ namespace boggle
     
     int validateWord(const std::string& board, std::string word)
     {
-        for (size_t i = 0;(i = word.find("QU",i)) != std::string::npos;word.erase(++i));
-        if ((word.size() > 16) || (word.size() < 3))
+        size_t add = 0;
+        for (size_t i = 0;(i = word.find("QU",i)) != std::string::npos;word.erase(++i,1))
+            ++add;
+        if ((word.size() > 16) || (word.size()+add < 3))
             return 0;
         for (size_t pos = 0;(pos = board.find(word.front(),pos)) != std::string::npos;++pos)
         {
