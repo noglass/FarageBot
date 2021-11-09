@@ -3,6 +3,7 @@
 #include <vector>
 #include <unordered_set>
 #include <unordered_map>
+#include <fstream>
 #include <iostream>
 #include "shared/regex.h"
 using namespace Farage;
@@ -338,8 +339,8 @@ namespace boggle
             }
             std::vector<std::string> illegal;
             for (auto& word : player.words)
-                if (dictionary.find(word.first) == dend)
-                    illegal.emplace_back(word);
+                if ((word.first.front() != '~') && (dictionary.find(word.first) == dend))
+                    illegal.emplace_back(word.first);
             for (auto& ill : illegal)
             {
                 player.words.erase(ill);
