@@ -1585,7 +1585,7 @@ OPTIONS\n\
                 return ObjectResponse<Message>();
             try
             {
-                SleepyDiscord::ObjectResponse<SleepyDiscord::Message> response = ((BotClass*)(bot))->uploadFile(chan,filepath,message,(json.size() < 1 ? SleepyDiscord::Embed() : SleepyDiscord::Embed(json)),convertMessageReference(ref));
+                SleepyDiscord::ObjectResponse<SleepyDiscord::Message> response = ((BotClass*)(bot))->uploadFile(chan,filepath,message,(json.size() < 1 ? SleepyDiscord::Embed() : SleepyDiscord::Embed(json)),convertMessageReference(ref),Sync);
                 SleepyDiscord::Message object;
                 response.cast(object);
                 return ObjectResponse<Message>(std::move(convertResponse(response)),std::move(convertMessage(std::move(object))));
