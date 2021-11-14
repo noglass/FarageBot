@@ -8,7 +8,7 @@
 #include "shared/libini.h"
 using namespace Farage;
 
-#define VERSION "0.8.8"
+#define VERSION "0.8.9"
 
 #define MAX_EMBED_WIDTH 45
 
@@ -1255,7 +1255,8 @@ void rpsStartRound(std::vector<rpsGame>::iterator game)
     temp.clear();
     for (int i = 0;i < cols;++i)
         temp += "{\"name\": \"** **\", \"value\": \"" + fields[i] + "\", \"inline\": true},";
-    temp.erase(temp.size()-1);
+    if (temp.size() > 0)
+        temp.erase(temp.size()-1);
     
     for (auto player = game->player.begin();player != game->player.end();)
     {

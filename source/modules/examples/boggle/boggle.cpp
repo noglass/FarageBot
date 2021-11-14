@@ -11,7 +11,7 @@ using namespace Farage;
 #define MAKEMENTION
 #include "common_func.h"
 
-#define VERSION "v0.2.7"
+#define VERSION "v0.3.3"
 
 extern "C" Info Module
 {
@@ -415,11 +415,25 @@ namespace boggle
         else
         {
             auto response = sendFile(game->chan,"gameboard.png","","{\"color\": 44269, \"image\": { \"url\": \"attachment://gameboard.png\" }, \"title\": \"Boggle\", \"description\": \"Type `" + global->prefix(game->guild_id) + "boggle` to join!\"}");
-            if ((!response.response.error()) && (response.object.attachments.size() > 0))
+            //auto response = sendFile(game->chan,"gameboard.png","Type `" + global->prefix(game->guild_id) + "boggle` to join!");
+            if (response.response.error())
+                consoleOut("Error! " + std::to_string(response.response.statusCode) + ": " + response.response.text);
+            if (response.object.embeds.size() < 1)
+                consoleOut("No error, just empty embeds!");
+            if (!response.response.error())
             {
-                game->board_url = response.object.attachments.front().url;
-                //consoleOut(game->board_url);
-                std::cout<<response.object.attachments.front().url<<std::endl;
+                if (response.object.embeds.size() > 0)
+                    game->board_url = response.object.embeds.front().image.url;
+                else if (response.object.id.size() > 0)
+                {
+                    auto resp = getMessage(game->chan,response.object.id);
+                    if ((!resp.response.error()) && (resp.object.embeds.size() > 0))
+                        game->board_url = resp.object.embeds.front().image.url;
+                    else
+                        consoleOut("No embeds in fetched message!");
+                }
+                else
+                    consoleOut("No ID in response!");
             }
             else
                 consoleOut("Error!");
